@@ -10,6 +10,9 @@ class TrackingDao extends DatabaseAccessor<AppDatabase>
     with _$TrackingDaoMixin {
   TrackingDao(super.db);
 
+  Future<PeriodLog?> getPeriodLogById(int id) =>
+      (select(periodLogs)..where((t) => t.id.equals(id))).getSingleOrNull();
+
   Future<int> insertPeriodLog(PeriodLogsCompanion entry) =>
       into(periodLogs).insert(entry);
 
@@ -25,6 +28,9 @@ class TrackingDao extends DatabaseAccessor<AppDatabase>
             ..orderBy([(t) => OrderingTerm.desc(t.startDate)]))
           .watch();
 
+  Future<OvulationLog?> getOvulationLogById(int id) =>
+      (select(ovulationLogs)..where((t) => t.id.equals(id))).getSingleOrNull();
+
   Future<int> insertOvulationLog(OvulationLogsCompanion entry) =>
       into(ovulationLogs).insert(entry);
 
@@ -39,6 +45,9 @@ class TrackingDao extends DatabaseAccessor<AppDatabase>
             ..where((t) => t.womanId.equals(womanId))
             ..orderBy([(t) => OrderingTerm.desc(t.date)]))
           .watch();
+
+  Future<SymptomLog?> getSymptomLogById(int id) =>
+      (select(symptoms)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Future<int> insertSymptomLog(SymptomsCompanion entry) =>
       into(symptoms).insert(entry);
