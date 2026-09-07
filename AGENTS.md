@@ -20,7 +20,7 @@
 3. `BUENAS_PRACTICAS.md` — coding conventions, Gitflow, and commit rules.
 
 ## Decided stack
-- Flutter (installed) + SQLite via **drift** (2.31.0), state management with **Riverpod** (flutter_riverpod 2.6.1, already in pubspec).
+- Flutter + SQLite via **drift** (2.31.0), state management with **Riverpod** (flutter_riverpod 2.6.1, already in pubspec).
 - Feature-first architecture, 3 layers per feature: `presentation/` (UI) → `domain/` (pure Dart logic, no Flutter, unit-testable) → `data/` (drift). Shared code lives in `lib/core/`. Unidirectional flow: UI → Notifier → Repository → drift.
 - Prediction engine lives in `lib/features/prediction/domain/`; estimated ovulation = average cycle − 14 (standard luteal phase), fertility window = ovulation −5 / +2, defaults 24–32/28.
 - The app is 100 % local/offline, no cloud. No secrets, no sensitive data in logs.
@@ -34,3 +34,4 @@
 
 ## Working rule
 - Follow the phases in `planDeDesarrollo.md` in order; each phase maps to a `feature/...` branch and closes with `test`/`docs` commits.
+- Remoto `origin` en GitHub: `https://github.com/tochijanna/ciclotrack.git`. Las ramas `main` y `develop` ya han sido pushadas.

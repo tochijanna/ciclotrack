@@ -7,16 +7,44 @@ class Women extends Table {
   TextColumn get initials => text()();
   TextColumn get emoji => text().withDefault(const Constant('👩'))();
   IntColumn get color => integer().withDefault(const Constant(0xFFE91E63))();
-  TextColumn get tag => text().withDefault(const Constant(''))();
   TextColumn get privateNotes => text().withDefault(const Constant(''))();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [];
+}
+
+@DataClassName('Tag')
+class Tags extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {name},
+  ];
+}
+
+@DataClassName('WomanTag')
+class WomanTags extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get womanId =>
+      integer().references(Women, #id, onDelete: KeyAction.cascade)();
+  IntColumn get tagId =>
+      integer().references(Tags, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {womanId, tagId},
+  ];
 }
 
 @DataClassName('PeriodLog')
 class PeriodLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get womanId => integer().references(Women, #id)();
+  IntColumn get womanId =>
+      integer().references(Women, #id, onDelete: KeyAction.cascade)();
   DateTimeColumn get startDate => dateTime()();
   DateTimeColumn get endDate => dateTime().nullable()();
   IntColumn get flowLevel => integer().nullable()();
@@ -26,7 +54,8 @@ class PeriodLogs extends Table {
 @DataClassName('OvulationLog')
 class OvulationLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get womanId => integer().references(Women, #id)();
+  IntColumn get womanId =>
+      integer().references(Women, #id, onDelete: KeyAction.cascade)();
   DateTimeColumn get date => dateTime()();
   RealColumn get temperature => real().nullable()();
   TextColumn get cervicalMucus => text().nullable()();
@@ -36,7 +65,8 @@ class OvulationLogs extends Table {
 @DataClassName('SymptomLog')
 class Symptoms extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get womanId => integer().references(Women, #id)();
+  IntColumn get womanId =>
+      integer().references(Women, #id, onDelete: KeyAction.cascade)();
   DateTimeColumn get date => dateTime()();
   TextColumn get type => text()();
   IntColumn get severity => integer().withDefault(const Constant(1))();
@@ -56,14 +86,16 @@ class Encounters extends Table {
 class EncounterWomen extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get encounterId => integer().references(Encounters, #id)();
-  IntColumn get womanId => integer().references(Women, #id)();
+  IntColumn get womanId =>
+      integer().references(Women, #id, onDelete: KeyAction.cascade)();
   TextColumn get relationshipType => text().withDefault(const Constant(''))();
 }
 
 @DataClassName('Reminder')
 class Reminders extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get womanId => integer().references(Women, #id)();
+  IntColumn get womanId =>
+      integer().references(Women, #id, onDelete: KeyAction.cascade)();
   IntColumn get cycleDayStart => integer()();
   IntColumn get cycleDayEnd => integer()();
   TextColumn get message => text()();
