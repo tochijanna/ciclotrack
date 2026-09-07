@@ -24,6 +24,8 @@ void main() {
         tables,
         containsAll({
           'women',
+          'tags',
+          'woman_tags',
           'period_logs',
           'ovulation_logs',
           'symptoms',
@@ -54,7 +56,6 @@ void main() {
       expect(woman.name, 'María');
       expect(woman.emoji, '👩');
       expect(woman.sortOrder, 0);
-      expect(woman.tag, '');
     });
   });
 

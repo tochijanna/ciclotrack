@@ -61,16 +61,6 @@ class $WomenTable extends Women with TableInfo<$WomenTable, Woman> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0xFFE91E63),
   );
-  static const VerificationMeta _tagMeta = const VerificationMeta('tag');
-  @override
-  late final GeneratedColumn<String> tag = GeneratedColumn<String>(
-    'tag',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
   static const VerificationMeta _privateNotesMeta = const VerificationMeta(
     'privateNotes',
   );
@@ -113,7 +103,6 @@ class $WomenTable extends Women with TableInfo<$WomenTable, Woman> {
     initials,
     emoji,
     color,
-    tag,
     privateNotes,
     sortOrder,
     createdAt,
@@ -159,12 +148,6 @@ class $WomenTable extends Women with TableInfo<$WomenTable, Woman> {
       context.handle(
         _colorMeta,
         color.isAcceptableOrUnknown(data['color']!, _colorMeta),
-      );
-    }
-    if (data.containsKey('tag')) {
-      context.handle(
-        _tagMeta,
-        tag.isAcceptableOrUnknown(data['tag']!, _tagMeta),
       );
     }
     if (data.containsKey('private_notes')) {
@@ -219,10 +202,6 @@ class $WomenTable extends Women with TableInfo<$WomenTable, Woman> {
         DriftSqlType.int,
         data['${effectivePrefix}color'],
       )!,
-      tag: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}tag'],
-      )!,
       privateNotes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}private_notes'],
@@ -250,7 +229,6 @@ class Woman extends DataClass implements Insertable<Woman> {
   final String initials;
   final String emoji;
   final int color;
-  final String tag;
   final String privateNotes;
   final int sortOrder;
   final DateTime createdAt;
@@ -260,7 +238,6 @@ class Woman extends DataClass implements Insertable<Woman> {
     required this.initials,
     required this.emoji,
     required this.color,
-    required this.tag,
     required this.privateNotes,
     required this.sortOrder,
     required this.createdAt,
@@ -273,7 +250,6 @@ class Woman extends DataClass implements Insertable<Woman> {
     map['initials'] = Variable<String>(initials);
     map['emoji'] = Variable<String>(emoji);
     map['color'] = Variable<int>(color);
-    map['tag'] = Variable<String>(tag);
     map['private_notes'] = Variable<String>(privateNotes);
     map['sort_order'] = Variable<int>(sortOrder);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -287,7 +263,6 @@ class Woman extends DataClass implements Insertable<Woman> {
       initials: Value(initials),
       emoji: Value(emoji),
       color: Value(color),
-      tag: Value(tag),
       privateNotes: Value(privateNotes),
       sortOrder: Value(sortOrder),
       createdAt: Value(createdAt),
@@ -305,7 +280,6 @@ class Woman extends DataClass implements Insertable<Woman> {
       initials: serializer.fromJson<String>(json['initials']),
       emoji: serializer.fromJson<String>(json['emoji']),
       color: serializer.fromJson<int>(json['color']),
-      tag: serializer.fromJson<String>(json['tag']),
       privateNotes: serializer.fromJson<String>(json['privateNotes']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -320,7 +294,6 @@ class Woman extends DataClass implements Insertable<Woman> {
       'initials': serializer.toJson<String>(initials),
       'emoji': serializer.toJson<String>(emoji),
       'color': serializer.toJson<int>(color),
-      'tag': serializer.toJson<String>(tag),
       'privateNotes': serializer.toJson<String>(privateNotes),
       'sortOrder': serializer.toJson<int>(sortOrder),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -333,7 +306,6 @@ class Woman extends DataClass implements Insertable<Woman> {
     String? initials,
     String? emoji,
     int? color,
-    String? tag,
     String? privateNotes,
     int? sortOrder,
     DateTime? createdAt,
@@ -343,7 +315,6 @@ class Woman extends DataClass implements Insertable<Woman> {
     initials: initials ?? this.initials,
     emoji: emoji ?? this.emoji,
     color: color ?? this.color,
-    tag: tag ?? this.tag,
     privateNotes: privateNotes ?? this.privateNotes,
     sortOrder: sortOrder ?? this.sortOrder,
     createdAt: createdAt ?? this.createdAt,
@@ -355,7 +326,6 @@ class Woman extends DataClass implements Insertable<Woman> {
       initials: data.initials.present ? data.initials.value : this.initials,
       emoji: data.emoji.present ? data.emoji.value : this.emoji,
       color: data.color.present ? data.color.value : this.color,
-      tag: data.tag.present ? data.tag.value : this.tag,
       privateNotes: data.privateNotes.present
           ? data.privateNotes.value
           : this.privateNotes,
@@ -372,7 +342,6 @@ class Woman extends DataClass implements Insertable<Woman> {
           ..write('initials: $initials, ')
           ..write('emoji: $emoji, ')
           ..write('color: $color, ')
-          ..write('tag: $tag, ')
           ..write('privateNotes: $privateNotes, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('createdAt: $createdAt')
@@ -387,7 +356,6 @@ class Woman extends DataClass implements Insertable<Woman> {
     initials,
     emoji,
     color,
-    tag,
     privateNotes,
     sortOrder,
     createdAt,
@@ -401,7 +369,6 @@ class Woman extends DataClass implements Insertable<Woman> {
           other.initials == this.initials &&
           other.emoji == this.emoji &&
           other.color == this.color &&
-          other.tag == this.tag &&
           other.privateNotes == this.privateNotes &&
           other.sortOrder == this.sortOrder &&
           other.createdAt == this.createdAt);
@@ -413,7 +380,6 @@ class WomenCompanion extends UpdateCompanion<Woman> {
   final Value<String> initials;
   final Value<String> emoji;
   final Value<int> color;
-  final Value<String> tag;
   final Value<String> privateNotes;
   final Value<int> sortOrder;
   final Value<DateTime> createdAt;
@@ -423,7 +389,6 @@ class WomenCompanion extends UpdateCompanion<Woman> {
     this.initials = const Value.absent(),
     this.emoji = const Value.absent(),
     this.color = const Value.absent(),
-    this.tag = const Value.absent(),
     this.privateNotes = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -434,7 +399,6 @@ class WomenCompanion extends UpdateCompanion<Woman> {
     required String initials,
     this.emoji = const Value.absent(),
     this.color = const Value.absent(),
-    this.tag = const Value.absent(),
     this.privateNotes = const Value.absent(),
     this.sortOrder = const Value.absent(),
     required DateTime createdAt,
@@ -447,7 +411,6 @@ class WomenCompanion extends UpdateCompanion<Woman> {
     Expression<String>? initials,
     Expression<String>? emoji,
     Expression<int>? color,
-    Expression<String>? tag,
     Expression<String>? privateNotes,
     Expression<int>? sortOrder,
     Expression<DateTime>? createdAt,
@@ -458,7 +421,6 @@ class WomenCompanion extends UpdateCompanion<Woman> {
       if (initials != null) 'initials': initials,
       if (emoji != null) 'emoji': emoji,
       if (color != null) 'color': color,
-      if (tag != null) 'tag': tag,
       if (privateNotes != null) 'private_notes': privateNotes,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (createdAt != null) 'created_at': createdAt,
@@ -471,7 +433,6 @@ class WomenCompanion extends UpdateCompanion<Woman> {
     Value<String>? initials,
     Value<String>? emoji,
     Value<int>? color,
-    Value<String>? tag,
     Value<String>? privateNotes,
     Value<int>? sortOrder,
     Value<DateTime>? createdAt,
@@ -482,7 +443,6 @@ class WomenCompanion extends UpdateCompanion<Woman> {
       initials: initials ?? this.initials,
       emoji: emoji ?? this.emoji,
       color: color ?? this.color,
-      tag: tag ?? this.tag,
       privateNotes: privateNotes ?? this.privateNotes,
       sortOrder: sortOrder ?? this.sortOrder,
       createdAt: createdAt ?? this.createdAt,
@@ -507,9 +467,6 @@ class WomenCompanion extends UpdateCompanion<Woman> {
     if (color.present) {
       map['color'] = Variable<int>(color.value);
     }
-    if (tag.present) {
-      map['tag'] = Variable<String>(tag.value);
-    }
     if (privateNotes.present) {
       map['private_notes'] = Variable<String>(privateNotes.value);
     }
@@ -530,10 +487,455 @@ class WomenCompanion extends UpdateCompanion<Woman> {
           ..write('initials: $initials, ')
           ..write('emoji: $emoji, ')
           ..write('color: $color, ')
-          ..write('tag: $tag, ')
           ..write('privateNotes: $privateNotes, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Tag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {name},
+  ];
+  @override
+  Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Tag(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $TagsTable createAlias(String alias) {
+    return $TagsTable(attachedDatabase, alias);
+  }
+}
+
+class Tag extends DataClass implements Insertable<Tag> {
+  final int id;
+  final String name;
+  const Tag({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  TagsCompanion toCompanion(bool nullToAbsent) {
+    return TagsCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory Tag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Tag(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  Tag copyWith({int? id, String? name}) =>
+      Tag(id: id ?? this.id, name: name ?? this.name);
+  Tag copyWithCompanion(TagsCompanion data) {
+    return Tag(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Tag(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Tag && other.id == this.id && other.name == this.name);
+}
+
+class TagsCompanion extends UpdateCompanion<Tag> {
+  final Value<int> id;
+  final Value<String> name;
+  const TagsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  TagsCompanion.insert({this.id = const Value.absent(), required String name})
+    : name = Value(name);
+  static Insertable<Tag> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  TagsCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return TagsCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WomanTagsTable extends WomanTags
+    with TableInfo<$WomanTagsTable, WomanTag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WomanTagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _womanIdMeta = const VerificationMeta(
+    'womanId',
+  );
+  @override
+  late final GeneratedColumn<int> womanId = GeneratedColumn<int>(
+    'woman_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES women (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _tagIdMeta = const VerificationMeta('tagId');
+  @override
+  late final GeneratedColumn<int> tagId = GeneratedColumn<int>(
+    'tag_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tags (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, womanId, tagId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'woman_tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WomanTag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('woman_id')) {
+      context.handle(
+        _womanIdMeta,
+        womanId.isAcceptableOrUnknown(data['woman_id']!, _womanIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_womanIdMeta);
+    }
+    if (data.containsKey('tag_id')) {
+      context.handle(
+        _tagIdMeta,
+        tagId.isAcceptableOrUnknown(data['tag_id']!, _tagIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tagIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {womanId, tagId},
+  ];
+  @override
+  WomanTag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WomanTag(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      womanId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}woman_id'],
+      )!,
+      tagId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tag_id'],
+      )!,
+    );
+  }
+
+  @override
+  $WomanTagsTable createAlias(String alias) {
+    return $WomanTagsTable(attachedDatabase, alias);
+  }
+}
+
+class WomanTag extends DataClass implements Insertable<WomanTag> {
+  final int id;
+  final int womanId;
+  final int tagId;
+  const WomanTag({
+    required this.id,
+    required this.womanId,
+    required this.tagId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['woman_id'] = Variable<int>(womanId);
+    map['tag_id'] = Variable<int>(tagId);
+    return map;
+  }
+
+  WomanTagsCompanion toCompanion(bool nullToAbsent) {
+    return WomanTagsCompanion(
+      id: Value(id),
+      womanId: Value(womanId),
+      tagId: Value(tagId),
+    );
+  }
+
+  factory WomanTag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WomanTag(
+      id: serializer.fromJson<int>(json['id']),
+      womanId: serializer.fromJson<int>(json['womanId']),
+      tagId: serializer.fromJson<int>(json['tagId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'womanId': serializer.toJson<int>(womanId),
+      'tagId': serializer.toJson<int>(tagId),
+    };
+  }
+
+  WomanTag copyWith({int? id, int? womanId, int? tagId}) => WomanTag(
+    id: id ?? this.id,
+    womanId: womanId ?? this.womanId,
+    tagId: tagId ?? this.tagId,
+  );
+  WomanTag copyWithCompanion(WomanTagsCompanion data) {
+    return WomanTag(
+      id: data.id.present ? data.id.value : this.id,
+      womanId: data.womanId.present ? data.womanId.value : this.womanId,
+      tagId: data.tagId.present ? data.tagId.value : this.tagId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WomanTag(')
+          ..write('id: $id, ')
+          ..write('womanId: $womanId, ')
+          ..write('tagId: $tagId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, womanId, tagId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WomanTag &&
+          other.id == this.id &&
+          other.womanId == this.womanId &&
+          other.tagId == this.tagId);
+}
+
+class WomanTagsCompanion extends UpdateCompanion<WomanTag> {
+  final Value<int> id;
+  final Value<int> womanId;
+  final Value<int> tagId;
+  const WomanTagsCompanion({
+    this.id = const Value.absent(),
+    this.womanId = const Value.absent(),
+    this.tagId = const Value.absent(),
+  });
+  WomanTagsCompanion.insert({
+    this.id = const Value.absent(),
+    required int womanId,
+    required int tagId,
+  }) : womanId = Value(womanId),
+       tagId = Value(tagId);
+  static Insertable<WomanTag> custom({
+    Expression<int>? id,
+    Expression<int>? womanId,
+    Expression<int>? tagId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (womanId != null) 'woman_id': womanId,
+      if (tagId != null) 'tag_id': tagId,
+    });
+  }
+
+  WomanTagsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? womanId,
+    Value<int>? tagId,
+  }) {
+    return WomanTagsCompanion(
+      id: id ?? this.id,
+      womanId: womanId ?? this.womanId,
+      tagId: tagId ?? this.tagId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (womanId.present) {
+      map['woman_id'] = Variable<int>(womanId.value);
+    }
+    if (tagId.present) {
+      map['tag_id'] = Variable<int>(tagId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WomanTagsCompanion(')
+          ..write('id: $id, ')
+          ..write('womanId: $womanId, ')
+          ..write('tagId: $tagId')
           ..write(')'))
         .toString();
   }
@@ -569,7 +971,7 @@ class $PeriodLogsTable extends PeriodLogs
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES women (id)',
+      'REFERENCES women (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _startDateMeta = const VerificationMeta(
@@ -970,7 +1372,7 @@ class $OvulationLogsTable extends OvulationLogs
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES women (id)',
+      'REFERENCES women (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
@@ -1387,7 +1789,7 @@ class $SymptomsTable extends Symptoms
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES women (id)',
+      'REFERENCES women (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
@@ -2151,7 +2553,7 @@ class $EncounterWomenTable extends EncounterWomen
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES women (id)',
+      'REFERENCES women (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _relationshipTypeMeta = const VerificationMeta(
@@ -2456,7 +2858,7 @@ class $RemindersTable extends Reminders
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES women (id)',
+      'REFERENCES women (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _cycleDayStartMeta = const VerificationMeta(
@@ -2844,6 +3246,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $WomenTable women = $WomenTable(this);
+  late final $TagsTable tags = $TagsTable(this);
+  late final $WomanTagsTable womanTags = $WomanTagsTable(this);
   late final $PeriodLogsTable periodLogs = $PeriodLogsTable(this);
   late final $OvulationLogsTable ovulationLogs = $OvulationLogsTable(this);
   late final $SymptomsTable symptoms = $SymptomsTable(this);
@@ -2856,6 +3260,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     women,
+    tags,
+    womanTags,
     periodLogs,
     ovulationLogs,
     symptoms,
@@ -2863,6 +3269,58 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     encounterWomen,
     reminders,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'women',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('woman_tags', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tags',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('woman_tags', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'women',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('period_logs', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'women',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('ovulation_logs', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'women',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('symptoms', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'women',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('encounter_women', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'women',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('reminders', kind: UpdateKind.delete)],
+    ),
+  ]);
 }
 
 typedef $$WomenTableCreateCompanionBuilder =
@@ -2872,7 +3330,6 @@ typedef $$WomenTableCreateCompanionBuilder =
       required String initials,
       Value<String> emoji,
       Value<int> color,
-      Value<String> tag,
       Value<String> privateNotes,
       Value<int> sortOrder,
       required DateTime createdAt,
@@ -2884,7 +3341,6 @@ typedef $$WomenTableUpdateCompanionBuilder =
       Value<String> initials,
       Value<String> emoji,
       Value<int> color,
-      Value<String> tag,
       Value<String> privateNotes,
       Value<int> sortOrder,
       Value<DateTime> createdAt,
@@ -2893,6 +3349,24 @@ typedef $$WomenTableUpdateCompanionBuilder =
 final class $$WomenTableReferences
     extends BaseReferences<_$AppDatabase, $WomenTable, Woman> {
   $$WomenTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WomanTagsTable, List<WomanTag>>
+  _womanTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.womanTags,
+    aliasName: $_aliasNameGenerator(db.women.id, db.womanTags.womanId),
+  );
+
+  $$WomanTagsTableProcessedTableManager get womanTagsRefs {
+    final manager = $$WomanTagsTableTableManager(
+      $_db,
+      $_db.womanTags,
+    ).filter((f) => f.womanId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_womanTagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$PeriodLogsTable, List<PeriodLog>>
   _periodLogsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -3018,11 +3492,6 @@ class $$WomenTableFilterComposer extends Composer<_$AppDatabase, $WomenTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get tag => $composableBuilder(
-    column: $table.tag,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get privateNotes => $composableBuilder(
     column: $table.privateNotes,
     builder: (column) => ColumnFilters(column),
@@ -3037,6 +3506,31 @@ class $$WomenTableFilterComposer extends Composer<_$AppDatabase, $WomenTable> {
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> womanTagsRefs(
+    Expression<bool> Function($$WomanTagsTableFilterComposer f) f,
+  ) {
+    final $$WomanTagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.womanTags,
+      getReferencedColumn: (t) => t.womanId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WomanTagsTableFilterComposer(
+            $db: $db,
+            $table: $db.womanTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> periodLogsRefs(
     Expression<bool> Function($$PeriodLogsTableFilterComposer f) f,
@@ -3198,11 +3692,6 @@ class $$WomenTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get tag => $composableBuilder(
-    column: $table.tag,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get privateNotes => $composableBuilder(
     column: $table.privateNotes,
     builder: (column) => ColumnOrderings(column),
@@ -3243,9 +3732,6 @@ class $$WomenTableAnnotationComposer
   GeneratedColumn<int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
 
-  GeneratedColumn<String> get tag =>
-      $composableBuilder(column: $table.tag, builder: (column) => column);
-
   GeneratedColumn<String> get privateNotes => $composableBuilder(
     column: $table.privateNotes,
     builder: (column) => column,
@@ -3256,6 +3742,31 @@ class $$WomenTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  Expression<T> womanTagsRefs<T extends Object>(
+    Expression<T> Function($$WomanTagsTableAnnotationComposer a) f,
+  ) {
+    final $$WomanTagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.womanTags,
+      getReferencedColumn: (t) => t.womanId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WomanTagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.womanTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<T> periodLogsRefs<T extends Object>(
     Expression<T> Function($$PeriodLogsTableAnnotationComposer a) f,
@@ -3397,6 +3908,7 @@ class $$WomenTableTableManager
           (Woman, $$WomenTableReferences),
           Woman,
           PrefetchHooks Function({
+            bool womanTagsRefs,
             bool periodLogsRefs,
             bool ovulationLogsRefs,
             bool symptomsRefs,
@@ -3422,7 +3934,6 @@ class $$WomenTableTableManager
                 Value<String> initials = const Value.absent(),
                 Value<String> emoji = const Value.absent(),
                 Value<int> color = const Value.absent(),
-                Value<String> tag = const Value.absent(),
                 Value<String> privateNotes = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -3432,7 +3943,6 @@ class $$WomenTableTableManager
                 initials: initials,
                 emoji: emoji,
                 color: color,
-                tag: tag,
                 privateNotes: privateNotes,
                 sortOrder: sortOrder,
                 createdAt: createdAt,
@@ -3444,7 +3954,6 @@ class $$WomenTableTableManager
                 required String initials,
                 Value<String> emoji = const Value.absent(),
                 Value<int> color = const Value.absent(),
-                Value<String> tag = const Value.absent(),
                 Value<String> privateNotes = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 required DateTime createdAt,
@@ -3454,7 +3963,6 @@ class $$WomenTableTableManager
                 initials: initials,
                 emoji: emoji,
                 color: color,
-                tag: tag,
                 privateNotes: privateNotes,
                 sortOrder: sortOrder,
                 createdAt: createdAt,
@@ -3467,6 +3975,7 @@ class $$WomenTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                womanTagsRefs = false,
                 periodLogsRefs = false,
                 ovulationLogsRefs = false,
                 symptomsRefs = false,
@@ -3476,6 +3985,7 @@ class $$WomenTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (womanTagsRefs) db.womanTags,
                     if (periodLogsRefs) db.periodLogs,
                     if (ovulationLogsRefs) db.ovulationLogs,
                     if (symptomsRefs) db.symptoms,
@@ -3485,6 +3995,23 @@ class $$WomenTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (womanTagsRefs)
+                        await $_getPrefetchedData<Woman, $WomenTable, WomanTag>(
+                          currentTable: table,
+                          referencedTable: $$WomenTableReferences
+                              ._womanTagsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WomenTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).womanTagsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.womanId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (periodLogsRefs)
                         await $_getPrefetchedData<
                           Woman,
@@ -3607,12 +4134,581 @@ typedef $$WomenTableProcessedTableManager =
       (Woman, $$WomenTableReferences),
       Woman,
       PrefetchHooks Function({
+        bool womanTagsRefs,
         bool periodLogsRefs,
         bool ovulationLogsRefs,
         bool symptomsRefs,
         bool encounterWomenRefs,
         bool remindersRefs,
       })
+    >;
+typedef $$TagsTableCreateCompanionBuilder =
+    TagsCompanion Function({Value<int> id, required String name});
+typedef $$TagsTableUpdateCompanionBuilder =
+    TagsCompanion Function({Value<int> id, Value<String> name});
+
+final class $$TagsTableReferences
+    extends BaseReferences<_$AppDatabase, $TagsTable, Tag> {
+  $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WomanTagsTable, List<WomanTag>>
+  _womanTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.womanTags,
+    aliasName: $_aliasNameGenerator(db.tags.id, db.womanTags.tagId),
+  );
+
+  $$WomanTagsTableProcessedTableManager get womanTagsRefs {
+    final manager = $$WomanTagsTableTableManager(
+      $_db,
+      $_db.womanTags,
+    ).filter((f) => f.tagId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_womanTagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> womanTagsRefs(
+    Expression<bool> Function($$WomanTagsTableFilterComposer f) f,
+  ) {
+    final $$WomanTagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.womanTags,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WomanTagsTableFilterComposer(
+            $db: $db,
+            $table: $db.womanTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  Expression<T> womanTagsRefs<T extends Object>(
+    Expression<T> Function($$WomanTagsTableAnnotationComposer a) f,
+  ) {
+    final $$WomanTagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.womanTags,
+      getReferencedColumn: (t) => t.tagId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WomanTagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.womanTags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TagsTable,
+          Tag,
+          $$TagsTableFilterComposer,
+          $$TagsTableOrderingComposer,
+          $$TagsTableAnnotationComposer,
+          $$TagsTableCreateCompanionBuilder,
+          $$TagsTableUpdateCompanionBuilder,
+          (Tag, $$TagsTableReferences),
+          Tag,
+          PrefetchHooks Function({bool womanTagsRefs})
+        > {
+  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+              }) => TagsCompanion(id: id, name: name),
+          createCompanionCallback:
+              ({Value<int> id = const Value.absent(), required String name}) =>
+                  TagsCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$TagsTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: ({womanTagsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (womanTagsRefs) db.womanTags],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (womanTagsRefs)
+                    await $_getPrefetchedData<Tag, $TagsTable, WomanTag>(
+                      currentTable: table,
+                      referencedTable: $$TagsTableReferences
+                          ._womanTagsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$TagsTableReferences(db, table, p0).womanTagsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.tagId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TagsTable,
+      Tag,
+      $$TagsTableFilterComposer,
+      $$TagsTableOrderingComposer,
+      $$TagsTableAnnotationComposer,
+      $$TagsTableCreateCompanionBuilder,
+      $$TagsTableUpdateCompanionBuilder,
+      (Tag, $$TagsTableReferences),
+      Tag,
+      PrefetchHooks Function({bool womanTagsRefs})
+    >;
+typedef $$WomanTagsTableCreateCompanionBuilder =
+    WomanTagsCompanion Function({
+      Value<int> id,
+      required int womanId,
+      required int tagId,
+    });
+typedef $$WomanTagsTableUpdateCompanionBuilder =
+    WomanTagsCompanion Function({
+      Value<int> id,
+      Value<int> womanId,
+      Value<int> tagId,
+    });
+
+final class $$WomanTagsTableReferences
+    extends BaseReferences<_$AppDatabase, $WomanTagsTable, WomanTag> {
+  $$WomanTagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WomenTable _womanIdTable(_$AppDatabase db) => db.women.createAlias(
+    $_aliasNameGenerator(db.womanTags.womanId, db.women.id),
+  );
+
+  $$WomenTableProcessedTableManager get womanId {
+    final $_column = $_itemColumn<int>('woman_id')!;
+
+    final manager = $$WomenTableTableManager(
+      $_db,
+      $_db.women,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_womanIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $TagsTable _tagIdTable(_$AppDatabase db) =>
+      db.tags.createAlias($_aliasNameGenerator(db.womanTags.tagId, db.tags.id));
+
+  $$TagsTableProcessedTableManager get tagId {
+    final $_column = $_itemColumn<int>('tag_id')!;
+
+    final manager = $$TagsTableTableManager(
+      $_db,
+      $_db.tags,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_tagIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WomanTagsTableFilterComposer
+    extends Composer<_$AppDatabase, $WomanTagsTable> {
+  $$WomanTagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WomenTableFilterComposer get womanId {
+    final $$WomenTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.womanId,
+      referencedTable: $db.women,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WomenTableFilterComposer(
+            $db: $db,
+            $table: $db.women,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableFilterComposer get tagId {
+    final $$TagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableFilterComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WomanTagsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WomanTagsTable> {
+  $$WomanTagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WomenTableOrderingComposer get womanId {
+    final $$WomenTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.womanId,
+      referencedTable: $db.women,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WomenTableOrderingComposer(
+            $db: $db,
+            $table: $db.women,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableOrderingComposer get tagId {
+    final $$TagsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableOrderingComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WomanTagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WomanTagsTable> {
+  $$WomanTagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  $$WomenTableAnnotationComposer get womanId {
+    final $$WomenTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.womanId,
+      referencedTable: $db.women,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WomenTableAnnotationComposer(
+            $db: $db,
+            $table: $db.women,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TagsTableAnnotationComposer get tagId {
+    final $$TagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.tagId,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WomanTagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WomanTagsTable,
+          WomanTag,
+          $$WomanTagsTableFilterComposer,
+          $$WomanTagsTableOrderingComposer,
+          $$WomanTagsTableAnnotationComposer,
+          $$WomanTagsTableCreateCompanionBuilder,
+          $$WomanTagsTableUpdateCompanionBuilder,
+          (WomanTag, $$WomanTagsTableReferences),
+          WomanTag,
+          PrefetchHooks Function({bool womanId, bool tagId})
+        > {
+  $$WomanTagsTableTableManager(_$AppDatabase db, $WomanTagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WomanTagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WomanTagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WomanTagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> womanId = const Value.absent(),
+                Value<int> tagId = const Value.absent(),
+              }) => WomanTagsCompanion(id: id, womanId: womanId, tagId: tagId),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int womanId,
+                required int tagId,
+              }) => WomanTagsCompanion.insert(
+                id: id,
+                womanId: womanId,
+                tagId: tagId,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$WomanTagsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({womanId = false, tagId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (womanId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.womanId,
+                                referencedTable: $$WomanTagsTableReferences
+                                    ._womanIdTable(db),
+                                referencedColumn: $$WomanTagsTableReferences
+                                    ._womanIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (tagId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.tagId,
+                                referencedTable: $$WomanTagsTableReferences
+                                    ._tagIdTable(db),
+                                referencedColumn: $$WomanTagsTableReferences
+                                    ._tagIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WomanTagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WomanTagsTable,
+      WomanTag,
+      $$WomanTagsTableFilterComposer,
+      $$WomanTagsTableOrderingComposer,
+      $$WomanTagsTableAnnotationComposer,
+      $$WomanTagsTableCreateCompanionBuilder,
+      $$WomanTagsTableUpdateCompanionBuilder,
+      (WomanTag, $$WomanTagsTableReferences),
+      WomanTag,
+      PrefetchHooks Function({bool womanId, bool tagId})
     >;
 typedef $$PeriodLogsTableCreateCompanionBuilder =
     PeriodLogsCompanion Function({
@@ -5654,6 +6750,9 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$WomenTableTableManager get women =>
       $$WomenTableTableManager(_db, _db.women);
+  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
+  $$WomanTagsTableTableManager get womanTags =>
+      $$WomanTagsTableTableManager(_db, _db.womanTags);
   $$PeriodLogsTableTableManager get periodLogs =>
       $$PeriodLogsTableTableManager(_db, _db.periodLogs);
   $$OvulationLogsTableTableManager get ovulationLogs =>
