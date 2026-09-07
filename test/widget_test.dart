@@ -19,8 +19,11 @@ void main() {
       ),
     );
 
+    // Allow providers to settle.
+    await tester.pumpAndSettle(const Duration(seconds: 5));
+
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('CicloTrack'), findsOneWidget);
-    expect(find.text('Bienvenido a CicloTrack'), findsOneWidget);
+    expect(find.byIcon(Icons.add), findsWidgets);
   });
 }
