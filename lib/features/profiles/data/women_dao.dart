@@ -5,7 +5,18 @@ import '../../../core/db/tables.dart';
 
 part 'women_dao.g.dart';
 
-@DriftAccessor(tables: [Women, Tags, WomanTags])
+@DriftAccessor(
+  tables: [
+    Women,
+    Tags,
+    WomanTags,
+    PeriodLogs,
+    OvulationLogs,
+    Symptoms,
+    EncounterWomen,
+    Reminders,
+  ],
+)
 class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
   WomenDao(super.db);
 
@@ -32,6 +43,21 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
 
   Future<void> deleteWoman(int id) =>
       (delete(women)..where((t) => t.id.equals(id))).go();
+
+  /// Elimina una mujer y todos sus datos dependientes en una única
+  /// transacción. Compatible tanto con bases nuevas (ON DELETE CASCADE) como
+  /// con bases migradas desde v1 que conservan las restricciones antiguas.
+  Future<void> deleteWomanCascade(int id) {
+    return transaction(() async {
+      await (delete(womanTags)..where((t) => t.womanId.equals(id))).go();
+      await (delete(periodLogs)..where((t) => t.womanId.equals(id))).go();
+      await (delete(ovulationLogs)..where((t) => t.womanId.equals(id))).go();
+      await (delete(symptoms)..where((t) => t.womanId.equals(id))).go();
+      await (delete(encounterWomen)..where((t) => t.womanId.equals(id))).go();
+      await (delete(reminders)..where((t) => t.womanId.equals(id))).go();
+      await (delete(women)..where((t) => t.id.equals(id))).go();
+    });
+  }
 
   // --- Tags ---
 
