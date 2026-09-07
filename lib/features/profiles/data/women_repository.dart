@@ -73,8 +73,8 @@ class WomenRepository {
     await _dao.replaceTags(id, draft.tags);
   }
 
-  /// Elimina un perfil (cascade elimina etiquetas vinculadas e hijos).
-  Future<void> delete(int id) => _dao.deleteWoman(id);
+  /// Elimina un perfil y todos sus datos dependientes de forma transaccional.
+  Future<void> delete(int id) => _dao.deleteWomanCascade(id);
 
   /// Reordena perfiles persistiendo sortOrder según el orden de la lista.
   Future<void> reorder(List<Woman> ordered) async {

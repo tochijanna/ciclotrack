@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/db/app_database_provider.dart';
 import '../../domain/tracking_drafts.dart';
 import '../../domain/tracking_event.dart';
 import '../../domain/tracking_options.dart';
@@ -83,16 +82,11 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
 
     final repo = ref.read(trackingRepositoryProvider);
     if (isEditing) {
-      final db = ref.read(appDatabaseProvider);
-      final existing = await (db.select(
-        db.symptoms,
-      )..where((t) => t.id.equals(widget.event!.id))).getSingle();
-      await repo.updateSymptom(existing, draft);
+      await repo.updateSymptomById(widget.event!.id, draft);
     } else {
       await repo.createSymptom(widget.womanId, draft);
     }
 
-    ref.invalidate(trackingTimelineProvider(widget.womanId));
     if (mounted) Navigator.pop(context);
   }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/db/app_database_provider.dart';
 import '../../domain/tracking_drafts.dart';
 import '../../domain/tracking_event.dart';
 import '../../domain/tracking_options.dart';
@@ -92,18 +91,11 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
 
     final repo = ref.read(trackingRepositoryProvider);
     if (isEditing) {
-      // Necesitamos el PeriodLog original para update.
-      // Lo obtenemos del evento.
-      final db = ref.read(appDatabaseProvider);
-      final existing = await (db.select(
-        db.periodLogs,
-      )..where((t) => t.id.equals(widget.event!.id))).getSingle();
-      await repo.updatePeriod(existing, draft);
+      await repo.updatePeriodById(widget.event!.id, draft);
     } else {
       await repo.createPeriod(widget.womanId, draft);
     }
 
-    ref.invalidate(trackingTimelineProvider(widget.womanId));
     if (mounted) Navigator.pop(context);
   }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/db/app_database_provider.dart';
 import '../../domain/tracking_drafts.dart';
 import '../../domain/tracking_event.dart';
 import '../../domain/tracking_options.dart';
@@ -85,16 +84,11 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
 
     final repo = ref.read(trackingRepositoryProvider);
     if (isEditing) {
-      final db = ref.read(appDatabaseProvider);
-      final existing = await (db.select(
-        db.ovulationLogs,
-      )..where((t) => t.id.equals(widget.event!.id))).getSingle();
-      await repo.updateOvulation(existing, draft);
+      await repo.updateOvulationById(widget.event!.id, draft);
     } else {
       await repo.createOvulation(widget.womanId, draft);
     }
 
-    ref.invalidate(trackingTimelineProvider(widget.womanId));
     if (mounted) Navigator.pop(context);
   }
 

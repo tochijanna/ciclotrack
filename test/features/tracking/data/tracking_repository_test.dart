@@ -227,4 +227,87 @@ void main() {
       expect(events, isEmpty);
     });
   });
+
+  group('TrackingRepository - watchTimeline (reactivo)', () {
+    test('emits on period, ovulation and symptom changes', () async {
+      final events = <List<TrackingEvent>>[];
+      final sub = repo.watchTimeline(womanId).listen(events.add);
+
+      await repo.createPeriod(
+        womanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 1)),
+      );
+      await pumpEventQueue();
+
+      await repo.createOvulation(
+        womanId,
+        OvulationDraft(date: DateTime(2026, 9, 14)),
+      );
+      await pumpEventQueue();
+
+      await repo.createSymptom(
+        womanId,
+        SymptomDraft(date: DateTime(2026, 9, 10), type: 'Humor', severity: 2),
+      );
+      await pumpEventQueue();
+
+      await sub.cancel();
+
+      // La última emisión debe reflejar los tres eventos.
+      expect(events, isNotEmpty);
+      expect(events.last, hasLength(3));
+      final types = events.last.map((e) => e.type).toSet();
+      expect(
+        types,
+        containsAll([
+          TrackingEventType.period,
+          TrackingEventType.ovulation,
+          TrackingEventType.symptom,
+        ]),
+      );
+    });
+
+    test('emits updated timeline after deletion', () async {
+      final periodId = await repo.createPeriod(
+        womanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 1)),
+      );
+
+      final events = <List<TrackingEvent>>[];
+      final sub = repo.watchTimeline(womanId).listen(events.add);
+      await pumpEventQueue();
+
+      expect(events.last, hasLength(1));
+
+      await repo.deletePeriod(periodId);
+      await pumpEventQueue();
+
+      await sub.cancel();
+
+      expect(events.last, isEmpty);
+    });
+
+    test('emits ordered by date descending', () async {
+      await repo.createPeriod(
+        womanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 1)),
+      );
+
+      final events = <List<TrackingEvent>>[];
+      final sub = repo.watchTimeline(womanId).listen(events.add);
+      await pumpEventQueue();
+
+      await repo.createOvulation(
+        womanId,
+        OvulationDraft(date: DateTime(2026, 9, 20)),
+      );
+      await pumpEventQueue();
+
+      await sub.cancel();
+
+      final last = events.last;
+      expect(last[0].type, TrackingEventType.ovulation);
+      expect(last[1].type, TrackingEventType.period);
+    });
+  });
 }

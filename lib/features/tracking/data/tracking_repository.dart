@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 
 import '../../../core/db/app_database.dart';
@@ -13,31 +15,15 @@ class TrackingRepository {
 
   // --- Timeline ---
 
-  /// Stream de todos los eventos de una mujer, ordenados por fecha descendente.
+  /// Stream reactivo de todos los eventos de una mujer, ordenados por fecha
+  /// descendente. Emite de nuevo ante cualquier cambio en periodos, ovulación
+  /// o síntomas.
   Stream<List<TrackingEvent>> watchTimeline(int womanId) {
     final periods$ = _dao.watchPeriodLogsByWoman(womanId);
     final ovulations$ = _dao.watchOvulationLogsByWoman(womanId);
     final symptoms$ = _dao.watchSymptomLogsByWoman(womanId);
 
-    return _combineTimeline(periods$, ovulations$, symptoms$);
-  }
-
-  Stream<List<TrackingEvent>> _combineTimeline(
-    Stream<List<PeriodLog>> periods$,
-    Stream<List<OvulationLog>> ovulations$,
-    Stream<List<SymptomLog>> symptoms$,
-  ) async* {
-    // Escuchamos los tres streams y combinamos manualmente.
-    List<PeriodLog> periods = [];
-    List<OvulationLog> ovulations = [];
-    List<SymptomLog> symptoms = [];
-
-    await for (final p in periods$) {
-      periods = p;
-      yield _buildTimeline(periods, ovulations, symptoms);
-    }
-    // Nota: este enfoque simplificado solo reacciona al stream de periodos.
-    // Para una reactividad completa, usamos StreamGroup o Future.wait en el provider.
+    return _combineLatest3(periods$, ovulations$, symptoms$, _buildTimeline);
   }
 
   /// Obtiene el timeline completo una sola vez (no reactivo).
@@ -46,6 +32,58 @@ class TrackingRepository {
     final ovulations = await _dao.watchOvulationLogsByWoman(womanId).first;
     final symptoms = await _dao.watchSymptomLogsByWoman(womanId).first;
     return _buildTimeline(periods, ovulations, symptoms);
+  }
+
+  /// Combina tres streams emitiendo siempre que cualquiera de ellos cambie.
+  /// Emite una primera vez tan pronto como los tres hayan emitido al menos una
+  /// vez. Las suscripciones se cancelan al cerrarse el stream resultante.
+  Stream<T> _combineLatest3<A, B, C, T>(
+    Stream<A> a$,
+    Stream<B> b$,
+    Stream<C> c$,
+    T Function(A, B, C) combine,
+  ) {
+    late StreamController<T> controller;
+    A? a;
+    B? b;
+    C? c;
+    var aReady = false;
+    var bReady = false;
+    var cReady = false;
+
+    void emitIfReady() {
+      if (aReady && bReady && cReady && !controller.isClosed) {
+        controller.add(combine(a as A, b as B, c as C));
+      }
+    }
+
+    controller = StreamController<T>(
+      onListen: () {
+        final subA = a$.listen((v) {
+          a = v;
+          aReady = true;
+          emitIfReady();
+        });
+        final subB = b$.listen((v) {
+          b = v;
+          bReady = true;
+          emitIfReady();
+        });
+        final subC = c$.listen((v) {
+          c = v;
+          cReady = true;
+          emitIfReady();
+        });
+
+        controller.onCancel = () async {
+          await subA.cancel();
+          await subB.cancel();
+          await subC.cancel();
+        };
+      },
+    );
+
+    return controller.stream;
   }
 
   List<TrackingEvent> _buildTimeline(
@@ -100,6 +138,8 @@ class TrackingRepository {
 
   // --- Periodos ---
 
+  Future<PeriodLog?> getPeriodById(int id) => _dao.getPeriodLogById(id);
+
   Future<int> createPeriod(int womanId, PeriodDraft draft) =>
       _dao.insertPeriodLog(
         PeriodLogsCompanion.insert(
@@ -121,9 +161,18 @@ class TrackingRepository {
         ),
       );
 
+  Future<void> updatePeriodById(int id, PeriodDraft draft) async {
+    final existing = await _dao.getPeriodLogById(id);
+    if (existing == null) return;
+    await updatePeriod(existing, draft);
+  }
+
   Future<void> deletePeriod(int id) => _dao.deletePeriodLog(id);
 
   // --- Ovulación ---
+
+  Future<OvulationLog?> getOvulationById(int id) =>
+      _dao.getOvulationLogById(id);
 
   Future<int> createOvulation(int womanId, OvulationDraft draft) =>
       _dao.insertOvulationLog(
@@ -146,9 +195,17 @@ class TrackingRepository {
         ),
       );
 
+  Future<void> updateOvulationById(int id, OvulationDraft draft) async {
+    final existing = await _dao.getOvulationLogById(id);
+    if (existing == null) return;
+    await updateOvulation(existing, draft);
+  }
+
   Future<void> deleteOvulation(int id) => _dao.deleteOvulationLog(id);
 
   // --- Síntomas ---
+
+  Future<SymptomLog?> getSymptomById(int id) => _dao.getSymptomLogById(id);
 
   Future<int> createSymptom(int womanId, SymptomDraft draft) =>
       _dao.insertSymptomLog(
@@ -170,6 +227,12 @@ class TrackingRepository {
           notes: draft.notes,
         ),
       );
+
+  Future<void> updateSymptomById(int id, SymptomDraft draft) async {
+    final existing = await _dao.getSymptomLogById(id);
+    if (existing == null) return;
+    await updateSymptom(existing, draft);
+  }
 
   Future<void> deleteSymptom(int id) => _dao.deleteSymptomLog(id);
 }

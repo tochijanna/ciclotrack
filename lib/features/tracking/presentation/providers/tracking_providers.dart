@@ -19,9 +19,10 @@ final trackingRepositoryProvider = Provider<TrackingRepository>((ref) {
 
 // --- Timeline ---
 
-/// Provider familiar que observa el timeline de una mujer concreta.
-final trackingTimelineProvider =
-    FutureProvider.family<List<TrackingEvent>, int>((ref, womanId) async {
+/// Provider familiar reactivo: emite el timeline de una mujer y se actualiza
+/// automáticamente ante cualquier cambio en periodos, ovulación o síntomas.
+final trackingTimelineProvider = StreamProvider.autoDispose
+    .family<List<TrackingEvent>, int>((ref, womanId) {
       final repo = ref.watch(trackingRepositoryProvider);
-      return repo.getTimelineOnce(womanId);
+      return repo.watchTimeline(womanId);
     });
