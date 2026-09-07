@@ -8,11 +8,13 @@ class WomanCard extends StatelessWidget {
     super.key,
     required this.profile,
     this.onTap,
+    this.onEdit,
     this.onLongPress,
   });
 
   final WomanProfile profile;
   final VoidCallback? onTap;
+  final VoidCallback? onEdit;
   final VoidCallback? onLongPress;
 
   @override
@@ -79,9 +81,12 @@ class WomanCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.drag_handle,
-                color: Theme.of(context).colorScheme.outline,
+              IconButton(
+                icon: Icon(
+                  Icons.edit,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+                onPressed: onEdit,
               ),
             ],
           ),
