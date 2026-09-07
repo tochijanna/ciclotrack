@@ -5,6 +5,7 @@ import '../../data/women_repository.dart';
 import '../providers/women_providers.dart';
 import '../widgets/woman_card.dart';
 import 'woman_form_screen.dart';
+import '../../../tracking/presentation/screens/tracking_screen.dart';
 
 class WomenListScreen extends ConsumerWidget {
   const WomenListScreen({super.key});
@@ -92,7 +93,8 @@ class WomenListScreen extends ConsumerWidget {
                       return WomanCard(
                         key: ValueKey(profile.woman.id),
                         profile: profile,
-                        onTap: () =>
+                        onTap: () => _navigateToTracking(context, profile),
+                        onEdit: () =>
                             _navigateToForm(context, ref, profile: profile),
                         onLongPress: () =>
                             _confirmDelete(context, ref, profile),
@@ -122,6 +124,12 @@ class WomenListScreen extends ConsumerWidget {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => WomanFormScreen(profile: profile)),
     );
+  }
+
+  void _navigateToTracking(BuildContext context, WomanProfile profile) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => TrackingScreen(profile: profile)));
   }
 
   void _confirmDelete(
