@@ -6,6 +6,8 @@ import '../providers/women_providers.dart';
 import '../widgets/woman_card.dart';
 import 'woman_form_screen.dart';
 import '../../../tracking/presentation/screens/tracking_screen.dart';
+import '../../../encounters/presentation/screens/encounter_form_screen.dart';
+import '../../../encounters/presentation/screens/encounters_screen.dart';
 
 class WomenListScreen extends ConsumerWidget {
   const WomenListScreen({super.key});
@@ -109,9 +111,53 @@ class WomenListScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToForm(context, ref),
-        child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddMenu(context, ref),
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo'),
+      ),
+    );
+  }
+
+  void _showAddMenu(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person_add),
+              title: const Text('Nuevo perfil'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _navigateToForm(context, ref);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.favorite),
+              title: const Text('Nuevo encuentro'),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const EncounterFormScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.list),
+              title: const Text('Ver encuentros'),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const EncountersScreen()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
