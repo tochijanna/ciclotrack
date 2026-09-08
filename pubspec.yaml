@@ -41,6 +41,9 @@ dependencies:
   # Local SQLite database
   drift: ^2.31.0
   drift_flutter: ^0.2.8
+  flutter_local_notifications: ^20.1.0
+  timezone: ^0.10.1
+  flutter_timezone: ^5.1.0
 
 dev_dependencies:
   flutter_test:
