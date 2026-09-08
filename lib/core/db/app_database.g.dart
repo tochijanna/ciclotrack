@@ -3242,6 +3242,428 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
   }
 }
 
+class $AlertSettingsTable extends AlertSettings
+    with TableInfo<$AlertSettingsTable, AlertSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AlertSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _masterEnabledMeta = const VerificationMeta(
+    'masterEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> masterEnabled = GeneratedColumn<bool>(
+    'master_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("master_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _notifyHourMeta = const VerificationMeta(
+    'notifyHour',
+  );
+  @override
+  late final GeneratedColumn<int> notifyHour = GeneratedColumn<int>(
+    'notify_hour',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(9),
+  );
+  static const VerificationMeta _notifyMinuteMeta = const VerificationMeta(
+    'notifyMinute',
+  );
+  @override
+  late final GeneratedColumn<int> notifyMinute = GeneratedColumn<int>(
+    'notify_minute',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _enabledTypesMeta = const VerificationMeta(
+    'enabledTypes',
+  );
+  @override
+  late final GeneratedColumn<String> enabledTypes = GeneratedColumn<String>(
+    'enabled_types',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _horizonDaysMeta = const VerificationMeta(
+    'horizonDays',
+  );
+  @override
+  late final GeneratedColumn<int> horizonDays = GeneratedColumn<int>(
+    'horizon_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(7),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    masterEnabled,
+    notifyHour,
+    notifyMinute,
+    enabledTypes,
+    horizonDays,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'alert_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AlertSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('master_enabled')) {
+      context.handle(
+        _masterEnabledMeta,
+        masterEnabled.isAcceptableOrUnknown(
+          data['master_enabled']!,
+          _masterEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notify_hour')) {
+      context.handle(
+        _notifyHourMeta,
+        notifyHour.isAcceptableOrUnknown(data['notify_hour']!, _notifyHourMeta),
+      );
+    }
+    if (data.containsKey('notify_minute')) {
+      context.handle(
+        _notifyMinuteMeta,
+        notifyMinute.isAcceptableOrUnknown(
+          data['notify_minute']!,
+          _notifyMinuteMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enabled_types')) {
+      context.handle(
+        _enabledTypesMeta,
+        enabledTypes.isAcceptableOrUnknown(
+          data['enabled_types']!,
+          _enabledTypesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('horizon_days')) {
+      context.handle(
+        _horizonDaysMeta,
+        horizonDays.isAcceptableOrUnknown(
+          data['horizon_days']!,
+          _horizonDaysMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AlertSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AlertSetting(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      masterEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}master_enabled'],
+      )!,
+      notifyHour: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}notify_hour'],
+      )!,
+      notifyMinute: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}notify_minute'],
+      )!,
+      enabledTypes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}enabled_types'],
+      )!,
+      horizonDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}horizon_days'],
+      )!,
+    );
+  }
+
+  @override
+  $AlertSettingsTable createAlias(String alias) {
+    return $AlertSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class AlertSetting extends DataClass implements Insertable<AlertSetting> {
+  final int id;
+  final bool masterEnabled;
+  final int notifyHour;
+  final int notifyMinute;
+  final String enabledTypes;
+  final int horizonDays;
+  const AlertSetting({
+    required this.id,
+    required this.masterEnabled,
+    required this.notifyHour,
+    required this.notifyMinute,
+    required this.enabledTypes,
+    required this.horizonDays,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['master_enabled'] = Variable<bool>(masterEnabled);
+    map['notify_hour'] = Variable<int>(notifyHour);
+    map['notify_minute'] = Variable<int>(notifyMinute);
+    map['enabled_types'] = Variable<String>(enabledTypes);
+    map['horizon_days'] = Variable<int>(horizonDays);
+    return map;
+  }
+
+  AlertSettingsCompanion toCompanion(bool nullToAbsent) {
+    return AlertSettingsCompanion(
+      id: Value(id),
+      masterEnabled: Value(masterEnabled),
+      notifyHour: Value(notifyHour),
+      notifyMinute: Value(notifyMinute),
+      enabledTypes: Value(enabledTypes),
+      horizonDays: Value(horizonDays),
+    );
+  }
+
+  factory AlertSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AlertSetting(
+      id: serializer.fromJson<int>(json['id']),
+      masterEnabled: serializer.fromJson<bool>(json['masterEnabled']),
+      notifyHour: serializer.fromJson<int>(json['notifyHour']),
+      notifyMinute: serializer.fromJson<int>(json['notifyMinute']),
+      enabledTypes: serializer.fromJson<String>(json['enabledTypes']),
+      horizonDays: serializer.fromJson<int>(json['horizonDays']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'masterEnabled': serializer.toJson<bool>(masterEnabled),
+      'notifyHour': serializer.toJson<int>(notifyHour),
+      'notifyMinute': serializer.toJson<int>(notifyMinute),
+      'enabledTypes': serializer.toJson<String>(enabledTypes),
+      'horizonDays': serializer.toJson<int>(horizonDays),
+    };
+  }
+
+  AlertSetting copyWith({
+    int? id,
+    bool? masterEnabled,
+    int? notifyHour,
+    int? notifyMinute,
+    String? enabledTypes,
+    int? horizonDays,
+  }) => AlertSetting(
+    id: id ?? this.id,
+    masterEnabled: masterEnabled ?? this.masterEnabled,
+    notifyHour: notifyHour ?? this.notifyHour,
+    notifyMinute: notifyMinute ?? this.notifyMinute,
+    enabledTypes: enabledTypes ?? this.enabledTypes,
+    horizonDays: horizonDays ?? this.horizonDays,
+  );
+  AlertSetting copyWithCompanion(AlertSettingsCompanion data) {
+    return AlertSetting(
+      id: data.id.present ? data.id.value : this.id,
+      masterEnabled: data.masterEnabled.present
+          ? data.masterEnabled.value
+          : this.masterEnabled,
+      notifyHour: data.notifyHour.present
+          ? data.notifyHour.value
+          : this.notifyHour,
+      notifyMinute: data.notifyMinute.present
+          ? data.notifyMinute.value
+          : this.notifyMinute,
+      enabledTypes: data.enabledTypes.present
+          ? data.enabledTypes.value
+          : this.enabledTypes,
+      horizonDays: data.horizonDays.present
+          ? data.horizonDays.value
+          : this.horizonDays,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AlertSetting(')
+          ..write('id: $id, ')
+          ..write('masterEnabled: $masterEnabled, ')
+          ..write('notifyHour: $notifyHour, ')
+          ..write('notifyMinute: $notifyMinute, ')
+          ..write('enabledTypes: $enabledTypes, ')
+          ..write('horizonDays: $horizonDays')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    masterEnabled,
+    notifyHour,
+    notifyMinute,
+    enabledTypes,
+    horizonDays,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AlertSetting &&
+          other.id == this.id &&
+          other.masterEnabled == this.masterEnabled &&
+          other.notifyHour == this.notifyHour &&
+          other.notifyMinute == this.notifyMinute &&
+          other.enabledTypes == this.enabledTypes &&
+          other.horizonDays == this.horizonDays);
+}
+
+class AlertSettingsCompanion extends UpdateCompanion<AlertSetting> {
+  final Value<int> id;
+  final Value<bool> masterEnabled;
+  final Value<int> notifyHour;
+  final Value<int> notifyMinute;
+  final Value<String> enabledTypes;
+  final Value<int> horizonDays;
+  const AlertSettingsCompanion({
+    this.id = const Value.absent(),
+    this.masterEnabled = const Value.absent(),
+    this.notifyHour = const Value.absent(),
+    this.notifyMinute = const Value.absent(),
+    this.enabledTypes = const Value.absent(),
+    this.horizonDays = const Value.absent(),
+  });
+  AlertSettingsCompanion.insert({
+    this.id = const Value.absent(),
+    this.masterEnabled = const Value.absent(),
+    this.notifyHour = const Value.absent(),
+    this.notifyMinute = const Value.absent(),
+    this.enabledTypes = const Value.absent(),
+    this.horizonDays = const Value.absent(),
+  });
+  static Insertable<AlertSetting> custom({
+    Expression<int>? id,
+    Expression<bool>? masterEnabled,
+    Expression<int>? notifyHour,
+    Expression<int>? notifyMinute,
+    Expression<String>? enabledTypes,
+    Expression<int>? horizonDays,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (masterEnabled != null) 'master_enabled': masterEnabled,
+      if (notifyHour != null) 'notify_hour': notifyHour,
+      if (notifyMinute != null) 'notify_minute': notifyMinute,
+      if (enabledTypes != null) 'enabled_types': enabledTypes,
+      if (horizonDays != null) 'horizon_days': horizonDays,
+    });
+  }
+
+  AlertSettingsCompanion copyWith({
+    Value<int>? id,
+    Value<bool>? masterEnabled,
+    Value<int>? notifyHour,
+    Value<int>? notifyMinute,
+    Value<String>? enabledTypes,
+    Value<int>? horizonDays,
+  }) {
+    return AlertSettingsCompanion(
+      id: id ?? this.id,
+      masterEnabled: masterEnabled ?? this.masterEnabled,
+      notifyHour: notifyHour ?? this.notifyHour,
+      notifyMinute: notifyMinute ?? this.notifyMinute,
+      enabledTypes: enabledTypes ?? this.enabledTypes,
+      horizonDays: horizonDays ?? this.horizonDays,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (masterEnabled.present) {
+      map['master_enabled'] = Variable<bool>(masterEnabled.value);
+    }
+    if (notifyHour.present) {
+      map['notify_hour'] = Variable<int>(notifyHour.value);
+    }
+    if (notifyMinute.present) {
+      map['notify_minute'] = Variable<int>(notifyMinute.value);
+    }
+    if (enabledTypes.present) {
+      map['enabled_types'] = Variable<String>(enabledTypes.value);
+    }
+    if (horizonDays.present) {
+      map['horizon_days'] = Variable<int>(horizonDays.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AlertSettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('masterEnabled: $masterEnabled, ')
+          ..write('notifyHour: $notifyHour, ')
+          ..write('notifyMinute: $notifyMinute, ')
+          ..write('enabledTypes: $enabledTypes, ')
+          ..write('horizonDays: $horizonDays')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3254,6 +3676,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $EncountersTable encounters = $EncountersTable(this);
   late final $EncounterWomenTable encounterWomen = $EncounterWomenTable(this);
   late final $RemindersTable reminders = $RemindersTable(this);
+  late final $AlertSettingsTable alertSettings = $AlertSettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3268,6 +3691,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     encounters,
     encounterWomen,
     reminders,
+    alertSettings,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6744,6 +7168,229 @@ typedef $$RemindersTableProcessedTableManager =
       Reminder,
       PrefetchHooks Function({bool womanId})
     >;
+typedef $$AlertSettingsTableCreateCompanionBuilder =
+    AlertSettingsCompanion Function({
+      Value<int> id,
+      Value<bool> masterEnabled,
+      Value<int> notifyHour,
+      Value<int> notifyMinute,
+      Value<String> enabledTypes,
+      Value<int> horizonDays,
+    });
+typedef $$AlertSettingsTableUpdateCompanionBuilder =
+    AlertSettingsCompanion Function({
+      Value<int> id,
+      Value<bool> masterEnabled,
+      Value<int> notifyHour,
+      Value<int> notifyMinute,
+      Value<String> enabledTypes,
+      Value<int> horizonDays,
+    });
+
+class $$AlertSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $AlertSettingsTable> {
+  $$AlertSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get masterEnabled => $composableBuilder(
+    column: $table.masterEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get notifyHour => $composableBuilder(
+    column: $table.notifyHour,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get notifyMinute => $composableBuilder(
+    column: $table.notifyMinute,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get enabledTypes => $composableBuilder(
+    column: $table.enabledTypes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get horizonDays => $composableBuilder(
+    column: $table.horizonDays,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AlertSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AlertSettingsTable> {
+  $$AlertSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get masterEnabled => $composableBuilder(
+    column: $table.masterEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get notifyHour => $composableBuilder(
+    column: $table.notifyHour,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get notifyMinute => $composableBuilder(
+    column: $table.notifyMinute,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get enabledTypes => $composableBuilder(
+    column: $table.enabledTypes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get horizonDays => $composableBuilder(
+    column: $table.horizonDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AlertSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AlertSettingsTable> {
+  $$AlertSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<bool> get masterEnabled => $composableBuilder(
+    column: $table.masterEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get notifyHour => $composableBuilder(
+    column: $table.notifyHour,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get notifyMinute => $composableBuilder(
+    column: $table.notifyMinute,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get enabledTypes => $composableBuilder(
+    column: $table.enabledTypes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get horizonDays => $composableBuilder(
+    column: $table.horizonDays,
+    builder: (column) => column,
+  );
+}
+
+class $$AlertSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AlertSettingsTable,
+          AlertSetting,
+          $$AlertSettingsTableFilterComposer,
+          $$AlertSettingsTableOrderingComposer,
+          $$AlertSettingsTableAnnotationComposer,
+          $$AlertSettingsTableCreateCompanionBuilder,
+          $$AlertSettingsTableUpdateCompanionBuilder,
+          (
+            AlertSetting,
+            BaseReferences<_$AppDatabase, $AlertSettingsTable, AlertSetting>,
+          ),
+          AlertSetting,
+          PrefetchHooks Function()
+        > {
+  $$AlertSettingsTableTableManager(_$AppDatabase db, $AlertSettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AlertSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AlertSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AlertSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<bool> masterEnabled = const Value.absent(),
+                Value<int> notifyHour = const Value.absent(),
+                Value<int> notifyMinute = const Value.absent(),
+                Value<String> enabledTypes = const Value.absent(),
+                Value<int> horizonDays = const Value.absent(),
+              }) => AlertSettingsCompanion(
+                id: id,
+                masterEnabled: masterEnabled,
+                notifyHour: notifyHour,
+                notifyMinute: notifyMinute,
+                enabledTypes: enabledTypes,
+                horizonDays: horizonDays,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<bool> masterEnabled = const Value.absent(),
+                Value<int> notifyHour = const Value.absent(),
+                Value<int> notifyMinute = const Value.absent(),
+                Value<String> enabledTypes = const Value.absent(),
+                Value<int> horizonDays = const Value.absent(),
+              }) => AlertSettingsCompanion.insert(
+                id: id,
+                masterEnabled: masterEnabled,
+                notifyHour: notifyHour,
+                notifyMinute: notifyMinute,
+                enabledTypes: enabledTypes,
+                horizonDays: horizonDays,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AlertSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AlertSettingsTable,
+      AlertSetting,
+      $$AlertSettingsTableFilterComposer,
+      $$AlertSettingsTableOrderingComposer,
+      $$AlertSettingsTableAnnotationComposer,
+      $$AlertSettingsTableCreateCompanionBuilder,
+      $$AlertSettingsTableUpdateCompanionBuilder,
+      (
+        AlertSetting,
+        BaseReferences<_$AppDatabase, $AlertSettingsTable, AlertSetting>,
+      ),
+      AlertSetting,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6765,4 +7412,6 @@ class $AppDatabaseManager {
       $$EncounterWomenTableTableManager(_db, _db.encounterWomen);
   $$RemindersTableTableManager get reminders =>
       $$RemindersTableTableManager(_db, _db.reminders);
+  $$AlertSettingsTableTableManager get alertSettings =>
+      $$AlertSettingsTableTableManager(_db, _db.alertSettings);
 }

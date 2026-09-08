@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ciclotrack/core/db/app_database.dart';
+import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/profiles/data/women_dao.dart';
 
 void main() {
@@ -17,15 +18,53 @@ void main() {
     await db.close();
   });
 
-  group('schema v2', () {
-    test('schemaVersion is 2', () {
-      expect(db.schemaVersion, 2);
+  group('schema v3', () {
+    test('schemaVersion is 3', () {
+      expect(db.schemaVersion, 3);
     });
 
-    test('tags and woman_tags tables exist', () {
+    test('alert_settings table exists', () {
       final tableNames = db.allTables.map((t) => t.actualTableName).toSet();
-      expect(tableNames, containsAll(['tags', 'woman_tags']));
-      expect(tableNames.length, 9);
+      expect(tableNames, contains('alert_settings'));
+      expect(tableNames.length, 10);
+    });
+  });
+
+  group('alert_settings', () {
+    test('getOrCreate creates singleton row', () async {
+      final settingsDao = AlertSettingsDao(db);
+      final settings = await settingsDao.getOrCreate();
+      expect(settings.id, 1);
+      expect(settings.masterEnabled, true);
+      expect(settings.notifyHour, 9);
+      expect(settings.notifyMinute, 0);
+      expect(settings.horizonDays, 7);
+    });
+
+    test('getOrCreate returns existing row on second call', () async {
+      final settingsDao = AlertSettingsDao(db);
+      final first = await settingsDao.getOrCreate();
+      await settingsDao.updateSettings(first.copyWith(masterEnabled: false));
+      final second = await settingsDao.getOrCreate();
+      expect(second.masterEnabled, false);
+    });
+
+    test('watchSettings emits updates', () async {
+      final settingsDao = AlertSettingsDao(db);
+      await settingsDao.ensureCreated();
+
+      final values = <bool>[];
+      final sub = settingsDao.watchSettings().listen((s) {
+        if (s != null) values.add(s.masterEnabled);
+      });
+
+      await settingsDao.updateSettings(
+        (await settingsDao.getOrCreate()).copyWith(masterEnabled: false),
+      );
+      await pumpEventQueue();
+
+      await sub.cancel();
+      expect(values, contains(false));
     });
   });
 

@@ -8,6 +8,7 @@ import 'woman_form_screen.dart';
 import '../../../tracking/presentation/screens/tracking_screen.dart';
 import '../../../encounters/presentation/screens/encounter_form_screen.dart';
 import '../../../encounters/presentation/screens/encounters_screen.dart';
+import '../../../alerts/presentation/screens/alerts_screen.dart';
 
 class WomenListScreen extends ConsumerWidget {
   const WomenListScreen({super.key});
@@ -22,6 +23,12 @@ class WomenListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('CicloTrack'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const AlertsScreen())),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.read(womenListProvider.notifier).refresh(),

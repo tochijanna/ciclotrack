@@ -14,8 +14,9 @@ import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
 import 'package:ciclotrack/features/tracking/presentation/screens/tracking_screen.dart';
 
 void main() {
-  testWidgets('TrackingScreen renders prediction card and empty timeline',
-      (tester) async {
+  testWidgets('TrackingScreen renders prediction card and empty timeline', (
+    tester,
+  ) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
 
     final profile = (await tester.runAsync(() => _createProfile(db, 'María')))!;
@@ -37,8 +38,9 @@ void main() {
     });
   });
 
-  testWidgets('TrackingScreen shows prediction and period in timeline',
-      (tester) async {
+  testWidgets('TrackingScreen shows prediction and period in timeline', (
+    tester,
+  ) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     final profile = (await tester.runAsync(() => _createProfile(db, 'Ana')))!;
 
@@ -67,8 +69,9 @@ void main() {
     });
   });
 
-  testWidgets('TrackingScreen deletes an event after confirmation',
-      (tester) async {
+  testWidgets('TrackingScreen deletes an event after confirmation', (
+    tester,
+  ) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     final profile = (await tester.runAsync(() async {
       final p = await _createProfile(db, 'Sofía');
