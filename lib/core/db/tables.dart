@@ -101,3 +101,14 @@ class Reminders extends Table {
   TextColumn get message => text()();
   BoolColumn get enabled => boolean().withDefault(const Constant(true))();
 }
+
+/// Ajustes de alertas (fila singleton, id=1).
+@DataClassName('AlertSetting')
+class AlertSettings extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  BoolColumn get masterEnabled => boolean().withDefault(const Constant(true))();
+  IntColumn get notifyHour => integer().withDefault(const Constant(9))();
+  IntColumn get notifyMinute => integer().withDefault(const Constant(0))();
+  TextColumn get enabledTypes => text().withDefault(const Constant(''))();
+  IntColumn get horizonDays => integer().withDefault(const Constant(7))();
+}
