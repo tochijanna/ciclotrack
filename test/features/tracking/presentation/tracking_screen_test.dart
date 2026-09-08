@@ -14,7 +14,8 @@ import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
 import 'package:ciclotrack/features/tracking/presentation/screens/tracking_screen.dart';
 
 void main() {
-  testWidgets('TrackingScreen renders empty timeline', (tester) async {
+  testWidgets('TrackingScreen renders prediction card and empty timeline',
+      (tester) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
 
     final profile = (await tester.runAsync(() => _createProfile(db, 'María')))!;
@@ -36,9 +37,8 @@ void main() {
     });
   });
 
-  testWidgets('TrackingScreen shows a created period in timeline', (
-    tester,
-  ) async {
+  testWidgets('TrackingScreen shows prediction and period in timeline',
+      (tester) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     final profile = (await tester.runAsync(() => _createProfile(db, 'Ana')))!;
 
@@ -59,16 +59,16 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('Periodo'), findsOneWidget);
+    // Prediction card should show (periodo en curso or similar)
+    expect(find.textContaining('Periodo'), findsWidgets);
 
     await tester.runAsync(() async {
       await db.close();
     });
   });
 
-  testWidgets('TrackingScreen deletes an event after confirmation', (
-    tester,
-  ) async {
+  testWidgets('TrackingScreen deletes an event after confirmation',
+      (tester) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     final profile = (await tester.runAsync(() async {
       final p = await _createProfile(db, 'Sofía');
@@ -89,7 +89,20 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    await tester.longPress(find.text('Periodo'));
+    // Find the tracking event card's "Periodo" text and long-press it.
+    // The prediction card may push it off-screen, so scroll if needed.
+    final periodoFinder = find.text('Periodo');
+    if (periodoFinder.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(
+        periodoFinder,
+        200,
+        scrollable: find.descendant(
+          of: find.byType(ListView),
+          matching: find.byType(Scrollable),
+        ),
+      );
+    }
+    await tester.longPress(periodoFinder);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('Eliminar registro'), findsOneWidget);

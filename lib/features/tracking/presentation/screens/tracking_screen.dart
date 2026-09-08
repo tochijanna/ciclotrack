@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../prediction/presentation/providers/prediction_providers.dart';
+import '../../../prediction/presentation/widgets/prediction_card.dart';
 import '../../../profiles/data/women_repository.dart';
 import '../../domain/tracking_event.dart';
 import '../providers/tracking_providers.dart';
@@ -17,6 +19,9 @@ class TrackingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final timelineAsync = ref.watch(trackingTimelineProvider(profile.woman.id));
+    final predictionAsync = ref.watch(
+      womanPredictionProvider(profile.woman.id),
+    );
     final woman = profile.woman;
     final color = Color(woman.color);
 
@@ -46,15 +51,22 @@ class TrackingScreen extends ConsumerWidget {
                   _navigateToForm(context, ref, _FormType.symptom),
             );
           }
+          final hasPrediction =
+              predictionAsync.hasValue && predictionAsync.value != null;
+          final totalItems = events.length + (hasPrediction ? 1 : 0);
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(trackingTimelineProvider(woman.id));
             },
             child: ListView.builder(
               padding: const EdgeInsets.only(bottom: 80),
-              itemCount: events.length,
+              itemCount: totalItems,
               itemBuilder: (context, index) {
-                final event = events[index];
+                if (hasPrediction && index == 0) {
+                  return PredictionCard(prediction: predictionAsync.value!);
+                }
+                final eventIndex = index - (hasPrediction ? 1 : 0);
+                final event = events[eventIndex];
                 return TrackingEventCard(
                   key: ValueKey('${event.type.name}_${event.id}'),
                   event: event,
