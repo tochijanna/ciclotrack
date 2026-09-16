@@ -11,22 +11,35 @@ class LocalNotificationScheduler implements NotificationScheduler {
   LocalNotificationScheduler(this._plugin);
 
   final FlutterLocalNotificationsPlugin _plugin;
+  Future<void>? _initialization;
+  bool _available = true;
 
   @override
-  Future<void> initialize() async {
-    tz.initializeTimeZones();
-    final tzInfo = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+  Future<void> initialize() {
+    return _initialization ??= _initialize();
+  }
 
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
-    const initSettings = InitializationSettings(android: androidSettings);
-    await _plugin.initialize(settings: initSettings);
+  Future<void> _initialize() async {
+    try {
+      tz.initializeTimeZones();
+      final tzInfo = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
+      const initSettings = InitializationSettings(android: androidSettings);
+      await _plugin.initialize(settings: initSettings);
+    } catch (_) {
+      // Widget/unit tests and unsupported platforms have no plugin channel.
+      _available = false;
+    }
   }
 
   @override
   Future<bool> requestPermission() async {
+    await initialize();
+    if (!_available) return false;
     final android = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -38,6 +51,8 @@ class LocalNotificationScheduler implements NotificationScheduler {
 
   @override
   Future<bool> canScheduleExact() async {
+    await initialize();
+    if (!_available) return false;
     final android = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -48,6 +63,8 @@ class LocalNotificationScheduler implements NotificationScheduler {
 
   @override
   Future<void> schedule(AlertItem item) async {
+    await initialize();
+    if (!_available) return;
     final tzDateTime = tz.TZDateTime.from(item.fireDate, tz.local);
 
     // Si la fecha ya pasó, no programar.
@@ -91,11 +108,15 @@ class LocalNotificationScheduler implements NotificationScheduler {
 
   @override
   Future<void> cancelAll() async {
+    await initialize();
+    if (!_available) return;
     await _plugin.cancelAll();
   }
 
   @override
   Future<List<PendingNotification>> pending() async {
+    await initialize();
+    if (!_available) return const [];
     final pending = await _plugin.pendingNotificationRequests();
     return pending
         .map(
