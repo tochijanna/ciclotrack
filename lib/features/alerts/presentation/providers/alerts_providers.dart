@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,6 +16,8 @@ import '../../../profiles/data/women_repository.dart';
 import '../../domain/alert_item.dart';
 import '../../domain/alert_rule_engine.dart';
 import '../../data/alert_settings_dao.dart';
+import '../../data/alerts_change_dao.dart';
+import '../../data/alerts_coordinator.dart';
 import '../../data/alerts_repository.dart';
 import '../../data/notification_scheduler.dart';
 import '../../data/local_notification_scheduler.dart';
@@ -28,6 +32,11 @@ final notificationSchedulerProvider = Provider<NotificationScheduler>((ref) {
 final alertSettingsDaoProvider = Provider<AlertSettingsDao>((ref) {
   final db = ref.watch(appDatabaseProvider);
   return AlertSettingsDao(db);
+});
+
+final alertsChangeDaoProvider = Provider<AlertsChangeDao>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return AlertsChangeDao(db);
 });
 
 final alertRuleEngineProvider = Provider<AlertRuleEngine>((ref) {
@@ -53,13 +62,24 @@ final alertsRepositoryProvider = Provider<AlertsRepository>((ref) {
   );
 });
 
+final alertsCoordinatorProvider = Provider<AlertsCoordinator>((ref) {
+  final coordinator = AlertsCoordinator(
+    scheduler: ref.watch(notificationSchedulerProvider),
+    repository: ref.watch(alertsRepositoryProvider),
+    changeDao: ref.watch(alertsChangeDaoProvider),
+  );
+  unawaited(coordinator.start());
+  ref.onDispose(coordinator.dispose);
+  return coordinator;
+});
+
 // --- Ajustes ---
 
 final alertSettingsStreamProvider = StreamProvider.autoDispose<AlertSetting?>((
   ref,
 ) {
   final dao = ref.watch(alertSettingsDaoProvider);
-  dao.ensureCreated();
+  unawaited(dao.ensureCreated());
   return dao.watchSettings();
 });
 
