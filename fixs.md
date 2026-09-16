@@ -2,9 +2,11 @@
 
 Hallazgos de la revisión técnica posterior a la Fase 6. Ordenados por impacto y riesgo.
 
+F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
+
 ## Críticos
 
-### F-01 — Inicializar notificaciones y solicitar permisos
+### F-01 — Inicializar notificaciones y solicitar permisos ✅ Resuelto
 
 - **Archivos:** `lib/main.dart`, `lib/features/alerts/data/local_notification_scheduler.dart`
 - **Problema:** `initialize()` y `requestPermission()` nunca se invocan.
@@ -12,7 +14,7 @@ Hallazgos de la revisión técnica posterior a la Fase 6. Ordenados por impacto 
 - **Fix:** inicializar el scheduler durante el arranque de la aplicación y solicitar permisos mediante un flujo explícito desde la pantalla de alertas.
 - **Pruebas:** verificar inicialización, permiso concedido/denegado y comportamiento sin permisos.
 
-### F-02 — Unificar el significado de tipos de alerta vacíos
+### F-02 — Unificar el significado de tipos de alerta vacíos ✅ Resuelto
 
 - **Archivos:** `lib/features/alerts/domain/alert_settings.dart`, `lib/features/alerts/presentation/screens/alerts_screen.dart`, `lib/features/alerts/data/alerts_repository.dart`
 - **Problema:** la UI interpreta `enabledTypes == ''` como todos activos, pero el dominio lo interpreta como ninguno.
@@ -20,7 +22,7 @@ Hallazgos de la revisión técnica posterior a la Fase 6. Ordenados por impacto 
 - **Fix:** definir una única política. Recomendación: normalizar una fila nueva a todos los tipos activos y persistir siempre el CSV completo.
 - **Pruebas:** ajustes por defecto, desactivar el último tipo, recargar la pantalla y evaluar el motor.
 
-### F-03 — Reprogramar alertas cuando cambien datos o ajustes
+### F-03 — Reprogramar alertas cuando cambien datos o ajustes ✅ Resuelto
 
 - **Archivos:** `lib/features/alerts/data/alerts_repository.dart`, formularios de tracking y encuentros, `lib/features/alerts/presentation/screens/alerts_screen.dart`, `lib/main.dart`
 - **Problema:** `refreshAlerts()` solo se ejecuta mediante botones manuales.

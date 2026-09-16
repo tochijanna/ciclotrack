@@ -2,13 +2,13 @@ import 'alert_types.dart';
 
 /// Ajustes de alertas (modelo de dominio, independiente de Drift).
 class AlertSettings {
-  const AlertSettings({
-    this.masterEnabled = true,
+  AlertSettings({
+    this.masterEnabled = false,
     this.notifyHour = 9,
     this.notifyMinute = 0,
-    this.enabledTypes = const {},
+    Set<AlertType>? enabledTypes,
     this.horizonDays = 7,
-  });
+  }) : enabledTypes = enabledTypes ?? Set.unmodifiable(AlertType.values);
 
   final bool masterEnabled;
   final int notifyHour;
@@ -40,17 +40,17 @@ class AlertSettings {
 
   /// Deserializa CSV a Set de AlertType.
   static Set<AlertType> enabledTypesFromCsv(String csv) {
-    if (csv.trim().isEmpty) return {};
+    if (csv.trim().isEmpty) {
+      // Compatibilidad con filas creadas antes de la normalización.
+      return Set<AlertType>.from(AlertType.values);
+    }
+    if (csv.trim() == 'none') return {};
     return csv
         .split(',')
         .map((s) => s.trim())
         .where((s) => s.isNotEmpty)
-        .map(
-          (s) => AlertType.values.firstWhere(
-            (t) => t.name == s,
-            orElse: () => AlertType.fertilidadInminente,
-          ),
-        )
+        .where((s) => AlertType.values.any((t) => t.name == s))
+        .map((s) => AlertType.values.firstWhere((t) => t.name == s))
         .toSet();
   }
 }

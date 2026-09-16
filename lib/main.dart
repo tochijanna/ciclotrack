@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/db/app_database_provider.dart';
+import 'features/alerts/presentation/providers/alerts_providers.dart';
 import 'features/profiles/presentation/screens/women_list_screen.dart';
 
 void main() {
@@ -14,6 +15,7 @@ class CicloTrackApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(appDatabaseProvider);
+    ref.watch(alertsCoordinatorProvider);
     return MaterialApp(
       title: 'CicloTrack',
       theme: ThemeData(

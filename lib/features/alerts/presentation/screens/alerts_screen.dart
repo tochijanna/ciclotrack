@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/alert_settings.dart';
 import '../../domain/alert_types.dart';
 import '../providers/alerts_providers.dart';
 
@@ -42,8 +43,28 @@ class AlertsScreen extends ConsumerWidget {
                   'Activa o desactiva todas las notificaciones',
                 ),
                 value: settings.masterEnabled,
-                onChanged: (v) {
-                  ref.read(alertsRepositoryProvider).updateMasterEnabled(v);
+                onChanged: (v) async {
+                  if (v) {
+                    final granted = await ref
+                        .read(notificationSchedulerProvider)
+                        .requestPermission();
+                    if (!granted) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Permiso de notificaciones no concedido',
+                            ),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+                  }
+                  await ref
+                      .read(alertsRepositoryProvider)
+                      .updateMasterEnabled(v);
+                  await ref.read(alertsCoordinatorProvider).refreshNow();
                   ref.invalidate(upcomingAlertsProvider);
                 },
               ),
@@ -65,9 +86,10 @@ class AlertsScreen extends ConsumerWidget {
                       ),
                     );
                     if (time != null) {
-                      ref
+                      await ref
                           .read(alertsRepositoryProvider)
                           .updateNotifyTime(time.hour, time.minute);
+                      await ref.read(alertsCoordinatorProvider).refreshNow();
                       ref.invalidate(upcomingAlertsProvider);
                     }
                   },
@@ -93,16 +115,17 @@ class AlertsScreen extends ConsumerWidget {
                       style: const TextStyle(fontSize: 12),
                     ),
                     value: enabled,
-                    onChanged: (v) {
+                    onChanged: (v) async {
                       final updated = Set<AlertType>.from(enabledTypes);
                       if (v == true) {
                         updated.add(type);
                       } else {
                         updated.remove(type);
                       }
-                      ref
+                      await ref
                           .read(alertsRepositoryProvider)
                           .updateEnabledTypes(updated);
+                      await ref.read(alertsCoordinatorProvider).refreshNow();
                       ref.invalidate(upcomingAlertsProvider);
                     },
                   );
@@ -182,20 +205,6 @@ class AlertsScreen extends ConsumerWidget {
   }
 
   Set<AlertType> _parseEnabledTypes(String csv) {
-    if (csv.trim().isEmpty) {
-      // Por defecto, todos activos.
-      return Set<AlertType>.from(AlertType.values);
-    }
-    return csv
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .map(
-          (s) => AlertType.values.firstWhere(
-            (t) => t.name == s,
-            orElse: () => AlertType.fertilidadInminente,
-          ),
-        )
-        .toSet();
+    return AlertSettings.enabledTypesFromCsv(csv);
   }
 }
