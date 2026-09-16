@@ -372,7 +372,7 @@ void main() {
 
   group('AlertSettings - CSV serialization', () {
     test('round-trips through CSV', () {
-      const settings = AlertSettings(
+      final settings = AlertSettings(
         enabledTypes: {AlertType.diaDeRiesgo, AlertType.periodoInminente},
       );
       final csv = settings.enabledTypesToCsv();
@@ -380,8 +380,11 @@ void main() {
       expect(restored, equals(settings.enabledTypes));
     });
 
-    test('empty CSV returns empty set', () {
-      expect(AlertSettings.enabledTypesFromCsv(''), isEmpty);
+    test('empty CSV returns all alert types for legacy defaults', () {
+      expect(
+        AlertSettings.enabledTypesFromCsv(''),
+        containsAll(AlertType.values),
+      );
     });
   });
 }

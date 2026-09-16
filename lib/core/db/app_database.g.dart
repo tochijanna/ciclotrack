@@ -3274,7 +3274,7 @@ class $AlertSettingsTable extends AlertSettings
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'CHECK ("master_enabled" IN (0, 1))',
     ),
-    defaultValue: const Constant(true),
+    defaultValue: const Constant(false),
   );
   static const VerificationMeta _notifyHourMeta = const VerificationMeta(
     'notifyHour',

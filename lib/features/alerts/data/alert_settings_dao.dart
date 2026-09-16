@@ -11,16 +11,18 @@ class AlertSettingsDao extends DatabaseAccessor<AppDatabase>
   AlertSettingsDao(super.db);
 
   /// Obtiene la fila singleton (id=1), creándola si no existe.
-  Future<AlertSetting> getOrCreate() async {
+  Future<AlertSetting> getOrCreate() => transaction(() async {
     final existing = await (select(
       alertSettings,
     )..where((t) => t.id.equals(1))).getSingleOrNull();
     if (existing != null) return existing;
-    await into(alertSettings).insert(const AlertSettingsCompanion());
+    await into(
+      alertSettings,
+    ).insert(const AlertSettingsCompanion(id: Value(1)));
     return await (select(
       alertSettings,
     )..where((t) => t.id.equals(1))).getSingle();
-  }
+  });
 
   /// Stream reactivo de los ajustes.
   Stream<AlertSetting?> watchSettings() {
@@ -31,12 +33,7 @@ class AlertSettingsDao extends DatabaseAccessor<AppDatabase>
 
   /// Asegura que la fila singleton existe.
   Future<void> ensureCreated() async {
-    final existing = await (select(
-      alertSettings,
-    )..where((t) => t.id.equals(1))).getSingleOrNull();
-    if (existing == null) {
-      await into(alertSettings).insert(const AlertSettingsCompanion());
-    }
+    await getOrCreate();
   }
 
   /// Actualiza los ajustes (fila singleton).

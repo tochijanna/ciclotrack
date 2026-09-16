@@ -35,7 +35,7 @@ void main() {
       final settingsDao = AlertSettingsDao(db);
       final settings = await settingsDao.getOrCreate();
       expect(settings.id, 1);
-      expect(settings.masterEnabled, true);
+      expect(settings.masterEnabled, false);
       expect(settings.notifyHour, 9);
       expect(settings.notifyMinute, 0);
       expect(settings.horizonDays, 7);

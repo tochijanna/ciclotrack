@@ -106,7 +106,8 @@ class Reminders extends Table {
 @DataClassName('AlertSetting')
 class AlertSettings extends Table {
   IntColumn get id => integer().autoIncrement()();
-  BoolColumn get masterEnabled => boolean().withDefault(const Constant(true))();
+  BoolColumn get masterEnabled =>
+      boolean().withDefault(const Constant(false))();
   IntColumn get notifyHour => integer().withDefault(const Constant(9))();
   IntColumn get notifyMinute => integer().withDefault(const Constant(0))();
   TextColumn get enabledTypes => text().withDefault(const Constant(''))();

@@ -119,7 +119,7 @@ class AlertsRepository {
 
   Future<void> updateEnabledTypes(Set<AlertType> types) async {
     final current = await settingsDao.getOrCreate();
-    final csv = types.map((t) => t.name).join(',');
+    final csv = types.isEmpty ? 'none' : types.map((t) => t.name).join(',');
     await settingsDao.updateSettings(current.copyWith(enabledTypes: csv));
   }
 
