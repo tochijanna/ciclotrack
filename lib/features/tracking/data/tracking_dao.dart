@@ -22,6 +22,9 @@ class TrackingDao extends DatabaseAccessor<AppDatabase>
   Future<void> deletePeriodLog(int id) =>
       (delete(periodLogs)..where((t) => t.id.equals(id))).go();
 
+  Future<List<PeriodLog>> getPeriodLogsByWoman(int womanId) =>
+      (select(periodLogs)..where((t) => t.womanId.equals(womanId))).get();
+
   Stream<List<PeriodLog>> watchPeriodLogsByWoman(int womanId) =>
       (select(periodLogs)
             ..where((t) => t.womanId.equals(womanId))

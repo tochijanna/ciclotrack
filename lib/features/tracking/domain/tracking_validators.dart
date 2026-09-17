@@ -1,8 +1,23 @@
 import 'tracking_options.dart';
 
+class PeriodConflictException implements Exception {
+  const PeriodConflictException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// Elimina la hora: tracking y predicción trabajan por día calendario.
+DateTime calendarDate(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
+
 /// Calcula la duración en días de un periodo (inclusivo).
 /// Devuelve null si [endDate] es null o anterior a [startDate].
 int? periodDuration(DateTime startDate, DateTime? endDate) {
+  startDate = calendarDate(startDate);
+  endDate = endDate == null ? null : calendarDate(endDate);
   if (endDate == null) return null;
   if (endDate.isBefore(startDate)) return null;
   return endDate.difference(startDate).inDays + 1;

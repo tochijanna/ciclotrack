@@ -9,6 +9,7 @@ import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_event.dart';
+import 'package:ciclotrack/features/tracking/domain/tracking_validators.dart';
 
 void main() {
   late AppDatabase db;
@@ -93,6 +94,59 @@ void main() {
         db.periodLogs,
       )..where((t) => t.id.equals(id))).getSingleOrNull();
       expect(log, isNull);
+    });
+  });
+
+  group('TrackingRepository - Validación de periodos', () {
+    test('rejects duplicate start date', () async {
+      await repo.createPeriod(
+        womanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 1)),
+      );
+
+      expect(
+        () => repo.createPeriod(
+          womanId,
+          PeriodDraft(startDate: DateTime(2026, 9, 1)),
+        ),
+        throwsA(isA<PeriodConflictException>()),
+      );
+    });
+
+    test('rejects overlapping periods', () async {
+      await repo.createPeriod(
+        womanId,
+        PeriodDraft(
+          startDate: DateTime(2026, 9, 1),
+          endDate: DateTime(2026, 9, 5),
+        ),
+      );
+
+      expect(
+        () => repo.createPeriod(
+          womanId,
+          PeriodDraft(
+            startDate: DateTime(2026, 9, 4),
+            endDate: DateTime(2026, 9, 8),
+          ),
+        ),
+        throwsA(isA<PeriodConflictException>()),
+      );
+    });
+
+    test('normalizes time before persistence', () async {
+      final id = await repo.createPeriod(
+        womanId,
+        PeriodDraft(
+          startDate: DateTime(2026, 9, 1, 23, 30),
+          endDate: DateTime(2026, 9, 3, 22),
+        ),
+      );
+      final period = await (db.select(
+        db.periodLogs,
+      )..where((t) => t.id.equals(id))).getSingle();
+      expect(period.startDate, DateTime(2026, 9, 1));
+      expect(period.endDate, DateTime(2026, 9, 3));
     });
   });
 

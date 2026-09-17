@@ -22,6 +22,7 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
   DateTime? _endDate;
   int? _flowLevel;
   late final TextEditingController _notesCtrl;
+  bool _saving = false;
 
   bool get isEditing => widget.event != null;
 
@@ -61,42 +62,58 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!isValidDate(_startDate)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('La fecha de inicio no puede ser futura')),
-      );
-      return;
-    }
-    if (!isValidDateRange(_startDate, _endDate)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('La fecha de fin no puede ser anterior al inicio'),
-        ),
-      );
-      return;
-    }
-    if (!isValidFlowLevel(_flowLevel)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Flujo debe estar entre 1 y 5')),
-      );
-      return;
-    }
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      _startDate = calendarDate(_startDate);
+      _endDate = _endDate == null ? null : calendarDate(_endDate!);
+      if (!isValidDate(_startDate)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La fecha de inicio no puede ser futura'),
+          ),
+        );
+        return;
+      }
+      if (!isValidDateRange(_startDate, _endDate)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La fecha de fin no puede ser anterior al inicio'),
+          ),
+        );
+        return;
+      }
+      if (!isValidFlowLevel(_flowLevel)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Flujo debe estar entre 1 y 5')),
+        );
+        return;
+      }
 
-    final draft = PeriodDraft(
-      startDate: _startDate,
-      endDate: _endDate,
-      flowLevel: _flowLevel,
-      notes: _notesCtrl.text,
-    );
+      final draft = PeriodDraft(
+        startDate: _startDate,
+        endDate: _endDate,
+        flowLevel: _flowLevel,
+        notes: _notesCtrl.text,
+      );
 
-    final repo = ref.read(trackingRepositoryProvider);
-    if (isEditing) {
-      await repo.updatePeriodById(widget.event!.id, draft);
-    } else {
-      await repo.createPeriod(widget.womanId, draft);
+      final repo = ref.read(trackingRepositoryProvider);
+      if (isEditing) {
+        await repo.updatePeriodById(widget.event!.id, draft);
+      } else {
+        await repo.createPeriod(widget.womanId, draft);
+      }
+
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo guardar el periodo')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -104,7 +121,12 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar periodo' : 'Registrar periodo'),
-        actions: [TextButton(onPressed: _save, child: const Text('Guardar'))],
+        actions: [
+          TextButton(
+            onPressed: _saving ? null : _save,
+            child: const Text('Guardar'),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -193,7 +215,7 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: _save,
+              onPressed: _saving ? null : _save,
               icon: Icon(isEditing ? Icons.save : Icons.add),
               label: Text(isEditing ? 'Guardar cambios' : 'Registrar periodo'),
             ),
