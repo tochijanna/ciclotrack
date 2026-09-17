@@ -25,6 +25,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
   late int _color;
   late List<String> _tags;
   WomanValidationErrors _errors = const WomanValidationErrors();
+  bool _saving = false;
 
   bool get isEditing => widget.profile != null;
 
@@ -55,27 +56,39 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
   }
 
   Future<void> _save() async {
-    _autoInitials();
-    final draft = WomanDraft(
-      name: _nameCtrl.text,
-      initials: _initialsCtrl.text,
-      emoji: _emoji,
-      color: _color,
-      privateNotes: _notesCtrl.text,
-      tags: normalizeTags(_tags),
-    );
-    final errors = validateWomanDraft(draft);
-    if (!errors.isValid) {
-      setState(() => _errors = errors);
-      return;
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      _autoInitials();
+      final draft = WomanDraft(
+        name: _nameCtrl.text,
+        initials: _initialsCtrl.text,
+        emoji: _emoji,
+        color: _color,
+        privateNotes: _notesCtrl.text,
+        tags: normalizeTags(_tags),
+      );
+      final errors = validateWomanDraft(draft);
+      if (!errors.isValid) {
+        setState(() => _errors = errors);
+        return;
+      }
+      final notifier = ref.read(womenListProvider.notifier);
+      if (isEditing) {
+        await notifier.updateProfile(widget.profile!.woman.id, draft);
+      } else {
+        await notifier.create(draft);
+      }
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo guardar el perfil')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    final notifier = ref.read(womenListProvider.notifier);
-    if (isEditing) {
-      await notifier.updateProfile(widget.profile!.woman.id, draft);
-    } else {
-      await notifier.create(draft);
-    }
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -83,7 +96,12 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar perfil' : 'Nuevo perfil'),
-        actions: [TextButton(onPressed: _save, child: const Text('Guardar'))],
+        actions: [
+          TextButton(
+            onPressed: _saving ? null : _save,
+            child: const Text('Guardar'),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -235,7 +253,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
               const SizedBox(height: 24),
               // Guardar
               FilledButton.icon(
-                onPressed: _save,
+                onPressed: _saving ? null : _save,
                 icon: Icon(isEditing ? Icons.save : Icons.person_add),
                 label: Text(isEditing ? 'Guardar cambios' : 'Crear perfil'),
               ),

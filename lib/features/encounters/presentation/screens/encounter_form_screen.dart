@@ -24,6 +24,7 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
 
   /// womanId → relationshipType seleccionado.
   final Map<int, String> _selectedWomen = {};
+  bool _saving = false;
 
   bool get isEditing => widget.encounterId != null;
 
@@ -91,49 +92,61 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
   }
 
   Future<void> _save() async {
-    final participants = _selectedWomen.entries
-        .map(
-          (e) => EncounterParticipantDraft(
-            womanId: e.key,
-            relationshipType: e.value,
-          ),
-        )
-        .toList();
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      final participants = _selectedWomen.entries
+          .map(
+            (e) => EncounterParticipantDraft(
+              womanId: e.key,
+              relationshipType: e.value,
+            ),
+          )
+          .toList();
 
-    final draft = EncounterDraft(
-      encounterTime: _encounterTime,
-      protection: _protection,
-      participants: participants,
-      outcome: _outcome,
-      notes: _notesCtrl.text,
-    );
+      final draft = EncounterDraft(
+        encounterTime: _encounterTime,
+        protection: _protection,
+        participants: participants,
+        outcome: _outcome,
+        notes: _notesCtrl.text,
+      );
 
-    final errors = validateEncounterDraft(draft);
-    if (!errors.isValid) {
-      final msg = [
-        errors.encounterTime,
-        errors.protection,
-        errors.participants,
-        errors.outcome,
-        errors.relationshipType,
-      ].where((e) => e != null).join('\n');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg)));
+      final errors = validateEncounterDraft(draft);
+      if (!errors.isValid) {
+        final msg = [
+          errors.encounterTime,
+          errors.protection,
+          errors.participants,
+          errors.outcome,
+          errors.relationshipType,
+        ].where((e) => e != null).join('\n');
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(msg)));
+        }
+        return;
       }
-      return;
-    }
 
-    final repo = ref.read(encounterRepositoryProvider);
-    if (isEditing) {
-      await repo.update(widget.encounterId!, draft);
-    } else {
-      await repo.create(draft);
+      final repo = ref.read(encounterRepositoryProvider);
+      if (isEditing) {
+        await repo.update(widget.encounterId!, draft);
+      } else {
+        await repo.create(draft);
+      }
+      ref.invalidate(allEncountersProvider);
+      ref.invalidate(encountersByWomanProvider);
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo guardar el encuentro')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    ref.invalidate(allEncountersProvider);
-    ref.invalidate(encountersByWomanProvider);
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -143,7 +156,12 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar encuentro' : 'Nuevo encuentro'),
-        actions: [TextButton(onPressed: _save, child: const Text('Guardar'))],
+        actions: [
+          TextButton(
+            onPressed: _saving ? null : _save,
+            child: const Text('Guardar'),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -310,7 +328,7 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: _save,
+              onPressed: _saving ? null : _save,
               icon: Icon(isEditing ? Icons.save : Icons.add),
               label: Text(
                 isEditing ? 'Guardar cambios' : 'Registrar encuentro',
