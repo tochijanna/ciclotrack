@@ -90,7 +90,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 
 ## Media
 
-### F-11 — Hacer reactivos tags y encuentros enriquecidos
+### F-11 — Hacer reactivos tags y encuentros enriquecidos ✅ Resuelto
 
 - **Archivos:** `women_dao.dart`, `women_repository.dart`, `encounter_dao.dart`, `encounter_repository.dart`
 - **Problema:** `watchAllTags()` usa `get().asStream()` y los datos enriquecidos se cargan con `.first`.
@@ -98,7 +98,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** usar consultas Drift con joins reactivos o combinar streams correctamente.
 - **Pruebas:** mantener una suscripción y modificar únicamente relaciones, nombres o colores.
 
-### F-12 — Validar correctamente temperatura decimal
+### F-12 — Validar correctamente temperatura decimal ✅ Resuelto
 
 - **Archivo:** `lib/features/tracking/presentation/screens/ovulation_form_screen.dart`
 - **Problema:** cualquier texto no numérico se convierte en `null` y se acepta como campo vacío.
@@ -106,7 +106,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** distinguir entre campo vacío y parseo fallido; aceptar coma decimal normalizándola a punto.
 - **Pruebas:** vacío, `36.5`, `36,5`, `abc`, valores fuera de 34–40 °C.
 
-### F-13 — Actualizar predicción al cambiar el día
+### F-13 — Actualizar predicción al cambiar el día ✅ Resuelto
 
 - **Archivo:** `lib/features/prediction/data/prediction_repository.dart`
 - **Problema:** la predicción solo se recalcula al cambiar `period_logs`.
@@ -114,7 +114,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** invalidar al volver la app a foreground y añadir una señal de fecha al provider; no depender solo del stream de base de datos.
 - **Pruebas:** cambiar el día inyectando `today`, resume de app y transición de ventana fértil/retraso.
 
-### F-14 — Revisar rango de ovulación
+### F-14 — Revisar rango de ovulación ✅ Resuelto
 
 - **Archivos:** `prediction_engine.dart`, tests del motor, `Especificaciones.md`
 - **Problema:** con defaults el rango puede ser 1–32, mientras la explicación visual de la spec muestra 11–17.
@@ -122,7 +122,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** confirmar la fórmula funcional con la spec y ajustar el cálculo o la documentación; actualizar tests después de decidir.
 - **Pruebas:** defaults, ciclos cortos/largos y límites del rango.
 
-### F-15 — Usar el final real del último periodo
+### F-15 — Usar el final real del último periodo ✅ Resuelto
 
 - **Archivo:** `prediction_calculator.dart`
 - **Problema:** `periodoEnCurso` usa la duración media/default, aunque el último periodo tenga `endDate` explícito.
@@ -130,7 +130,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** priorizar el `endDate` del último periodo cuando exista; usar la duración estimada solo para ciclos futuros.
 - **Pruebas:** último periodo corto/largo con historial de duración diferente.
 
-### F-16 — Garantizar singleton de `alert_settings`
+### F-16 — Garantizar singleton de `alert_settings` ✅ Resuelto
 
 - **Archivos:** `tables.dart`, `alert_settings_dao.dart`, `alerts_providers.dart`
 - **Problema:** la tabla permite varias filas y `ensureCreated()` no se espera antes de `getOrCreate()`.
@@ -138,7 +138,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** imponer id fijo/clave única para la fila singleton y centralizar una operación `getOrCreate()` transaccional.
 - **Pruebas:** acceso concurrente inicial y comprobación de una sola fila.
 
-### F-17 — Hacer segura la reprogramación de notificaciones
+### F-17 — Hacer segura la reprogramación de notificaciones ✅ Resuelto
 
 - **Archivo:** `lib/features/alerts/data/alerts_repository.dart`
 - **Problema:** primero se ejecuta `cancelAll()` y después se programan alertas una a una.
@@ -146,7 +146,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** calcular y validar primero; programar el conjunto nuevo; cancelar ids obsoletos al final. Limitar cancelaciones al canal de CicloTrack.
 - **Pruebas:** fallo del scheduler en mitad del lote, reintento e idempotencia.
 
-### F-18 — Corregir participantes del mensaje multi-mujer
+### F-18 — Corregir participantes del mensaje multi-mujer ✅ Resuelto
 
 - **Archivo:** `alert_rule_engine.dart`
 - **Problema:** la regla comprueba dos mujeres fértiles, pero construye el mensaje con todas las participantes del encuentro.
@@ -154,7 +154,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** separar participantes fértiles de no fértiles y usar solo las fértiles en el texto y `womanIds` de la alerta.
 - **Pruebas:** encuentro con tres mujeres, solo dos fértiles.
 
-### F-19 — Ignorar tokens CSV desconocidos
+### F-19 — Ignorar tokens CSV desconocidos ✅ Resuelto
 
 - **Archivo:** `lib/features/alerts/domain/alert_settings.dart`
 - **Problema:** un token desconocido se transforma silenciosamente en `fertilidadInminente`.
