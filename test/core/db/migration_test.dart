@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
@@ -28,6 +31,75 @@ void main() {
       expect(tableNames, contains('alert_settings'));
       expect(tableNames.length, 10);
     });
+  });
+
+  test('upgrades a real v1 database through v2 to v3', () async {
+    await db.close();
+    final directory = await Directory.systemTemp.createTemp(
+      'ciclotrack_migration_',
+    );
+    final file = File('${directory.path}/legacy.sqlite');
+
+    final legacy = sqlite3.sqlite3.open(file.path);
+    legacy.execute('''
+          CREATE TABLE women (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            initials TEXT NOT NULL,
+            emoji TEXT NOT NULL DEFAULT '👩',
+            color INTEGER NOT NULL DEFAULT 0xFFE91E63,
+            tag TEXT NOT NULL DEFAULT '',
+            private_notes TEXT NOT NULL DEFAULT '',
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at INTEGER NOT NULL
+          )
+        ''');
+    legacy.execute('''
+          CREATE TABLE period_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            woman_id INTEGER NOT NULL,
+            start_date INTEGER NOT NULL,
+            end_date INTEGER,
+            flow_level INTEGER,
+            notes TEXT NOT NULL DEFAULT ''
+          )
+        ''');
+    legacy.execute("""
+          INSERT INTO women
+            (name, initials, tag, created_at)
+          VALUES ('Legacy', 'LG', 'Amiga', 1798848000000)
+        """);
+    legacy.execute('''
+          INSERT INTO period_logs (woman_id, start_date, notes)
+          VALUES (1, 1798848000000, 'periodo legacy')
+        ''');
+    legacy.execute('PRAGMA user_version = 1');
+    legacy.dispose();
+
+    final upgraded = AppDatabase.forTesting(NativeDatabase(file));
+    addTearDown(() async {
+      await upgraded.close();
+      await directory.delete(recursive: true);
+    });
+
+    expect(upgraded.schemaVersion, 3);
+    final women = await upgraded.select(upgraded.women).get();
+    expect(women, hasLength(1));
+    expect(women.single.name, 'Legacy');
+    expect(await upgraded.select(upgraded.periodLogs).get(), hasLength(1));
+    expect(await upgraded.select(upgraded.tags).get(), hasLength(1));
+    expect(await upgraded.select(upgraded.womanTags).get(), hasLength(1));
+    expect(await upgraded.select(upgraded.alertSettings).get(), isEmpty);
+
+    final columns = await upgraded
+        .customSelect('PRAGMA table_info(women)')
+        .get();
+    expect(columns.map((row) => row.data['name']), isNot(contains('tag')));
+
+    final settingsDao = AlertSettingsDao(upgraded);
+    final settings = await settingsDao.getOrCreate();
+    expect(settings.id, 1);
+    expect(settings.masterEnabled, isFalse);
   });
 
   group('alert_settings', () {
