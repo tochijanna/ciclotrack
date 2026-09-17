@@ -96,8 +96,9 @@ El motor puro está en `lib/features/prediction/domain/`.
 - **Con un solo periodo:** defaults con indicador de estimación por defecto.
 - **Con ≥2 ciclos:** min/max/media reales.
 - **Rango de ovulación:**
-  - Inicio: `11 − (min − 10)`.
-  - Fin: `17 + (max − 14)`.
+  - Sin datos: días `11–17`.
+  - Con ciclos reales, inicio: `11 − (28 − min)`.
+  - Con ciclos reales, fin: `17 + (max − 28)`.
 - **Ventana fértil/riesgo:** ovulación estimada −5 días hasta +2 días.
 - **Periodo previsto:** último inicio + duración media.
 - **Fases:** menstruación, folicular, ventana fértil, ovulación, lútea, lútea tardía y retraso.

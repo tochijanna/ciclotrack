@@ -52,8 +52,12 @@ final class PredictionEngine {
         ? defaultCycleLength.toDouble()
         : cycleLengths.reduce((a, b) => a + b) / cycleLengths.length;
 
-    final rangeStart = _clamp(11 - (min - 10), min: 1, max: max);
-    final rangeEnd = _clamp(17 + (max - 14), min: 1, max: max);
+    final rangeStart = cycleLengths.isEmpty
+        ? 11
+        : _clamp(11 - (28 - min), min: 1, max: max);
+    final rangeEnd = cycleLengths.isEmpty
+        ? 17
+        : _clamp(17 + (max - 28), min: 1, max: max);
     final estimated = _clamp((average - 14).round(), min: 1, max: max);
     final fertilityStart = _clamp(estimated - 5, min: 1, max: max);
     final fertilityEnd = _clamp(estimated + 2, min: estimated, max: max);

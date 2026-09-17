@@ -37,8 +37,11 @@ Un solo usuario que gestiona los ciclos menstruales de varias mujeres de forma p
     
     Logica de Predicción:
     
-    Inicio del rango de ovulación = Día 11 - (días mínimos del ciclo - 10)
-    Fin del rango de ovulación = Día 17 + (días máximos del ciclo - 14)
+    Sin ciclos reales: rango de ovulación por defecto, días 11-17.
+    Con ciclos reales:
+    Inicio del rango = Día 11 - (28 - días mínimos del ciclo)
+    Fin del rango = Día 17 + (días máximos del ciclo - 28)
+    Los límites se ajustan al ciclo y nunca salen del rango de días válido.
     
     Explicación visual:
     
