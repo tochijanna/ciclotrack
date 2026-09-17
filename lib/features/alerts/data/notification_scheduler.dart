@@ -7,6 +7,7 @@ abstract class NotificationScheduler {
   Future<bool> requestPermission();
   Future<bool> canScheduleExact();
   Future<void> schedule(AlertItem item);
+  Future<void> cancel(List<int> ids);
   Future<void> cancelAll();
   Future<List<PendingNotification>> pending();
 }

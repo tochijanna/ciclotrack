@@ -75,7 +75,9 @@ void main() {
       ),
     );
     await coordinator.start();
-    final cancelsBefore = scheduler.cancelCalls;
+    scheduler.pendingItems.add(
+      const PendingNotification(id: 999, title: 'old', body: 'old'),
+    );
 
     final womanId = await WomenRepository(
       WomenDao(db),
@@ -85,7 +87,7 @@ void main() {
     ).createPeriod(womanId, PeriodDraft(startDate: DateTime(2026, 9, 1)));
     await Future<void>.delayed(const Duration(milliseconds: 400));
 
-    expect(scheduler.cancelCalls, greaterThan(cancelsBefore));
+    expect(scheduler.cancelledIds, contains(999));
   });
 
   test(
@@ -108,7 +110,9 @@ class FakeNotificationScheduler implements NotificationScheduler {
   int initializeCalls = 0;
   int requestPermissionCalls = 0;
   int cancelCalls = 0;
+  final cancelledIds = <int>[];
   final scheduled = <AlertItem>[];
+  final pendingItems = <PendingNotification>[];
 
   @override
   Future<void> initialize() async => initializeCalls++;
@@ -128,11 +132,18 @@ class FakeNotificationScheduler implements NotificationScheduler {
   }
 
   @override
+  Future<void> cancel(List<int> ids) async {
+    cancelledIds.addAll(ids);
+    scheduled.removeWhere((item) => ids.contains(item.id));
+    pendingItems.removeWhere((item) => ids.contains(item.id));
+  }
+
+  @override
   Future<void> cancelAll() async {
     cancelCalls++;
     scheduled.clear();
   }
 
   @override
-  Future<List<PendingNotification>> pending() async => const [];
+  Future<List<PendingNotification>> pending() async => [...pendingItems];
 }

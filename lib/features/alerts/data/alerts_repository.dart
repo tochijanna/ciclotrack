@@ -66,11 +66,13 @@ class AlertsRepository {
       settings: settings,
     );
 
-    // Reprogramar: cancelar todas las anteriores y programar las nuevas.
-    await scheduler.cancelAll();
+    // Programar primero; así un fallo no deja al usuario sin las anteriores.
+    final oldIds = (await scheduler.pending()).map((item) => item.id).toSet();
+    final newIds = items.map((item) => item.id).toSet();
     for (final item in items) {
       await scheduler.schedule(item);
     }
+    await scheduler.cancel(oldIds.difference(newIds).toList());
   }
 
   /// Vista previa de alertas sin programar (para la UI).
