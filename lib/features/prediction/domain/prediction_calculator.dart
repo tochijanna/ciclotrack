@@ -46,17 +46,25 @@ class PredictionCalculator {
     // Duración media de la menstruación (solo periodos con endDate).
     final durations = periodLogs
         .where((p) => p.endDate != null)
-        .map((p) => p.endDate!.difference(p.startDate).inDays + 1)
+        .map(
+          (p) =>
+              _calendarDate(
+                p.endDate!,
+              ).difference(_calendarDate(p.startDate)).inDays +
+              1,
+        )
         .toList();
     final periodDuration = durations.isEmpty
         ? defaultPeriodDuration
         : (durations.reduce((a, b) => a + b) / durations.length).round();
 
     // Motor de predicción.
-    final startDates = periodLogs.map((p) => p.startDate).toList();
+    final startDates = periodLogs
+        .map((p) => _calendarDate(p.startDate))
+        .toList();
     final cycleLengths = _engine.cycleLengthsFrom(startDates);
     final prediction = _engine.predict(cycleLengths: cycleLengths);
-    final lastStart = periodLogs.last.startDate;
+    final lastStart = _calendarDate(periodLogs.last.startDate);
     final avgCycle = prediction.averageCycle;
     final expectedPeriod = _engine.predictNextPeriod(lastStart, avgCycle);
     final isDefault = cycleLengths.isEmpty;
@@ -126,6 +134,9 @@ class PredictionCalculator {
       cicloActual: cycleDay,
     );
   }
+
+  DateTime _calendarDate(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
 
   EstadoRiesgo _estadoRiesgo(
     int cycleDay,

@@ -48,6 +48,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  sqlite3: ^2.9.4
 
   # drift code generation
   drift_dev: ^2.31.0

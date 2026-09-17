@@ -23,6 +23,7 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
   final _tempCtrl = TextEditingController();
   String? _cervicalMucus;
   bool? _lhTest;
+  bool _saving = false;
 
   bool get isEditing => widget.event != null;
 
@@ -55,41 +56,54 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!isValidDate(_date)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('La fecha no puede ser futura')),
-      );
-      return;
-    }
-
-    double? temp;
-    if (_tempCtrl.text.isNotEmpty) {
-      temp = double.tryParse(_tempCtrl.text);
-      if (!isValidTemperature(temp)) {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      _date = calendarDate(_date);
+      if (!isValidDate(_date)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Temperatura debe estar entre 34 y 40 °C'),
-          ),
+          const SnackBar(content: Text('La fecha no puede ser futura')),
         );
         return;
       }
+
+      double? temp;
+      if (_tempCtrl.text.isNotEmpty) {
+        temp = double.tryParse(_tempCtrl.text);
+        if (!isValidTemperature(temp)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Temperatura debe estar entre 34 y 40 °C'),
+            ),
+          );
+          return;
+        }
+      }
+
+      final draft = OvulationDraft(
+        date: _date,
+        temperature: temp,
+        cervicalMucus: _cervicalMucus,
+        lhTest: _lhTest,
+      );
+
+      final repo = ref.read(trackingRepositoryProvider);
+      if (isEditing) {
+        await repo.updateOvulationById(widget.event!.id, draft);
+      } else {
+        await repo.createOvulation(widget.womanId, draft);
+      }
+
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo guardar la ovulación')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-
-    final draft = OvulationDraft(
-      date: _date,
-      temperature: temp,
-      cervicalMucus: _cervicalMucus,
-      lhTest: _lhTest,
-    );
-
-    final repo = ref.read(trackingRepositoryProvider);
-    if (isEditing) {
-      await repo.updateOvulationById(widget.event!.id, draft);
-    } else {
-      await repo.createOvulation(widget.womanId, draft);
-    }
-
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -97,7 +111,12 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar ovulación' : 'Registrar ovulación'),
-        actions: [TextButton(onPressed: _save, child: const Text('Guardar'))],
+        actions: [
+          TextButton(
+            onPressed: _saving ? null : _save,
+            child: const Text('Guardar'),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -180,7 +199,7 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: _save,
+              onPressed: _saving ? null : _save,
               icon: Icon(isEditing ? Icons.save : Icons.add),
               label: Text(
                 isEditing ? 'Guardar cambios' : 'Registrar ovulación',

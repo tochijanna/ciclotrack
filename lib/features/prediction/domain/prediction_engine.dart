@@ -27,7 +27,11 @@ final class PredictionEngine {
 
   /// Devuelve la duración entre inicios de periodo consecutivos (en días).
   List<int> cycleLengthsFrom(List<DateTime> periodStarts) {
-    final dates = [...periodStarts]..sort();
+    final dates =
+        periodStarts
+            .map((date) => DateTime(date.year, date.month, date.day))
+            .toList()
+          ..sort();
     if (dates.length < 2) {
       return const [];
     }

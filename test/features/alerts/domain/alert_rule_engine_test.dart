@@ -78,12 +78,10 @@ void main() {
         encounters: const [],
         settings: settings(),
       );
-      expect(
-        alerts,
-        contains(
-          predicate<AlertItem>((a) => a.type == AlertType.fertilidadInminente),
-        ),
+      final alert = alerts.firstWhere(
+        (a) => a.type == AlertType.fertilidadInminente,
       );
+      expect(alert.fireDate, DateTime(2026, 9, 10, 9));
     });
 
     test('does not fire when ovulation is not tomorrow', () {
@@ -144,12 +142,10 @@ void main() {
         encounters: const [],
         settings: settings(),
       );
-      expect(
-        alerts,
-        contains(
-          predicate<AlertItem>((a) => a.type == AlertType.periodoInminente),
-        ),
+      final alert = alerts.firstWhere(
+        (a) => a.type == AlertType.periodoInminente,
       );
+      expect(alert.fireDate, DateTime(2026, 9, 26, 9));
     });
   });
 

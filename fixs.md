@@ -32,7 +32,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 
 ## Alta
 
-### F-04 — Corregir el momento de las alertas de “mañana”
+### F-04 — Corregir el momento de las alertas de “mañana” ✅ Resuelto
 
 - **Archivo:** `lib/features/alerts/domain/alert_rule_engine.dart`
 - **Problema:** las alertas de ovulación y periodo de mañana se programan para mañana aunque el texto avise sobre mañana.
@@ -40,7 +40,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** programar esas alertas para hoy a la hora configurada; si la hora ya pasó, programarlas inmediatamente o para el siguiente ciclo según la política elegida.
 - **Pruebas:** comprobar `fireDate` para ovulación/periodo mañana antes y después de la hora configurada.
 
-### F-05 — Normalizar fechas de tracking a día calendario
+### F-05 — Normalizar fechas de tracking a día calendario ✅ Resuelto
 
 - **Archivos:** formularios de tracking, `tracking_validators.dart`, `prediction_engine.dart`, `prediction_calculator.dart`
 - **Problema:** algunos registros conservan la hora actual y otros se guardan a medianoche.
@@ -48,7 +48,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** normalizar fechas de periodo, ovulación y síntomas a `DateTime(year, month, day)` antes de persistir y comparar.
 - **Pruebas:** inicios con horas distintas, fin el mismo día, duración inclusiva y cambios alrededor de medianoche.
 
-### F-06 — Evitar periodos duplicados y solapados
+### F-06 — Evitar periodos duplicados y solapados ✅ Resuelto
 
 - **Archivos:** `lib/core/db/tables.dart`, dominio/repositorio de tracking
 - **Problema:** no existe restricción ni validación para dos periodos iguales o solapados.
@@ -56,7 +56,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** validar por mujer: no duplicar `startDate`, no solapar periodos y aceptar solo duraciones/ciclos dentro de límites razonables. Añadir índice único si se decide como regla permanente.
 - **Pruebas:** duplicado exacto, solapamiento, ciclo mínimo, ciclo extremo y edición de un registro existente.
 
-### F-07 — Evitar duplicados por doble envío
+### F-07 — Evitar duplicados por doble envío ✅ Resuelto
 
 - **Archivos:** formularios de perfiles, tracking y encuentros
 - **Problema:** los botones Guardar permanecen activos durante operaciones asíncronas.
@@ -64,7 +64,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** añadir estado `_saving`, deshabilitar botones durante la operación, capturar errores y cerrar solo si la operación termina correctamente.
 - **Pruebas:** doble tap rápido, error del repositorio y guardado correcto.
 
-### F-08 — Eliminar encuentros sin participantes al borrar una mujer
+### F-08 — Eliminar encuentros sin participantes al borrar una mujer ✅ Resuelto
 
 - **Archivo:** `lib/features/profiles/data/women_dao.dart`
 - **Problema:** `deleteWomanCascade()` elimina las relaciones `encounter_women`, pero deja el encuentro padre vacío.
@@ -72,7 +72,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** dentro de la misma transacción, identificar encuentros cuyo único participante es la mujer eliminada y borrarlos; conservar los encuentros que aún tengan otras participantes.
 - **Pruebas:** encuentro con una participante, encuentro con dos participantes y borrado de una de ellas.
 
-### F-09 — Reordenar correctamente con filtro activo
+### F-09 — Reordenar correctamente con filtro activo ✅ Resuelto
 
 - **Archivo:** `lib/features/profiles/presentation/screens/women_list_screen.dart`
 - **Problema:** se reasignan posiciones desde cero usando solo la lista filtrada.
@@ -80,7 +80,7 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** deshabilitar drag & drop con filtro activo o reordenar la lista global manteniendo las posiciones de perfiles no visibles. Recomendación: deshabilitarlo mientras haya filtro.
 - **Pruebas:** reordenación sin filtro, con filtro, limpiar filtro y comprobar orden global.
 
-### F-10 — Implementar migraciones reales en tests
+### F-10 — Implementar migraciones reales en tests ✅ Resuelto
 
 - **Archivo:** `test/core/db/migration_test.dart`
 - **Problema:** los tests crean directamente una base con schema actual y no ejecutan upgrades v1→v2→v3.

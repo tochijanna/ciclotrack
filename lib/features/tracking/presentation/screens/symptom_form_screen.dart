@@ -22,6 +22,7 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
   String _type = symptomTypes.first;
   int _severity = 1;
   late final TextEditingController _notesCtrl;
+  bool _saving = false;
 
   bool get isEditing => widget.event != null;
 
@@ -54,40 +55,53 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!isValidDate(_date)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('La fecha no puede ser futura')),
-      );
-      return;
-    }
-    if (!isValidSymptomType(_type)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tipo de síntoma no válido')),
-      );
-      return;
-    }
-    if (!isValidSeverity(_severity)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Intensidad debe estar entre 1 y 5')),
-      );
-      return;
-    }
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      _date = calendarDate(_date);
+      if (!isValidDate(_date)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('La fecha no puede ser futura')),
+        );
+        return;
+      }
+      if (!isValidSymptomType(_type)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tipo de síntoma no válido')),
+        );
+        return;
+      }
+      if (!isValidSeverity(_severity)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Intensidad debe estar entre 1 y 5')),
+        );
+        return;
+      }
 
-    final draft = SymptomDraft(
-      date: _date,
-      type: _type,
-      severity: _severity,
-      notes: _notesCtrl.text,
-    );
+      final draft = SymptomDraft(
+        date: _date,
+        type: _type,
+        severity: _severity,
+        notes: _notesCtrl.text,
+      );
 
-    final repo = ref.read(trackingRepositoryProvider);
-    if (isEditing) {
-      await repo.updateSymptomById(widget.event!.id, draft);
-    } else {
-      await repo.createSymptom(widget.womanId, draft);
+      final repo = ref.read(trackingRepositoryProvider);
+      if (isEditing) {
+        await repo.updateSymptomById(widget.event!.id, draft);
+      } else {
+        await repo.createSymptom(widget.womanId, draft);
+      }
+
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo guardar el síntoma')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -95,7 +109,12 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar síntoma' : 'Registrar síntoma'),
-        actions: [TextButton(onPressed: _save, child: const Text('Guardar'))],
+        actions: [
+          TextButton(
+            onPressed: _saving ? null : _save,
+            child: const Text('Guardar'),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -175,7 +194,7 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: _save,
+              onPressed: _saving ? null : _save,
               icon: Icon(isEditing ? Icons.save : Icons.add),
               label: Text(isEditing ? 'Guardar cambios' : 'Registrar síntoma'),
             ),

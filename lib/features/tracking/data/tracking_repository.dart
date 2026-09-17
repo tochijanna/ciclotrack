@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../../../core/db/app_database.dart';
 import '../domain/tracking_drafts.dart';
 import '../domain/tracking_event.dart';
+import '../domain/tracking_validators.dart';
 import 'tracking_dao.dart';
 
 /// Repositorio que orquesta acceso a periodos, ovulación y síntomas.
@@ -140,26 +141,34 @@ class TrackingRepository {
 
   Future<PeriodLog?> getPeriodById(int id) => _dao.getPeriodLogById(id);
 
-  Future<int> createPeriod(int womanId, PeriodDraft draft) =>
-      _dao.insertPeriodLog(
-        PeriodLogsCompanion.insert(
-          womanId: womanId,
-          startDate: draft.startDate,
-          endDate: Value(draft.endDate),
-          flowLevel: Value(draft.flowLevel),
-          notes: Value(draft.notes),
+  Future<int> createPeriod(int womanId, PeriodDraft draft) async {
+    await _ensurePeriodDoesNotOverlap(womanId, draft);
+    return _dao.insertPeriodLog(
+      PeriodLogsCompanion.insert(
+        womanId: womanId,
+        startDate: calendarDate(draft.startDate),
+        endDate: Value(
+          draft.endDate == null ? null : calendarDate(draft.endDate!),
         ),
-      );
+        flowLevel: Value(draft.flowLevel),
+        notes: Value(draft.notes),
+      ),
+    );
+  }
 
-  Future<void> updatePeriod(PeriodLog existing, PeriodDraft draft) =>
-      _dao.updatePeriodLog(
-        existing.copyWith(
-          startDate: draft.startDate,
-          endDate: Value(draft.endDate),
-          flowLevel: Value(draft.flowLevel),
-          notes: draft.notes,
+  Future<void> updatePeriod(PeriodLog existing, PeriodDraft draft) async {
+    await _ensurePeriodDoesNotOverlap(existing.womanId, draft, existing.id);
+    await _dao.updatePeriodLog(
+      existing.copyWith(
+        startDate: calendarDate(draft.startDate),
+        endDate: Value(
+          draft.endDate == null ? null : calendarDate(draft.endDate!),
         ),
-      );
+        flowLevel: Value(draft.flowLevel),
+        notes: draft.notes,
+      ),
+    );
+  }
 
   Future<void> updatePeriodById(int id, PeriodDraft draft) async {
     final existing = await _dao.getPeriodLogById(id);
@@ -168,6 +177,29 @@ class TrackingRepository {
   }
 
   Future<void> deletePeriod(int id) => _dao.deletePeriodLog(id);
+
+  Future<void> _ensurePeriodDoesNotOverlap(
+    int womanId,
+    PeriodDraft draft, [
+    int? excludedId,
+  ]) async {
+    final start = calendarDate(draft.startDate);
+    final end = draft.endDate == null ? start : calendarDate(draft.endDate!);
+    final existing = await _dao.getPeriodLogsByWoman(womanId);
+    final conflict = existing.any((period) {
+      if (period.id == excludedId) return false;
+      final existingStart = calendarDate(period.startDate);
+      final existingEnd = period.endDate == null
+          ? existingStart
+          : calendarDate(period.endDate!);
+      return !end.isBefore(existingStart) && !start.isAfter(existingEnd);
+    });
+    if (conflict) {
+      throw const PeriodConflictException(
+        'El periodo se solapa con otro registro existente',
+      );
+    }
+  }
 
   // --- Ovulación ---
 
@@ -178,7 +210,7 @@ class TrackingRepository {
       _dao.insertOvulationLog(
         OvulationLogsCompanion.insert(
           womanId: womanId,
-          date: draft.date,
+          date: calendarDate(draft.date),
           temperature: Value(draft.temperature),
           cervicalMucus: Value(draft.cervicalMucus),
           lhTest: Value(draft.lhTest),
@@ -188,7 +220,7 @@ class TrackingRepository {
   Future<void> updateOvulation(OvulationLog existing, OvulationDraft draft) =>
       _dao.updateOvulationLog(
         existing.copyWith(
-          date: draft.date,
+          date: calendarDate(draft.date),
           temperature: Value(draft.temperature),
           cervicalMucus: Value(draft.cervicalMucus),
           lhTest: Value(draft.lhTest),
@@ -211,7 +243,7 @@ class TrackingRepository {
       _dao.insertSymptomLog(
         SymptomsCompanion.insert(
           womanId: womanId,
-          date: draft.date,
+          date: calendarDate(draft.date),
           type: draft.type,
           severity: Value(draft.severity),
           notes: Value(draft.notes),
@@ -221,7 +253,7 @@ class TrackingRepository {
   Future<void> updateSymptom(SymptomLog existing, SymptomDraft draft) =>
       _dao.updateSymptomLog(
         existing.copyWith(
-          date: draft.date,
+          date: calendarDate(draft.date),
           type: draft.type,
           severity: draft.severity,
           notes: draft.notes,
