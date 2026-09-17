@@ -56,7 +56,7 @@ class AlertRuleEngine {
         alerts.add(
           AlertItem(
             type: AlertType.fertilidadInminente,
-            fireDate: _atTime(tomorrow, settings),
+            fireDate: _fireTodayOrSoon(today, todayDate, settings),
             title: 'Fertilidad inminente',
             body:
                 'Mañana es día de ovulación de ${w.name}. Ventana de fertilidad: $dias días',
@@ -93,7 +93,7 @@ class AlertRuleEngine {
         alerts.add(
           AlertItem(
             type: AlertType.periodoInminente,
-            fireDate: _atTime(tomorrow, settings),
+            fireDate: _fireTodayOrSoon(today, todayDate, settings),
             title: 'Periodo inminente',
             body: 'El periodo de ${w.name} empieza mañana',
             womanIds: [w.womanId],
@@ -281,6 +281,17 @@ class AlertRuleEngine {
     settings.notifyHour,
     settings.notifyMinute,
   );
+
+  DateTime _fireTodayOrSoon(
+    DateTime now,
+    DateTime today,
+    AlertSettings settings,
+  ) {
+    final configured = _atTime(today, settings);
+    return configured.isAfter(now)
+        ? configured
+        : now.add(const Duration(minutes: 1));
+  }
 
   String _formatShort(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
