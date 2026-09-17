@@ -19,6 +19,27 @@ class EncounterDao extends DatabaseAccessor<AppDatabase>
     encounters,
   )..orderBy([(t) => OrderingTerm.desc(t.encounterTime)])).watch();
 
+  Stream<List<EncounterWithParticipantRow>> watchAllWithParticipants() {
+    final query = select(encounters).join([
+      innerJoin(
+        encounterWomen,
+        encounterWomen.encounterId.equalsExp(encounters.id),
+      ),
+      innerJoin(women, women.id.equalsExp(encounterWomen.womanId)),
+    ])..orderBy([OrderingTerm.desc(encounters.encounterTime)]);
+    return query.watch().map(
+      (rows) => rows
+          .map(
+            (row) => EncounterWithParticipantRow(
+              encounter: row.readTable(encounters),
+              encounterWoman: row.readTable(encounterWomen),
+              woman: row.readTable(women),
+            ),
+          )
+          .toList(),
+    );
+  }
+
   Stream<List<Encounter>> watchByWoman(int womanId) {
     final query =
         select(encounters).join([
@@ -31,6 +52,32 @@ class EncounterDao extends DatabaseAccessor<AppDatabase>
           ..orderBy([OrderingTerm.desc(encounters.encounterTime)]);
     return query.watch().map(
       (rows) => rows.map((row) => row.readTable(encounters)).toList(),
+    );
+  }
+
+  Stream<List<EncounterWithParticipantRow>> watchByWomanWithParticipants(
+    int womanId,
+  ) {
+    final query =
+        select(encounters).join([
+            innerJoin(
+              encounterWomen,
+              encounterWomen.encounterId.equalsExp(encounters.id),
+            ),
+            innerJoin(women, women.id.equalsExp(encounterWomen.womanId)),
+          ])
+          ..where(encounterWomen.womanId.equals(womanId))
+          ..orderBy([OrderingTerm.desc(encounters.encounterTime)]);
+    return query.watch().map(
+      (rows) => rows
+          .map(
+            (row) => EncounterWithParticipantRow(
+              encounter: row.readTable(encounters),
+              encounterWoman: row.readTable(encounterWomen),
+              woman: row.readTable(women),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -110,6 +157,18 @@ class EncounterDao extends DatabaseAccessor<AppDatabase>
 class ParticipantRow {
   const ParticipantRow({required this.encounterWoman, required this.woman});
 
+  final EncounterWoman encounterWoman;
+  final Woman woman;
+}
+
+class EncounterWithParticipantRow {
+  const EncounterWithParticipantRow({
+    required this.encounter,
+    required this.encounterWoman,
+    required this.woman,
+  });
+
+  final Encounter encounter;
   final EncounterWoman encounterWoman;
   final Woman woman;
 }

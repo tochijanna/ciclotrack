@@ -30,6 +30,27 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
           ]))
           .watch();
 
+  Stream<List<WomanWithTag>> watchAllWithTags() {
+    final query =
+        select(women).join([
+          leftOuterJoin(womanTags, womanTags.womanId.equalsExp(women.id)),
+          leftOuterJoin(tags, tags.id.equalsExp(womanTags.tagId)),
+        ])..orderBy([
+          OrderingTerm(expression: women.sortOrder),
+          OrderingTerm(expression: women.name),
+        ]);
+    return query.watch().map(
+      (rows) => rows
+          .map(
+            (row) => WomanWithTag(
+              woman: row.readTable(women),
+              tag: row.readTableOrNull(tags),
+            ),
+          )
+          .toList(),
+    );
+  }
+
   Future<Woman?> getById(int id) =>
       (select(women)..where((t) => t.id.equals(id))).getSingleOrNull();
 
@@ -84,7 +105,7 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
 
   // --- Tags ---
 
-  Stream<List<Tag>> watchAllTags() => select(tags).get().asStream();
+  Stream<List<Tag>> watchAllTags() => select(tags).watch();
 
   Future<List<Tag>> allTags() => select(tags).get();
 
@@ -123,4 +144,11 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
 
   Future<void> unlinkAllTags(int womanId) =>
       (delete(womanTags)..where((t) => t.womanId.equals(womanId))).go();
+}
+
+class WomanWithTag {
+  const WomanWithTag({required this.woman, this.tag});
+
+  final Woman woman;
+  final Tag? tag;
 }
