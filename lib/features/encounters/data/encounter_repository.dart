@@ -15,12 +15,12 @@ class EncounterRepository {
 
   /// Stream de todos los encuentros con participantes.
   Stream<List<EncounterWithWomen>> watchAll() {
-    return _dao.watchAll().asyncMap(_enrichEncounters);
+    return _mapRows(_dao.watchAllWithParticipants());
   }
 
   /// Stream de encuentros de una mujer concreta.
   Stream<List<EncounterWithWomen>> watchByWoman(int womanId) {
-    return _dao.watchByWoman(womanId).asyncMap(_enrichEncounters);
+    return _mapRows(_dao.watchByWomanWithParticipants(womanId));
   }
 
   /// Obtiene un encuentro con participantes por id.
@@ -33,15 +33,43 @@ class EncounterRepository {
     return _mapEncounter(encounter, participants);
   }
 
-  Future<List<EncounterWithWomen>> _enrichEncounters(
-    List<Encounter> encounters,
-  ) async {
-    final result = <EncounterWithWomen>[];
-    for (final e in encounters) {
-      final participants = await _dao.watchParticipantsWithWoman(e.id).first;
-      result.add(_mapEncounter(e, participants));
-    }
-    return result;
+  Stream<List<EncounterWithWomen>> _mapRows(
+    Stream<List<EncounterWithParticipantRow>> source,
+  ) {
+    return source.map((rows) {
+      final grouped = <int, EncounterWithWomen>{};
+      for (final row in rows) {
+        final current = grouped[row.encounter.id];
+        final participant = EncounterParticipant(
+          womanId: row.woman.id,
+          womanName: row.woman.name,
+          womanInitials: row.woman.initials,
+          womanEmoji: row.woman.emoji,
+          womanColor: row.woman.color,
+          relationshipType: row.encounterWoman.relationshipType,
+        );
+        if (current == null) {
+          grouped[row.encounter.id] = EncounterWithWomen(
+            encounterId: row.encounter.id,
+            encounterTime: row.encounter.encounterTime,
+            protection: row.encounter.protection,
+            outcome: row.encounter.outcome,
+            notes: row.encounter.notes,
+            participants: [participant],
+          );
+        } else {
+          grouped[row.encounter.id] = EncounterWithWomen(
+            encounterId: current.encounterId,
+            encounterTime: current.encounterTime,
+            protection: current.protection,
+            outcome: current.outcome,
+            notes: current.notes,
+            participants: [...current.participants, participant],
+          );
+        }
+      }
+      return grouped.values.toList();
+    });
   }
 
   EncounterWithWomen _mapEncounter(

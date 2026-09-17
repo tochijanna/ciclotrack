@@ -210,7 +210,7 @@ class AlertRuleEngine {
           return ctx.first.prediction.estadoRiesgo == EstadoRiesgo.diaDeRiesgo;
         }).toList();
         if (fertilesEnEncuentro.length >= 2) {
-          final nombres = e.participants
+          final nombres = fertilesEnEncuentro
               .map((p) {
                 final ctx = women.where((w) => w.womanId == p.womanId);
                 return ctx.isNotEmpty ? ctx.first.name : '?';
@@ -232,7 +232,7 @@ class AlertRuleEngine {
                 title: 'Múltiples mujeres + fertilidad',
                 body:
                     'Te acostaste con $nombres el ${_weekdayName(e.encounterTime)}. Ambas tienen ventana de fertilidad activa. Alto riesgo.',
-                womanIds: e.participants.map((p) => p.womanId).toList(),
+                womanIds: fertilesEnEncuentro.map((p) => p.womanId).toList(),
               ),
             );
           }

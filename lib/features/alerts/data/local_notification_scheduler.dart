@@ -114,6 +114,15 @@ class LocalNotificationScheduler implements NotificationScheduler {
   }
 
   @override
+  Future<void> cancel(List<int> ids) async {
+    await initialize();
+    if (!_available) return;
+    for (final id in ids) {
+      await _plugin.cancel(id: id);
+    }
+  }
+
+  @override
   Future<List<PendingNotification>> pending() async {
     await initialize();
     if (!_available) return const [];

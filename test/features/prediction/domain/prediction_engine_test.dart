@@ -48,16 +48,16 @@ void main() {
       expect(p.averageCycle, 28);
     });
 
-    test('ovulation range follows the spec formula and stays in bounds', () {
+    test('ovulation range adapts real cycles around the default range', () {
       final p = engine.predict(cycleLengths: [24, 32]);
-      expect(p.ovulationRangeStart, 1);
-      expect(p.ovulationRangeEnd, 32);
+      expect(p.ovulationRangeStart, 7);
+      expect(p.ovulationRangeEnd, 21);
     });
 
     test('ovulation range for a normal cycle', () {
       final p = engine.predict(cycleLengths: [28, 28]);
-      expect(p.ovulationRangeStart, 1);
-      expect(p.ovulationRangeEnd, 28);
+      expect(p.ovulationRangeStart, 11);
+      expect(p.ovulationRangeEnd, 17);
     });
 
     test('fertilidad window is estimatedOvulation -5 / +2', () {

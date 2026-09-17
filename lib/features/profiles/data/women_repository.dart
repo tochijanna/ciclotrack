@@ -22,16 +22,23 @@ class WomenRepository {
 
   /// Stream de todos los perfiles ordenados con sus etiquetas.
   Stream<List<WomanProfile>> watchAllProfiles() {
-    return _dao.watchAllOrdered().asyncMap((women) async {
-      final profiles = <WomanProfile>[];
-      for (final woman in women) {
-        final tagStream = _dao.watchTagsForWoman(woman.id);
-        final tagList = await tagStream.first;
-        profiles.add(
-          WomanProfile(woman: woman, tags: tagList.map((t) => t.name).toList()),
-        );
+    return _dao.watchAllWithTags().map((rows) {
+      final profiles = <int, WomanProfile>{};
+      for (final row in rows) {
+        final current = profiles[row.woman.id];
+        if (current == null) {
+          profiles[row.woman.id] = WomanProfile(
+            woman: row.woman,
+            tags: row.tag == null ? [] : [row.tag!.name],
+          );
+        } else if (row.tag != null) {
+          profiles[row.woman.id] = WomanProfile(
+            woman: current.woman,
+            tags: [...current.tags, row.tag!.name],
+          );
+        }
       }
-      return profiles;
+      return profiles.values.toList();
     });
   }
 

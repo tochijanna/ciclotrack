@@ -6,6 +6,7 @@ import '../../data/prediction_repository.dart';
 import '../../domain/prediction_calculator.dart';
 import '../../domain/prediction_engine.dart';
 import '../../domain/woman_prediction.dart';
+import 'prediction_day_provider.dart';
 
 // --- Providers base ---
 
@@ -34,5 +35,6 @@ final predictionRepositoryProvider = Provider<PredictionRepository>((ref) {
 final womanPredictionProvider = StreamProvider.autoDispose
     .family<WomanPrediction?, int>((ref, womanId) {
       final repo = ref.watch(predictionRepositoryProvider);
-      return repo.watchPrediction(womanId);
+      final day = ref.watch(predictionDayProvider);
+      return repo.watchPrediction(womanId, today: day);
     });

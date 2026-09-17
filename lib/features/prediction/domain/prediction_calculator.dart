@@ -71,12 +71,18 @@ class PredictionCalculator {
 
     // Día actual del ciclo.
     final cycleDay = now.difference(lastStart).inDays + 1;
+    final lastEnd = periodLogs.last.endDate == null
+        ? null
+        : _calendarDate(periodLogs.last.endDate!);
+    final periodDurationToday = lastEnd == null
+        ? periodDuration
+        : lastEnd.difference(lastStart).inDays + 1;
 
     // Fase y humor de hoy.
     final phase = phaseForCycleDay(
       cycleDay,
       prediction,
-      periodDuration,
+      periodDurationToday,
       avgCycle,
     );
     final mood = moodByPhase[phase]!;
@@ -86,9 +92,10 @@ class PredictionCalculator {
       cycleDay,
       prediction,
       expectedPeriod,
-      periodDuration,
+      periodDurationToday,
       now,
       lastStart,
+      lastEnd,
     );
 
     // Fechas concretas.
@@ -145,8 +152,14 @@ class PredictionCalculator {
     int periodDuration,
     DateTime now,
     DateTime lastStart,
+    DateTime? lastEnd,
   ) {
-    if (cycleDay <= periodDuration) return EstadoRiesgo.periodoEnCurso;
+    if (lastEnd != null && !now.isBefore(lastStart) && !now.isAfter(lastEnd)) {
+      return EstadoRiesgo.periodoEnCurso;
+    }
+    if (lastEnd == null && cycleDay <= periodDuration) {
+      return EstadoRiesgo.periodoEnCurso;
+    }
     if (expectedPeriod != null && !now.isBefore(expectedPeriod)) {
       return EstadoRiesgo.posibleRetraso;
     }

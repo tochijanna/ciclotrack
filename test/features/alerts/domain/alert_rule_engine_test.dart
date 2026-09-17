@@ -382,5 +382,18 @@ void main() {
         containsAll(AlertType.values),
       );
     });
+
+    test('ignores unknown CSV tokens', () {
+      final restored = AlertSettings.enabledTypesFromCsv(
+        'diaDeRiesgo,desconocido,periodoInminente',
+      );
+      expect(restored, contains(AlertType.diaDeRiesgo));
+      expect(restored, contains(AlertType.periodoInminente));
+      expect(restored, isNot(contains(AlertType.fertilidadInminente)));
+    });
+
+    test('none CSV disables all alert types', () {
+      expect(AlertSettings.enabledTypesFromCsv('none'), isEmpty);
+    });
   });
 }
