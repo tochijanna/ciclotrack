@@ -12,14 +12,14 @@ class PredictionRepository {
 
   /// Stream reactivo de la predicción de una mujer.
   /// Recalcula automáticamente ante cualquier cambio en periodos.
-  Stream<WomanPrediction?> watchPrediction(int womanId) {
+  Stream<WomanPrediction?> watchPrediction(int womanId, {DateTime? today}) {
     return _dao.watchPeriodLogsByWoman(womanId).map((logs) {
       final inputs = logs
           .map(
             (l) => PeriodLogInput(startDate: l.startDate, endDate: l.endDate),
           )
           .toList();
-      return _calculator.calculate(periodLogs: inputs);
+      return _calculator.calculate(periodLogs: inputs, today: today);
     });
   }
 }

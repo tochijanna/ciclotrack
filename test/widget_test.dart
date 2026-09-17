@@ -19,8 +19,9 @@ void main() {
       ),
     );
 
-    // Allow providers to settle.
-    await tester.pumpAndSettle(const Duration(seconds: 5));
+    // Allow initial providers without waiting for long-lived alert streams.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('CicloTrack'), findsOneWidget);
