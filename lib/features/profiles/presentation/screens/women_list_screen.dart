@@ -87,28 +87,11 @@ class WomenListScreen extends ConsumerWidget {
                 return RefreshIndicator(
                   onRefresh: () =>
                       ref.read(womenListProvider.notifier).refresh(),
-                  child: ReorderableListView.builder(
-                    padding: const EdgeInsets.only(bottom: 80),
-                    itemCount: profiles.length,
-                    onReorder: (oldIndex, newIndex) {
-                      if (newIndex > oldIndex) newIndex--;
-                      final ordered = profiles.map((p) => p.woman).toList();
-                      final item = ordered.removeAt(oldIndex);
-                      ordered.insert(newIndex, item);
-                      ref.read(womenListProvider.notifier).reorder(ordered);
-                    },
-                    itemBuilder: (context, index) {
-                      final profile = profiles[index];
-                      return WomanCard(
-                        key: ValueKey(profile.woman.id),
-                        profile: profile,
-                        onTap: () => _navigateToTracking(context, profile),
-                        onEdit: () =>
-                            _navigateToForm(context, ref, profile: profile),
-                        onLongPress: () =>
-                            _confirmDelete(context, ref, profile),
-                      );
-                    },
+                  child: _buildProfilesList(
+                    context,
+                    ref,
+                    profiles,
+                    reorderable: filter == null,
                   ),
                 );
               },
@@ -166,6 +149,45 @@ class WomenListScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfilesList(
+    BuildContext context,
+    WidgetRef ref,
+    List<WomanProfile> profiles, {
+    required bool reorderable,
+  }) {
+    Widget itemBuilder(BuildContext context, int index) {
+      final profile = profiles[index];
+      return WomanCard(
+        key: ValueKey(profile.woman.id),
+        profile: profile,
+        onTap: () => _navigateToTracking(context, profile),
+        onEdit: () => _navigateToForm(context, ref, profile: profile),
+        onLongPress: () => _confirmDelete(context, ref, profile),
+      );
+    }
+
+    if (!reorderable) {
+      return ListView.builder(
+        padding: const EdgeInsets.only(bottom: 80),
+        itemCount: profiles.length,
+        itemBuilder: itemBuilder,
+      );
+    }
+
+    return ReorderableListView.builder(
+      padding: const EdgeInsets.only(bottom: 80),
+      itemCount: profiles.length,
+      onReorder: (oldIndex, newIndex) {
+        if (newIndex > oldIndex) newIndex--;
+        final ordered = profiles.map((p) => p.woman).toList();
+        final item = ordered.removeAt(oldIndex);
+        ordered.insert(newIndex, item);
+        ref.read(womenListProvider.notifier).reorder(ordered);
+      },
+      itemBuilder: itemBuilder,
     );
   }
 

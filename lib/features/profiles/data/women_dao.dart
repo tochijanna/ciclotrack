@@ -13,6 +13,7 @@ part 'women_dao.g.dart';
     PeriodLogs,
     OvulationLogs,
     Symptoms,
+    Encounters,
     EncounterWomen,
     Reminders,
   ],
@@ -53,7 +54,29 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
       await (delete(periodLogs)..where((t) => t.womanId.equals(id))).go();
       await (delete(ovulationLogs)..where((t) => t.womanId.equals(id))).go();
       await (delete(symptoms)..where((t) => t.womanId.equals(id))).go();
-      await (delete(encounterWomen)..where((t) => t.womanId.equals(id))).go();
+      final linked = await (select(
+        encounterWomen,
+      )..where((t) => t.womanId.equals(id))).get();
+      for (final link in linked) {
+        final participants = await (select(
+          encounterWomen,
+        )..where((t) => t.encounterId.equals(link.encounterId))).get();
+        if (participants.length <= 1) {
+          await (delete(
+            encounterWomen,
+          )..where((t) => t.encounterId.equals(link.encounterId))).go();
+          await (delete(
+            encounters,
+          )..where((t) => t.id.equals(link.encounterId))).go();
+        } else {
+          await (delete(encounterWomen)..where(
+                (t) =>
+                    t.encounterId.equals(link.encounterId) &
+                    t.womanId.equals(id),
+              ))
+              .go();
+        }
+      }
       await (delete(reminders)..where((t) => t.womanId.equals(id))).go();
       await (delete(women)..where((t) => t.id.equals(id))).go();
     });

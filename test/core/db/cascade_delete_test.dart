@@ -93,10 +93,44 @@ void main() {
     expect(await db.select(db.symptoms).get(), isEmpty);
     expect(await db.select(db.reminders).get(), isEmpty);
     expect(await db.select(db.encounterWomen).get(), isEmpty);
-    // El encuentro en sí no se elimina (no depende de la mujer).
-    expect(await db.select(db.encounters).get(), hasLength(1));
+    // Un encuentro sin participantes se elimina con la mujer.
+    expect(await db.select(db.encounters).get(), isEmpty);
     // La etiqueta global sobrevive aunque el vínculo se borre.
     expect(await dao.tagByName('Amiga'), isNotNull);
+  });
+
+  test('deleteWomanCascade preserves shared encounters', () async {
+    final first = await repo.create(
+      const WomanDraft(name: 'María', initials: 'MR'),
+    );
+    final second = await repo.create(
+      const WomanDraft(name: 'Ana', initials: 'AN'),
+    );
+    final encounterId = await db
+        .into(db.encounters)
+        .insert(
+          EncountersCompanion.insert(
+            encounterTime: DateTime(2026, 9, 5),
+            protection: 'condom',
+          ),
+        );
+    for (final womanId in [first, second]) {
+      await db
+          .into(db.encounterWomen)
+          .insert(
+            EncounterWomenCompanion.insert(
+              encounterId: encounterId,
+              womanId: womanId,
+              relationshipType: const Value('vaginal'),
+            ),
+          );
+    }
+
+    await repo.delete(first);
+
+    expect(await db.select(db.encounters).get(), hasLength(1));
+    final participants = await db.select(db.encounterWomen).get();
+    expect(participants.single.womanId, second);
   });
 
   test('deleteWomanCascade is transactional on failure', () async {
