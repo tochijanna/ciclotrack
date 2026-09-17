@@ -68,12 +68,15 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
       }
 
       double? temp;
-      if (_tempCtrl.text.isNotEmpty) {
-        temp = double.tryParse(_tempCtrl.text);
-        if (!isValidTemperature(temp)) {
+      final rawTemperature = _tempCtrl.text.trim();
+      if (rawTemperature.isNotEmpty) {
+        temp = double.tryParse(rawTemperature.replaceAll(',', '.'));
+        if (temp == null || !isValidTemperature(temp)) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Temperatura debe estar entre 34 y 40 °C'),
+              content: Text(
+                'Introduce una temperatura válida entre 34 y 40 °C',
+              ),
             ),
           );
           return;
