@@ -1,9 +1,11 @@
 # AGENTS.md
 
 ## Project state
-- **Phase 1 done (db + prediction).** On `develop`. Drift schema (7 tables), feature DAOs and prediction engine are implemented and tested. Business UI starts in Phase 2.
+- **Phases 0–6 done** (scaffold + gitflow, drift schema + prediction engine, profiles, tracking, encounters, alerts with local notifications). On `develop`.
+- Drift schema **v3, 10 tables**: `women`, `tags`, `woman_tags`, `period_logs`, `ovulation_logs`, `symptoms`, `encounters`, `encounter_women`, `reminders`, `alert_settings`. Feature DAOs, prediction engine, business UI and notification scheduling are implemented and tested.
+- **Open work: phases 7–10** (consolidated week/month/fertility/encounters views, reports, backup, medication + polish). See `planDeDesarrollo.md`.
 - Active gitflow branches: `main` (release history) and `develop` (integration). `feature/*` branches are created per phase task and merged into `develop`.
-- **Toolchain lives inside the repo at `.toolchain/` and is git-ignored:** Flutter 3.32.7 + Android SDK 34 + OpenJDK 17 (system). Before any Flutter command, source the env:
+- **Toolchain lives inside the repo at `.toolchain/` and is git-ignored:** Flutter 3.32.7 + Android SDK platforms 34/35 (build-tools 34.0.0) + OpenJDK 17 (system, `/usr/lib/jvm/java-17-openjdk`). Before any Flutter command, source the env:
   ```bash
   source .toolchain/env.sh
   ```
@@ -18,11 +20,15 @@
 1. `Especificaciones.md` — functional requirements (source of truth for the business domain).
 2. `planDeDesarrollo.md` — architecture and phases 0–10.
 3. `BUENAS_PRACTICAS.md` — coding conventions, Gitflow, and commit rules.
+4. `fixs.md` — historical fix backlog (F-01…F-19) plus the coverage plan; every item is resolved. Read it for past decisions and test-harness rules, not as pending work.
 
 ## Decided stack
 - Flutter + SQLite via **drift** (2.31.0), state management with **Riverpod** (flutter_riverpod 2.6.1, already in pubspec).
 - Feature-first architecture, 3 layers per feature: `presentation/` (UI) → `domain/` (pure Dart logic, no Flutter, unit-testable) → `data/` (drift). Shared code lives in `lib/core/`. Unidirectional flow: UI → Notifier → Repository → drift.
 - Prediction engine lives in `lib/features/prediction/domain/`; estimated ovulation = average cycle − 14 (standard luteal phase), fertility window = ovulation −5 / +2, defaults 24–32/28.
+- Local notifications via **flutter_local_notifications 20.1.0** + **timezone / flutter_timezone**; pending alerts are recomputed at start-up and after any period, encounter or settings change.
+- Shared runtime helpers: `lib/core/db/` (database + providers) and `lib/core/time/clock.dart` (`clockProvider`, injectable clock for tests).
+- Not installed yet, added per phase: `table_calendar` (7), `fl_chart` (8), `csv` + `pdf` + `file_picker` + `share_plus` (9), `intl` / `go_router` when needed.
 - The app is 100 % local/offline, no cloud. No secrets, no sensitive data in logs.
 
 ## Mandatory conventions (from BUENAS_PRACTICAS.md)
@@ -30,8 +36,9 @@
 - **Full Gitflow**: branches `feature/<desc>`, `release/<version>`, `hotfix/<desc>`; `main` is only touched by release/hotfix (no direct merges); SemVer tags `vX.Y.Z`; delete branches after merge.
 - Before any commit: `dart format` + clean `flutter analyze` + green tests.
 - `domain/` requires mandatory unit tests (prediction engine).
+- Widget tests touching drift must close the database with `closeTestDatabase` / `await tester.runAsync(() => db.close())` inside the test body, **never** `addTearDown(db.close)`, and seed/read the DB inside `tester.runAsync`. Reuse `test/support/widget_harness.dart` (details and rationale in `fixs.md`).
 - All UI copy and project docs are in Spanish.
 
 ## Working rule
-- Follow the phases in `planDeDesarrollo.md` in order; each phase maps to a `feature/...` branch and closes with `test`/`docs` commits.
+- Follow the phases in `planDeDesarrollo.md` in order; each phase maps to a `feature/...` branch merged into `develop` and closes with `test`/`docs` commits. Phases 0–6 are closed; **7–10 are the open work**.
 - Remoto `origin` en GitHub: `https://github.com/tochijanna/ciclotrack.git`. Las ramas `main` y `develop` ya han sido pushadas.
