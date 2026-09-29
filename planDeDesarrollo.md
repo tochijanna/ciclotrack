@@ -121,7 +121,7 @@ La predicción se muestra en la tarjeta superior del tracking individual y se ac
 | **5** | Predicción visible, riesgo, fertilidad, periodo, humor y libido | ✅ Completada | Predicción por mujer |
 | **6** | Alertas locales y ajustes persistidos en Drift | ✅ Completada | Notificaciones locales |
 | **7** | Vistas consolidadas: Semana, Mes, Fertilidad y Encuentros | ✅ Completada | Dashboard |
-| **8** | Reportes y estadísticas con gráficos | Pendiente — plan detallado abajo | Análisis |
+| **8** | Reportes y estadísticas con gráficos | ✅ Completada | Análisis |
 | **9** | Export/import manual JSON, CSV y PDF | Pendiente | Backup |
 | **10** | Medicación, recordatorios personalizados, ajustes finales, iconos y pulido | Pendiente | Versión 1.0 |
 
@@ -346,11 +346,35 @@ Modificados: `pubspec.yaml` (`fl_chart`), `lib/features/calendar/domain/calendar
 
 #### Riesgos y límites aceptados
 
-- `fl_chart` queda pineado en 1.1.0 mientras el SDK fije `vector_math 2.1.4`.
+- `fl_chart` queda pineado en 1.0.0 mientras el SDK fije `vector_math 2.1.4`.
 - Ventana fija de 12 meses, sin selector de rango; los meses anteriores al primer registro salen a cero (no es un error).
 - La verificación de los gráficos es por presencia de widget y por el dominio: **no hay golden tests**, así que la forma exacta de las curvas se valida a mano sobre el APK.
 - Los reportes heredan los límites del tablero: horizonte de ~18 meses para lo proyectado y filtrado por rango en memoria.
 - Con cuatro acciones en el `AppBar` la cabecera queda justa en pantallas estrechas (se colapsa en la fase 10 si hace falta).
+
+### Fase 8: resultado
+
+Cerrada en la rama `feature/fase-8-reportes` con **9 commits** y **26 tests nuevos** (283 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni codegen. Los reportes se calculan sobre el tablero consolidado (extendido con los periodos registrados de cada mujer): una sola fuente de datos, sin un segundo agregado de los mismos cinco streams.
+
+| Punto de la spec | Implementación |
+|---|---|
+| Por mujer | KPIs (ciclos, duración media de ciclo y menstruación, encuentros, sin protección, días fértiles, próximo periodo) + `LineChart` de duración por ciclo + `BarChart` de síntomas recurrentes |
+| Por encuentro | `BarChart` de encuentros por mujer (con ceros) + `PieChart` de reparto por protección |
+| Por mes | `BarChart` de encuentros y sin protección por mes + detalle de los 12 meses con días fértiles y periodos |
+| Globales | KPIs de perfiles, ciclos, medias, encuentros, % sin protección, días fértiles y perfil con más encuentros |
+
+Ventanas, explícitas en cada tarjeta: ciclos, medias y series usan **todo el historial** (la línea se recorta a 12 ciclos); encuentros, protección, síntomas, periodos y días fértiles usan los **últimos 12 meses naturales**, mes en curso incluido y con días fértiles proyectados.
+
+Hallazgo relevante, aplicable a las fases siguientes: **`fl_chart` 1.1.0 no compila con el `vector_math 2.1.4` que fija el SDK** (usa `Matrix4.translateByDouble`, API de 2.2). `dart pub add --dry-run` lo daba por bueno porque la restricción declarada permite 2.1, y `flutter analyze` tampoco lo detecta porque no analiza el código de las dependencias: lo destapó la compilación del primer test de widget. El pin es exacto en **1.0.0** (con `^1.0.0` pub volvería a elegir 1.1.0, y 1.1.1+ ni resuelve). Lección: toda dependencia nueva se valida compilando un test **y** el APK, no solo resolviendo versiones.
+
+Desviaciones respecto al plan, por simplificación y sin recortar alcance:
+
+- Los cinco gráficos viven en `report_charts.dart` y las tarjetas en `kpi_card.dart`, en lugar de seis ficheros: comparten estilo, ejes y leyenda.
+- Las secciones de la pantalla son widgets privados de `reports_screen.dart` (solo se usan ahí).
+- El informe individual no lista sus encuentros (los KPIs y el reparto de protección los resumen; el listado está en la pestaña Encuentros del calendario).
+- Caso límite explícito: si una mujer tiene menos de dos ciclos cerrados, el gráfico de línea avisa en lugar de dibujar un punto suelto.
+
+Límites que se mantienen: ventana fija de 12 meses sin selector de rango, sin golden tests (la forma exacta de las curvas se valida a mano sobre el APK; los tests cubren los números y la presencia de los gráficos), y el `AppBar` de la lista de perfiles acumula ya cuatro acciones.
 
 ---
 

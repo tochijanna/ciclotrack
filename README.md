@@ -4,7 +4,7 @@ Aplicación Android personal para gestionar de forma privada los ciclos menstrua
 
 ## Estado
 
-Fases 0–7 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas y vistas consolidadas de calendario). Schema drift **v3 con 10 tablas**. Pendientes: fases 8–10 (reportes, backup e import/export, medicación y pulido). Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
+Fases 0–8 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas de calendario y reportes con gráficos). Schema drift **v3 con 10 tablas**. Pendientes: fases 9–10 (backup e import/export, medicación y pulido). Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
 
 ## Stack
 
@@ -15,6 +15,7 @@ Fases 0–7 completadas (scaffold, base de datos + motor de predicción, perfile
 | Datos | SQLite vía drift 2.31.0 + drift_flutter |
 | Notificaciones | flutter_local_notifications 20.1.0, timezone + flutter_timezone |
 | Calendario | table_calendar 3.2.1 + intl 0.20.2 (es-ES) |
+| Gráficos | fl_chart 1.0.0 (pin exacto: 1.1.x no compila con el `vector_math` del SDK) |
 
 Arquitectura feature-first con 3 capas por feature: `presentation/` (UI) → `domain/` (lógica pura, sin Flutter) → `data/` (drift), con flujo unidireccional UI → Notifier → Repository → drift. El código compartido vive en `lib/core/`.
 
