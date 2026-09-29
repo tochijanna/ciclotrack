@@ -66,7 +66,10 @@ void main() {
 
     final filtrado = tester.widget<EncounterCard>(find.byType(EncounterCard));
     expect(filtrado.encounter.encounterId, ambos);
-    expect(filtrado.encounter.participants.map((p) => p.womanName), contains('Bea'));
+    expect(
+      filtrado.encounter.participants.map((p) => p.womanName),
+      contains('Bea'),
+    );
 
     await tester.tap(find.text('Todas (2)'));
     await tester.pump();

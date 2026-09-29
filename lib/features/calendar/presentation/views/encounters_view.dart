@@ -48,9 +48,8 @@ class _EncountersBoardViewState extends ConsumerState<EncountersBoardView> {
                         vertical: 8,
                       ),
                       itemCount: encuentros.length,
-                      itemBuilder: (context, index) => EncounterCard(
-                        encounter: encuentros[index],
-                      ),
+                      itemBuilder: (context, index) =>
+                          EncounterCard(encounter: encuentros[index]),
                     ),
             ),
           ],
@@ -124,8 +123,7 @@ class _FilterRow extends StatelessWidget {
 
   int _countFor(CalendarBoard board, int womanId) => board.encuentros
       .where(
-        (encuentro) =>
-            encuentro.participants.any((p) => p.womanId == womanId),
+        (encuentro) => encuentro.participants.any((p) => p.womanId == womanId),
       )
       .length;
 }
