@@ -51,10 +51,10 @@ Las reglas de dominio requieren tests unitarios. Las fuentes reactivas usan `Str
 | `drift` + `drift_flutter` | SQLite local y streams | Instalado, Drift 2.31.0 |
 | `flutter_local_notifications` | Notificaciones locales | Instalado |
 | `timezone` + `flutter_timezone` | Programación por zona horaria | Instalado |
-| `table_calendar` | Vistas semana/mes | `^3.2.1`, Fase 7 — resuelve con Dart 3.8.1 |
+| `table_calendar` | Vistas semana/mes | Instalado (3.2.1) |
 | `fl_chart` | Reportes/estadísticas | Pendiente, Fase 8 |
 | `csv` + `pdf` + `file_picker` + `share_plus` | Backup manual | Pendiente, Fase 9 |
-| `intl` | Fechas y localización es-ES | `^0.20.2`, Fase 7 (+ `flutter_localizations`) |
+| `intl` | Fechas y localización es-ES | Instalado (0.20.2) + `flutter_localizations` |
 | `go_router` | Navegación avanzada | Pendiente según necesidad |
 | `ReorderableListView` | Orden de perfiles | Nativo, implementado |
 
@@ -120,7 +120,7 @@ La predicción se muestra en la tarjeta superior del tracking individual y se ac
 | **4** | Encuentros multi-mujer, protección, relación, resultado y notas | ✅ Completada | Registro de encuentros |
 | **5** | Predicción visible, riesgo, fertilidad, periodo, humor y libido | ✅ Completada | Predicción por mujer |
 | **6** | Alertas locales y ajustes persistidos en Drift | ✅ Completada | Notificaciones locales |
-| **7** | Vistas consolidadas: Semana, Mes, Fertilidad y Encuentros | Pendiente — plan detallado abajo | Dashboard |
+| **7** | Vistas consolidadas: Semana, Mes, Fertilidad y Encuentros | ✅ Completada | Dashboard |
 | **8** | Reportes y estadísticas con gráficos | Pendiente | Análisis |
 | **9** | Export/import manual JSON, CSV y PDF | Pendiente | Backup |
 | **10** | Medicación, recordatorios personalizados, ajustes finales, iconos y pulido | Pendiente | Versión 1.0 |
@@ -246,6 +246,30 @@ Modificados: `pubspec.yaml` (deps), `lib/main.dart` (locale + `initializeDateFor
 - Sin rutas nombradas no hay deep links a una vista concreta; se asume (fuera de alcance).
 - Mes con muchas mujeres: se limitan los puntos por día a 4 + contador para no romper el layout.
 - `table_calendar` queda pineado; no se actualiza sin actualizar Dart.
+
+### Fase 7: resultado
+
+Cerrada en la rama `feature/fase-7-vistas` con **11 commits** y **55 tests nuevos** (257 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni código generado nuevo.
+
+| Vista | Pestaña | Implementación |
+|---|---|---|
+| Semana | `Semana` | `BoardCalendar` en `CalendarFormat.week` + panel del día seleccionado |
+| Mes | `Mes` | `BoardCalendar` en `CalendarFormat.month` |
+| Fertilidad | `Fertilidad` | `FertilityView`: ventana que intersecta la semana, fechas, ovulación y cuenta atrás |
+| Encuentros | `Encuentros` | `EncountersBoardView`: `EncounterCard` reutilizada y chips «Todas» + una por mujer con contador |
+
+Entrada: icono `calendar_month_outlined` en el `AppBar` de `WomenListScreen`, junto a la campana de alertas. Composición: una única suscripción a los cinco streams globales (perfiles, periodos, ovulaciones, síntomas, encuentros) mediante `combineLatest5` en `lib/core/async/combine_latest.dart`.
+
+Desviaciones respecto al plan, todas por simplificación y sin recortar alcance:
+
+- Una sola `BoardView` con el `CalendarFormat` como parámetro, en lugar de `week_view.dart` + `month_view.dart`: los dos envoltorios no aportaban nada.
+- `DayDetail` añade `encuentros` y `esEstimado`: el panel debía mostrar con quién se acostó ese día y distinguir las proyecciones.
+- `fertileInWeek` devuelve `FertileWeekEntry` (mujer, fechas de la ventana, ovulación y `esEstimado`) en lugar de `WomanCalendar`, porque la vista necesita las fechas exactas.
+- `startOfWeek` se añadió al dominio para que la vista y los tests compartan el criterio de lunes.
+- El dashboard abre con dos pestañas y las olas 4 y 5 añaden la tercera y la cuarta, para no dejar pestañas vacías en ningún commit.
+- Las marcas se calculan para el mes enfocado ± 45 días en cada build; si el número de perfiles o registros creciera, el siguiente paso sería memoizar por mes visible y mover el filtro de rango a SQL.
+
+Límites que se mantienen: proyección de ciclos a ~18 meses (`CalendarRepository.defaultHorizonte`), máximo 4 glifos por celda y «+N», ventanas de ciclos proyectados atenuadas y etiquetadas como estimadas, y ausencia de deep links (sin `go_router`).
 
 ---
 

@@ -1,9 +1,10 @@
 # AGENTS.md
 
 ## Project state
-- **Phases 0–6 done** (scaffold + gitflow, drift schema + prediction engine, profiles, tracking, encounters, alerts with local notifications). On `develop`.
+- **Phases 0–7 done** (scaffold + gitflow, drift schema + prediction engine, profiles, tracking, encounters, alerts with local notifications, consolidated calendar views). On `develop`.
 - Drift schema **v3, 10 tables**: `women`, `tags`, `woman_tags`, `period_logs`, `ovulation_logs`, `symptoms`, `encounters`, `encounter_women`, `reminders`, `alert_settings`. Feature DAOs, prediction engine, business UI and notification scheduling are implemented and tested.
-- **Open work: phases 7–10** (consolidated week/month/fertility/encounters views, reports, backup, medication + polish). See `planDeDesarrollo.md`.
+- Consolidated views live in `lib/features/calendar/`: week/month grid on `table_calendar`, fertility and encounters views, opened from the calendar icon in the profile list. `CycleTimeline` (`lib/features/prediction/domain/cycle_timeline.dart`) answers phase/fertile window for **any** date, and flags projected cycles as estimated.
+- **Open work: phases 8–10** (reports, backup, medication + polish). See `planDeDesarrollo.md`.
 - Active gitflow branches: `main` (release history) and `develop` (integration). `feature/*` branches are created per phase task and merged into `develop`.
 - **Toolchain lives inside the repo at `.toolchain/` and is git-ignored:** Flutter 3.32.7 + Android SDK platforms 34/35 (build-tools 34.0.0) + OpenJDK 17 (system, `/usr/lib/jvm/java-17-openjdk`). Before any Flutter command, source the env:
   ```bash
@@ -36,7 +37,7 @@
 - **Full Gitflow**: branches `feature/<desc>`, `release/<version>`, `hotfix/<desc>`; `main` is only touched by release/hotfix (no direct merges); SemVer tags `vX.Y.Z`; delete branches after merge.
 - Before any commit: `dart format` + clean `flutter analyze` + green tests.
 - `domain/` requires mandatory unit tests (prediction engine).
-- Widget tests touching drift must close the database with `closeTestDatabase` / `await tester.runAsync(() => db.close())` inside the test body, **never** `addTearDown(db.close)`, and seed/read the DB inside `tester.runAsync`. Reuse `test/support/widget_harness.dart` (details and rationale in `fixs.md`).
+- Widget tests touching drift must close the database with `closeTestDatabase` / `await tester.runAsync(() => db.close())` inside the test body, **never** `addTearDown(db.close)`, and seed/read the DB inside `tester.runAsync`. Reuse `test/support/widget_harness.dart` (seeds for women, periods, encounters, ovulation and symptoms) and `fixedClock(DateTime)` to pin "today"; details and rationale in `fixs.md`.
 - All UI copy and project docs are in Spanish.
 
 ## Working rule
