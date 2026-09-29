@@ -267,6 +267,14 @@ void main() {
     });
   });
 
+  group('startOfWeek', () {
+    test('devuelve el lunes de la semana', () {
+      expect(startOfWeek(DateTime(2026, 9, 14)), DateTime(2026, 9, 14));
+      expect(startOfWeek(DateTime(2026, 9, 3)), DateTime(2026, 8, 31));
+      expect(startOfWeek(DateTime(2026, 9, 20, 23, 30)), DateTime(2026, 9, 14));
+    });
+  });
+
   group('fertileInWeek', () {
     test('lista las ventanas que intersectan la semana, ordenadas', () {
       final entradas = fertileInWeek(board, DateTime(2026, 9, 14));

@@ -155,6 +155,12 @@ List<DayDetail> detailsFor(CalendarBoard board, DateTime day) {
   ];
 }
 
+/// Lunes de la semana que contiene [day].
+DateTime startOfWeek(DateTime day) {
+  final fecha = _calendarDate(day);
+  return _addDays(fecha, -(fecha.weekday - DateTime.monday));
+}
+
 /// Mujeres cuya ventana fértil intersecta la semana que empieza en [weekStart].
 List<FertileWeekEntry> fertileInWeek(CalendarBoard board, DateTime weekStart) {
   final inicio = _calendarDate(weekStart);
