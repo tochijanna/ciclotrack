@@ -52,7 +52,7 @@ Las reglas de dominio requieren tests unitarios. Las fuentes reactivas usan `Str
 | `flutter_local_notifications` | Notificaciones locales | Instalado |
 | `timezone` + `flutter_timezone` | Programación por zona horaria | Instalado |
 | `table_calendar` | Vistas semana/mes | Instalado (3.2.1) |
-| `fl_chart` | Reportes/estadísticas | `^1.1.0`, Fase 8 — 1.1.1+ exige `vector_math ^2.2.0` y el SDK fija 2.1.4 |
+| `fl_chart` | Reportes/estadísticas | `1.0.0`, Fase 8 — 1.1.x declara `vector_math ^2.1` pero usa API de 2.2 y no compila |
 | `csv` + `pdf` + `file_picker` + `share_plus` | Backup manual | Pendiente, Fase 9 |
 | `intl` | Fechas y localización es-ES | Instalado (0.20.2) + `flutter_localizations` |
 | `go_router` | Navegación avanzada | Pendiente según necesidad |
@@ -288,7 +288,7 @@ Límites que se mantienen: proyección de ciclos a ~18 meses (`CalendarRepositor
 
 - **D1 — Una sola fuente de datos.** Los reportes reutilizan `calendarBoardProvider` en lugar de componer su propio agregado. Para ello `WomanCalendar` gana `periodos` (`List<PeriodLogInput>`), que es lo único que faltaba: el tablero ya trae perfiles, líneas temporales, ovulaciones, síntomas y encuentros. Descartado un `ReportsRepository` con su propia combinación de los cinco streams: serían dos fuentes de verdad del mismo agregado (precedente de composición cross-feature: `alerts`). Si aparece un tercer consumidor, se extrae un lector compartido.
 - **D2 — Todo el cálculo en dominio puro.** `reports/domain/` produce series y agregados como datos (`PuntoSerie`, `BarraValor`, `ReportKpis`); los widgets solo los pintan. Los gráficos no son testeables, los números sí: es la única forma de verificar de verdad un reporte (y cumple la regla de tests obligatorios en `domain/`).
-- **D3 — `fl_chart ^1.1.0`, no 1.1.1+.** Verificado con `dart pub add --dry-run`: `fl_chart >=1.1.1` depende de `vector_math ^2.2.0`, y `flutter_test` del SDK Flutter 3.32.7 fija `vector_math 2.1.4`, así que la resolución falla. No se sube sin subir Flutter; queda anotado junto a los pines de drift y Riverpod.
+- **D3 — `fl_chart` 1.0.0, pin exacto.** La resolución de versiones deja instalar 1.1.0 (declara `vector_math ^2.1`), pero **no compila**: usa `Matrix4.translateByDouble`, que solo existe en vector_math 2.2, y el SDK 3.32.7 fija 2.1.4. `flutter analyze` no lo detecta porque no analiza el código de las dependencias; lo destapó la compilación del primer test de widget. `fl_chart >=1.1.1` directamente no resuelve. Con `^1.0.0` pub volvería a elegir 1.1.0, por eso el pin es exacto: no se sube sin subir Flutter.
 - **D4 — Ventana fija de 12 meses** (y últimos 12 ciclos por mujer). Sin selector de rango: la spec no lo pide y añadirlo multiplica estados y tests. Documentado como límite.
 - **D5 — Tipos de gráfico acotados:** `LineChart` (duración del ciclo), `BarChart` (síntomas, encuentros por mes y por mujer), `PieChart` (reparto de protección) y tarjetas de KPI. Sin `RadarChart` ni `ScatterChart`: no aportan a lo pedido.
 - **D6 — Selector de mujer** (`Todas` + una por perfil) en la propia pantalla: con «Todas» se ven los globales, el resumen por mes y los encuentros por mujer; al elegir una mujer, sus ciclos, sus síntomas y sus encuentros. Es lo que permite cubrir «por mujer» y «global» sin dos pantallas.

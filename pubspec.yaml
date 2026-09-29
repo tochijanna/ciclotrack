@@ -51,8 +51,9 @@ dependencies:
   table_calendar: ^3.2.1
   intl: ^0.20.2
 
-  # Reports (phase 8). 1.1.1+ needs vector_math ^2.2.0, which the SDK pins 2.1.4.
-  fl_chart: ^1.1.0
+  # Reports (phase 8). 1.1.x needs vector_math 2.2 and does not compile
+  # against the 2.1.4 that the Flutter SDK pins, so it is pinned exactly.
+  fl_chart: 1.0.0
 
 dev_dependencies:
   flutter_test:
