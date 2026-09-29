@@ -1,99 +1,62 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ciclotrack/core/db/app_database.dart';
-import 'package:ciclotrack/core/db/app_database_provider.dart';
-import 'package:ciclotrack/features/profiles/data/women_dao.dart';
-import 'package:ciclotrack/features/profiles/data/women_repository.dart';
-import 'package:ciclotrack/features/profiles/domain/woman_draft.dart';
-import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
-import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
-import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
 import 'package:ciclotrack/features/tracking/presentation/screens/tracking_screen.dart';
 
+import '../../../support/widget_harness.dart';
+
 void main() {
+  late AppDatabase db;
+
   testWidgets('TrackingScreen renders prediction card and empty timeline', (
     tester,
   ) async {
-    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    db = createTestDatabase();
+    final profile = await seedProfile(tester, db, name: 'María');
 
-    final profile = (await tester.runAsync(() => _createProfile(db, 'María')))!;
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
-        child: MaterialApp(home: TrackingScreen(profile: profile)),
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await pumpScreen(tester, db, TrackingScreen(profile: profile));
 
     expect(find.text('María'), findsWidgets);
     expect(find.text('Sin registros'), findsOneWidget);
 
-    await tester.runAsync(() async {
-      await db.close();
-    });
+    await closeTestDatabase(tester, db);
   });
 
   testWidgets('TrackingScreen shows prediction and period in timeline', (
     tester,
   ) async {
-    final db = AppDatabase.forTesting(NativeDatabase.memory());
-    final profile = (await tester.runAsync(() => _createProfile(db, 'Ana')))!;
-
-    await tester.runAsync(() async {
-      final repo = TrackingRepository(TrackingDao(db));
-      await repo.createPeriod(
-        profile.woman.id,
-        PeriodDraft(startDate: DateTime(2026, 9, 1)),
-      );
-    });
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
-        child: MaterialApp(home: TrackingScreen(profile: profile)),
-      ),
+    db = createTestDatabase();
+    final profile = await seedProfile(tester, db, name: 'Ana');
+    await seedPeriod(
+      tester,
+      db,
+      womanId: profile.woman.id,
+      startDate: DateTime(2026, 9, 1),
     );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
 
-    // Prediction card should show (periodo en curso or similar)
+    await pumpScreen(tester, db, TrackingScreen(profile: profile));
+
     expect(find.textContaining('Periodo'), findsWidgets);
 
-    await tester.runAsync(() async {
-      await db.close();
-    });
+    await closeTestDatabase(tester, db);
   });
 
   testWidgets('TrackingScreen deletes an event after confirmation', (
     tester,
   ) async {
-    final db = AppDatabase.forTesting(NativeDatabase.memory());
-    final profile = (await tester.runAsync(() async {
-      final p = await _createProfile(db, 'Sofía');
-      final repo = TrackingRepository(TrackingDao(db));
-      await repo.createPeriod(
-        p.woman.id,
-        PeriodDraft(startDate: DateTime(2026, 9, 1)),
-      );
-      return p;
-    }))!;
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
-        child: MaterialApp(home: TrackingScreen(profile: profile)),
-      ),
+    db = createTestDatabase();
+    final profile = await seedProfile(tester, db, name: 'Sofía');
+    await seedPeriod(
+      tester,
+      db,
+      womanId: profile.woman.id,
+      startDate: DateTime(2026, 9, 1),
     );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
 
-    // Find the tracking event card's "Periodo" text and long-press it.
-    // The prediction card may push it off-screen, so scroll if needed.
+    await pumpScreen(tester, db, TrackingScreen(profile: profile));
+
+    // El card de predicción puede empujar el evento fuera de pantalla.
     final periodoFinder = find.text('Periodo');
     if (periodoFinder.evaluate().isEmpty) {
       await tester.scrollUntilVisible(
@@ -106,24 +69,18 @@ void main() {
       );
     }
     await tester.longPress(periodoFinder);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await pumpStreams(tester);
     expect(find.text('Eliminar registro'), findsOneWidget);
+
     await tester.tap(find.text('Eliminar'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await pumpStreams(tester);
 
     expect(find.text('Sin registros'), findsOneWidget);
+    expect(
+      await runReal(tester, () => db.select(db.periodLogs).get()),
+      isEmpty,
+    );
 
-    await tester.runAsync(() async {
-      await db.close();
-    });
+    await closeTestDatabase(tester, db);
   });
-}
-
-Future<WomanProfile> _createProfile(AppDatabase db, String name) async {
-  final repo = WomenRepository(WomenDao(db));
-  final id = await repo.create(WomanDraft(name: name, initials: 'X'));
-  final women = await repo.watchAllProfiles().first;
-  return women.firstWhere((p) => p.woman.id == id);
 }

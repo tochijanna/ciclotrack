@@ -148,6 +148,88 @@ void main() {
       expect(period.startDate, DateTime(2026, 9, 1));
       expect(period.endDate, DateTime(2026, 9, 3));
     });
+
+    test('normalizes midnight and 23:59 to the same calendar day', () async {
+      // Dos mujeres distintas para poder crear el mismo día sin conflicto.
+      final womenRepo = WomenRepository(WomenDao(db));
+      final otherWomanId = await womenRepo.create(
+        const WomanDraft(name: 'Ana', initials: 'AN'),
+      );
+
+      final midnightId = await repo.createPeriod(
+        womanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 2, 0, 0)),
+      );
+      final lateId = await repo.createPeriod(
+        otherWomanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 2, 23, 59)),
+      );
+
+      final midnight = await (db.select(
+        db.periodLogs,
+      )..where((t) => t.id.equals(midnightId))).getSingle();
+      final late = await (db.select(
+        db.periodLogs,
+      )..where((t) => t.id.equals(lateId))).getSingle();
+      expect(midnight.startDate, DateTime(2026, 9, 2));
+      expect(late.startDate, DateTime(2026, 9, 2));
+      expect(midnight.startDate, late.startDate);
+    });
+
+    test('rejects duplicate calendar day with different times', () async {
+      await repo.createPeriod(
+        womanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 2, 8, 0)),
+      );
+
+      expect(
+        () => repo.createPeriod(
+          womanId,
+          PeriodDraft(startDate: DateTime(2026, 9, 2, 22, 0)),
+        ),
+        throwsA(isA<PeriodConflictException>()),
+      );
+    });
+
+    test('treats 23:59 and next-day 00:00 as different days', () async {
+      final lateId = await repo.createPeriod(
+        womanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 2, 23, 59)),
+      );
+      final nextId = await repo.createPeriod(
+        womanId,
+        PeriodDraft(startDate: DateTime(2026, 9, 3, 0, 0)),
+      );
+
+      final late = await (db.select(
+        db.periodLogs,
+      )..where((t) => t.id.equals(lateId))).getSingle();
+      final next = await (db.select(
+        db.periodLogs,
+      )..where((t) => t.id.equals(nextId))).getSingle();
+      expect(late.startDate, DateTime(2026, 9, 2));
+      expect(next.startDate, DateTime(2026, 9, 3));
+    });
+
+    test(
+      'end date at midnight of the next day keeps the period inclusive',
+      () async {
+        final id = await repo.createPeriod(
+          womanId,
+          PeriodDraft(
+            startDate: DateTime(2026, 9, 2, 10),
+            endDate: DateTime(2026, 9, 3, 0, 0),
+          ),
+        );
+
+        final period = await (db.select(
+          db.periodLogs,
+        )..where((t) => t.id.equals(id))).getSingle();
+        expect(period.startDate, DateTime(2026, 9, 2));
+        expect(period.endDate, DateTime(2026, 9, 3));
+        expect(periodDuration(period.startDate, period.endDate), 2);
+      },
+    );
   });
 
   group('TrackingRepository - Ovulación', () {
@@ -188,6 +270,17 @@ void main() {
       )..where((t) => t.id.equals(id))).getSingleOrNull();
       expect(log, isNull);
     });
+
+    test('normalizes ovulation time before persistence', () async {
+      final id = await repo.createOvulation(
+        womanId,
+        OvulationDraft(date: DateTime(2026, 9, 14, 23, 59)),
+      );
+      final log = await (db.select(
+        db.ovulationLogs,
+      )..where((t) => t.id.equals(id))).getSingle();
+      expect(log.date, DateTime(2026, 9, 14));
+    });
   });
 
   group('TrackingRepository - Síntomas', () {
@@ -227,6 +320,21 @@ void main() {
         db.symptoms,
       )..where((t) => t.id.equals(id))).getSingleOrNull();
       expect(log, isNull);
+    });
+
+    test('normalizes symptom time before persistence', () async {
+      final id = await repo.createSymptom(
+        womanId,
+        SymptomDraft(
+          date: DateTime(2026, 9, 10, 22, 30),
+          type: 'Acné',
+          severity: 3,
+        ),
+      );
+      final log = await (db.select(
+        db.symptoms,
+      )..where((t) => t.id.equals(id))).getSingle();
+      expect(log.date, DateTime(2026, 9, 10));
     });
   });
 
