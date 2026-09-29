@@ -1,7 +1,6 @@
-import 'dart:async';
-
 import 'package:drift/drift.dart';
 
+import '../../../core/async/combine_latest.dart';
 import '../../../core/db/app_database.dart';
 import '../domain/tracking_drafts.dart';
 import '../domain/tracking_event.dart';
@@ -24,7 +23,7 @@ class TrackingRepository {
     final ovulations$ = _dao.watchOvulationLogsByWoman(womanId);
     final symptoms$ = _dao.watchSymptomLogsByWoman(womanId);
 
-    return _combineLatest3(periods$, ovulations$, symptoms$, _buildTimeline);
+    return combineLatest3(periods$, ovulations$, symptoms$, _buildTimeline);
   }
 
   /// Obtiene el timeline completo una sola vez (no reactivo).
@@ -33,58 +32,6 @@ class TrackingRepository {
     final ovulations = await _dao.watchOvulationLogsByWoman(womanId).first;
     final symptoms = await _dao.watchSymptomLogsByWoman(womanId).first;
     return _buildTimeline(periods, ovulations, symptoms);
-  }
-
-  /// Combina tres streams emitiendo siempre que cualquiera de ellos cambie.
-  /// Emite una primera vez tan pronto como los tres hayan emitido al menos una
-  /// vez. Las suscripciones se cancelan al cerrarse el stream resultante.
-  Stream<T> _combineLatest3<A, B, C, T>(
-    Stream<A> a$,
-    Stream<B> b$,
-    Stream<C> c$,
-    T Function(A, B, C) combine,
-  ) {
-    late StreamController<T> controller;
-    A? a;
-    B? b;
-    C? c;
-    var aReady = false;
-    var bReady = false;
-    var cReady = false;
-
-    void emitIfReady() {
-      if (aReady && bReady && cReady && !controller.isClosed) {
-        controller.add(combine(a as A, b as B, c as C));
-      }
-    }
-
-    controller = StreamController<T>(
-      onListen: () {
-        final subA = a$.listen((v) {
-          a = v;
-          aReady = true;
-          emitIfReady();
-        });
-        final subB = b$.listen((v) {
-          b = v;
-          bReady = true;
-          emitIfReady();
-        });
-        final subC = c$.listen((v) {
-          c = v;
-          cReady = true;
-          emitIfReady();
-        });
-
-        controller.onCancel = () async {
-          await subA.cancel();
-          await subB.cancel();
-          await subC.cancel();
-        };
-      },
-    );
-
-    return controller.stream;
   }
 
   List<TrackingEvent> _buildTimeline(

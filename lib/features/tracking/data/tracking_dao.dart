@@ -66,4 +66,21 @@ class TrackingDao extends DatabaseAccessor<AppDatabase>
             ..where((t) => t.womanId.equals(womanId))
             ..orderBy([(t) => OrderingTerm.desc(t.date)]))
           .watch();
+
+  // --- Lecturas globales (vistas consolidadas) ---
+  //
+  // Las vistas de calendario necesitan todos los registros de todas las
+  // mujeres en un único stream; filtrar por rango se hace en memoria para no
+  // re-suscribir la consulta al navegar entre meses.
+
+  Stream<List<PeriodLog>> watchAllPeriodLogs() => (select(
+    periodLogs,
+  )..orderBy([(t) => OrderingTerm.asc(t.startDate)])).watch();
+
+  Stream<List<OvulationLog>> watchAllOvulationLogs() => (select(
+    ovulationLogs,
+  )..orderBy([(t) => OrderingTerm.asc(t.date)])).watch();
+
+  Stream<List<SymptomLog>> watchAllSymptomLogs() =>
+      (select(symptoms)..orderBy([(t) => OrderingTerm.asc(t.date)])).watch();
 }

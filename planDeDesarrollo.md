@@ -51,10 +51,10 @@ Las reglas de dominio requieren tests unitarios. Las fuentes reactivas usan `Str
 | `drift` + `drift_flutter` | SQLite local y streams | Instalado, Drift 2.31.0 |
 | `flutter_local_notifications` | Notificaciones locales | Instalado |
 | `timezone` + `flutter_timezone` | Programación por zona horaria | Instalado |
-| `table_calendar` | Vistas semana/mes | Pendiente, Fase 7 |
+| `table_calendar` | Vistas semana/mes | Instalado (3.2.1) |
 | `fl_chart` | Reportes/estadísticas | Pendiente, Fase 8 |
 | `csv` + `pdf` + `file_picker` + `share_plus` | Backup manual | Pendiente, Fase 9 |
-| `intl` | Fechas y localización es-ES | Pendiente según necesidad |
+| `intl` | Fechas y localización es-ES | Instalado (0.20.2) + `flutter_localizations` |
 | `go_router` | Navegación avanzada | Pendiente según necesidad |
 | `ReorderableListView` | Orden de perfiles | Nativo, implementado |
 
@@ -120,7 +120,7 @@ La predicción se muestra en la tarjeta superior del tracking individual y se ac
 | **4** | Encuentros multi-mujer, protección, relación, resultado y notas | ✅ Completada | Registro de encuentros |
 | **5** | Predicción visible, riesgo, fertilidad, periodo, humor y libido | ✅ Completada | Predicción por mujer |
 | **6** | Alertas locales y ajustes persistidos en Drift | ✅ Completada | Notificaciones locales |
-| **7** | Vistas consolidadas: Semana, Mes, Fertilidad y Encuentros | Pendiente | Dashboard |
+| **7** | Vistas consolidadas: Semana, Mes, Fertilidad y Encuentros | ✅ Completada | Dashboard |
 | **8** | Reportes y estadísticas con gráficos | Pendiente | Análisis |
 | **9** | Export/import manual JSON, CSV y PDF | Pendiente | Backup |
 | **10** | Medicación, recordatorios personalizados, ajustes finales, iconos y pulido | Pendiente | Versión 1.0 |
@@ -139,6 +139,137 @@ Implementadas 8 reglas de alerta automáticas:
 8. Ventana combinada.
 
 La alerta de medicación se pospone a la Fase 10 porque requiere tabla y CRUD de medicamentos por mujer.
+
+### Fase 7: plan (dashboard de vistas consolidadas)
+
+**Rama:** `feature/fase-7-vistas` desde `develop`. **Schema:** sin cambios (sigue en v3); no hay migración ni código generado nuevo (solo métodos escritos a mano en DAOs existentes). **Alcances de commit:** `calendar` (principal), con `core`, `prediction` y `tracking` en los cambios que caen dentro de esas features.
+
+#### Alcance (Especificaciones.md §6)
+
+| Vista | Requisito | Contenido del entregable |
+|---|---|---|
+| Semana | Todos los perfiles en un mismo calendario | Cuadrícula de 7 días con marcas por mujer + panel del día seleccionado |
+| Mes | Todos los perfiles en un mismo mes | Cuadrícula mensual con las mismas marcas y navegación mes a mes |
+| Fertilidad | Qué mujeres están en ventana de fertilidad esta semana | Lista de mujeres cuya ventana intersecta la semana en curso, con fechas exactas |
+| Encuentros | Encuentros por mujer (quién se acostó con quién) | Lista descendente de encuentros con filtro por mujer y contador |
+
+#### Decisiones
+
+- **D1 — Feature nueva.** Todo vive en `lib/features/calendar/` con las 3 capas habituales; el dashboard no se cuelga de `profiles`.
+- **D2 — Cuadrícula.** `table_calendar ^3.2.1` (dry-run verificado: resuelve con Dart 3.8.1 y añade `intl 0.20.2` + `simple_gesture_detector 0.2.1`). Semana = `CalendarFormat.week`, Mes = `CalendarFormat.month`; un único widget compartido con el formato como parámetro, para no duplicar `calendarBuilders` ni el `eventLoader`.
+- **D3 — Localización.** Se añaden `intl ^0.20.2` y `flutter_localizations`; `main()` pasa a `async` con `initializeDateFormatting('es_ES')` y `MaterialApp` declara `locale`, `supportedLocales` y los delegates. Descartado mapear meses/días a mano: serían dos tablas de nombres que mantener y no cubriría el layout interno del calendario.
+- **D4 — Fase por fecha arbitraria.** `WomanPrediction` **no sirve**: `faseHoy`/`estadoRiesgo`/`pronostico` están anclados a `today` (`prediction_calculator.dart:72` y `:194-196`, que además solo proyecta hacia delante). Se crea `CycleTimeline` en `prediction/domain/cycle_timeline.dart`: proyecta ciclos reales (inicios registrados) y estimados (último inicio + `mediaCiclo · k`) hasta un horizonte y responde por fecha reutilizando `phaseForCycleDay` (`cycle_phase.dart:23`) y `PredictionEngine` (`prediction_engine.dart:27-52`). Vive en `prediction` porque es matemática de ciclo, no presentación; `calendar` la importa (precedente: `alert_rule_engine.dart:1-2`, `tracking_screen.dart:4-6`).
+- **D5 — Marcas por día.** Agregación pura en `calendar/domain/` sobre tipos de dominio ya puros (`TrackingEvent`, `EncounterWithWomen`) más una proyección `CalendarWoman` de `WomanProfile` (este último vive en `data/` y no puede entrar en `domain/`). Los días de una ventana fértil proyectada se marcan `esEstimado: true` y la UI los pinta como estimados: una ventana pasada o futura es una proyección con la media, no un hecho registrado.
+- **D6 — Lecturas multi-mujer.** Hoy no existe ninguna para tracking (solo `...ByWoman`). Se añaden `watchAllPeriodLogs()`, `watchAllOvulationLogs()` y `watchAllSymptomLogs()` a `TrackingDao` y se filtra por rango en memoria. Descartado `...Between(desde, hasta)`: re-suscribiría el stream en cada cambio de mes sin reducir el volumen real de un dataset personal.
+- **D7 — Composición reactiva.** `CalendarRepository.watchBoard()` combina 5 streams (perfiles, periodos, ovulaciones, síntomas, encuentros). El único combinador del proyecto es privado (`tracking_repository.dart:41-85`); se extrae a `lib/core/async/combine_latest.dart` (`combineLatest2..5`) y `TrackingRepository` pasa a usarlo, en vez de añadir una tercera copia.
+- **D8 — Navegación.** Sin `go_router` (no está instalado y no hace falta): el dashboard se abre desde un icono nuevo en el `AppBar` de `WomenListScreen`, junto a la campana de alertas (`women_list_screen.dart:27-30`). El mes visible y el día seleccionado son `State` local del widget; **"hoy" sale siempre de `predictionDayProvider`**, que ya se inyecta con `clockProvider` en tests.
+- **D9 — Reutilización.** La vista Encuentros usa `EncounterCard` (`encounters/presentation/widgets/encounter_card.dart`), read-only con `onTap`/`onLongPress` opcionales, siguiendo el precedente de `tracking_screen.dart:5`.
+
+#### Contratos nuevos
+
+```dart
+// lib/core/async/combine_latest.dart
+Stream<R> combineLatest2<A, B, R>(Stream<A>, Stream<B>, R Function(A, B));
+Stream<R> combineLatest3<A, B, C, R>(Stream<A>, Stream<B>, Stream<C>, R Function(A, B, C));
+Stream<R> combineLatest4<A, B, C, D, R>(…);
+Stream<R> combineLatest5<A, B, C, D, E, R>(…);
+
+// lib/features/prediction/domain/cycle_timeline.dart
+class CycleSpan { DateTime start, periodEnd, ovulation, fertileStart, fertileEnd; bool esReal; }
+class CycleTimeline {
+  factory CycleTimeline.from({required List<PeriodLogInput> logs, required DateTime horizonte, PredictionEngine? engine});
+  List<CycleSpan> get spans;
+  CycleSpan? spanFor(DateTime day);
+  CyclePhase? phaseOn(DateTime day);   // null cuando no hay datos
+  bool isPeriodOn(DateTime day);
+  bool isFertileOn(DateTime day);
+  bool isOvulationOn(DateTime day);
+  bool isEstimatedOn(DateTime day);
+  DateTime? nextFertileStart(DateTime from);
+}
+
+// lib/features/calendar/domain/calendar_board.dart
+class CalendarWoman { int id; String name, initials, emoji; int color; }
+class WomanCalendar { CalendarWoman woman; CycleTimeline timeline; List<TrackingEvent> eventos; }
+class CalendarBoard { List<WomanCalendar> women; List<EncounterWithWomen> encuentros; }
+enum DayMarkKind { menstruacion, ventanaFertil, ovulacion, ovulacionRegistrada, sintoma, encuentro }
+class DayMark { int womanId, color; DayMarkKind kind; bool esEstimado; }
+class DayDetail { CalendarWoman woman; CyclePhase? fase; bool fertil; List<TrackingEvent> eventos; }
+
+Map<DateTime, List<DayMark>> marksByDay(CalendarBoard board, DateTime desde, DateTime hasta);
+List<DayDetail> detailsFor(CalendarBoard board, DateTime day);
+List<WomanCalendar> fertileInWeek(CalendarBoard board, DateTime weekStart);
+
+// lib/features/calendar/data/calendar_repository.dart
+class CalendarRepository {
+  CalendarRepository({required WomenRepository womenRepo, required TrackingDao trackingDao,
+                      required EncounterRepository encounterRepo, PredictionEngine? engine});
+  Stream<CalendarBoard> watchBoard({required DateTime today, Duration horizonte = const Duration(days: 550)});
+}
+
+// lib/features/calendar/presentation/providers/calendar_providers.dart
+Provider<CalendarRepository> calendarRepositoryProvider;
+StreamProvider.autoDispose<CalendarBoard> calendarBoardProvider;  // depende de predictionDayProvider
+```
+
+#### Ficheros
+
+Nuevos: `lib/core/async/combine_latest.dart`; `lib/features/prediction/domain/cycle_timeline.dart`; `lib/features/calendar/domain/{calendar_board.dart,day_mark.dart}`; `lib/features/calendar/data/calendar_repository.dart`; `lib/features/calendar/presentation/providers/calendar_providers.dart`; `lib/features/calendar/presentation/screens/calendar_home_screen.dart`; `lib/features/calendar/presentation/views/{week_view.dart,month_view.dart,fertility_view.dart,encounters_view.dart}`; `lib/features/calendar/presentation/widgets/{board_calendar.dart,day_detail_panel.dart,calendar_legend.dart}`.
+
+Modificados: `pubspec.yaml` (deps), `lib/main.dart` (locale + `initializeDateFormatting`), `lib/features/tracking/data/tracking_dao.dart` (3 lecturas globales), `lib/features/tracking/data/tracking_repository.dart` (usar el combinador de core), `lib/features/profiles/presentation/screens/women_list_screen.dart` (icono de entrada).
+
+#### Olas
+
+1. **Ola 0 — dependencias y localización.** `pubspec.yaml` + `main.dart`; `test/widget_test.dart` sigue verde.
+   *Criterio:* `flutter test` verde y `MaterialApp` con `es_ES` (el test de arranque lo verifica).
+2. **Ola 1 — `CycleTimeline`.** Timeline pura + `test/features/prediction/domain/cycle_timeline_test.dart`.
+   *Criterio:* fase, ventana fértil, ovulación y menstruación correctas por fecha en rangos pasados y futuros; sin datos → todo `false`/`null`; fronteras (primer y último día de ventana, cambio de mes y de ciclo) y `esEstimado` distinguiendo periodos reales de proyectados.
+3. **Ola 2 — lecturas globales, dominio y datos de calendar.** 3 métodos en `TrackingDao`, extracción de `combineLatest`, `calendar_board.dart`, `day_mark.dart`, `CalendarRepository` y providers. Tests: `calendar_board_test.dart` (agregación pura) y `calendar_repository_test.dart` (reactividad con DB en memoria: insertar periodo/ovulación/síntoma/encuentro re-emite).
+   *Criterio:* una sola suscripción alimenta todo el dashboard; dos mujeres el mismo día producen dos marcas; un encuentro de dos mujeres marca el día para ambas; cambiar un dato emite un board nuevo sin consultas por mujer (N+1 evitado).
+4. **Ola 3 — vistas Semana y Mes.** `board_calendar.dart` compartido, `day_detail_panel.dart`, `calendar_legend.dart`, `calendar_home_screen.dart` con `TabBar`, `week_view.dart`, `month_view.dart`. Tests: `calendar_home_test.dart` y `week_month_view_test.dart` con `clockProvider` fijado.
+   *Criterio:* 7 días / mes completo con marcas por color de mujer (máx. 4 puntos + «+N»); seleccionar un día muestra fase y eventos de cada mujer; navegar de mes no vuelve a consultar la DB; mes sin datos se ve vacío sin crash.
+5. **Ola 4 — vista Fertilidad.** `fertility_view.dart` + `fertility_view_test.dart`.
+   *Criterio:* solo aparecen mujeres con ventana fértil que intersecta la semana en curso, con fechas exactas y etiqueta «estimado» cuando no hay ciclos reales; estado vacío con copy en español.
+6. **Ola 5 — vista Encuentros.** `encounters_view.dart` + `encounters_view_test.dart`.
+   *Criterio:* lista descendente reutilizando `EncounterCard`; chips «Todas» + una por mujer con contador; el filtro reduce la lista; estado vacío.
+7. **Ola 6 — entrada al dashboard.** Icono en `WomenListScreen` + test de navegación (pulsa el icono y verifica que se monta `CalendarHomeScreen` con las 4 pestañas).
+8. **Ola 7 — cierre.** `dart format`, `flutter analyze`, `flutter test`, `flutter build apk --debug`, y `docs(calendar)` actualizando esta sección con el resultado real (patrón de `fixs.md`).
+
+#### Extensiones del andamiaje de tests
+
+`test/support/widget_harness.dart` gana `seedOvulation`, `seedSymptom` y un override de reloj fijo (`clockProvider`) para fechas deterministas. Se respetan las reglas vigentes: sembrar y leer dentro de `runReal`, cerrar con `closeTestDatabase` dentro del cuerpo del test, y `ensureVisible` + `pump` antes de pulsar widgets al final de un scroll.
+
+#### Riesgos y límites aceptados
+
+- Las ventanas fértiles de ciclos pasados o futuros son proyecciones con la media; se marcan como estimadas y la UI no las presenta como hechos.
+- Horizonte de proyección de ~18 meses hacia delante: más allá no se pintan marcas estimadas (se documenta en la leyenda, no es un error).
+- Sin rutas nombradas no hay deep links a una vista concreta; se asume (fuera de alcance).
+- Mes con muchas mujeres: se limitan los puntos por día a 4 + contador para no romper el layout.
+- `table_calendar` queda pineado; no se actualiza sin actualizar Dart.
+
+### Fase 7: resultado
+
+Cerrada en la rama `feature/fase-7-vistas` con **11 commits** y **55 tests nuevos** (257 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni código generado nuevo.
+
+| Vista | Pestaña | Implementación |
+|---|---|---|
+| Semana | `Semana` | `BoardCalendar` en `CalendarFormat.week` + panel del día seleccionado |
+| Mes | `Mes` | `BoardCalendar` en `CalendarFormat.month` |
+| Fertilidad | `Fertilidad` | `FertilityView`: ventana que intersecta la semana, fechas, ovulación y cuenta atrás |
+| Encuentros | `Encuentros` | `EncountersBoardView`: `EncounterCard` reutilizada y chips «Todas» + una por mujer con contador |
+
+Entrada: icono `calendar_month_outlined` en el `AppBar` de `WomenListScreen`, junto a la campana de alertas. Composición: una única suscripción a los cinco streams globales (perfiles, periodos, ovulaciones, síntomas, encuentros) mediante `combineLatest5` en `lib/core/async/combine_latest.dart`.
+
+Desviaciones respecto al plan, todas por simplificación y sin recortar alcance:
+
+- Una sola `BoardView` con el `CalendarFormat` como parámetro, en lugar de `week_view.dart` + `month_view.dart`: los dos envoltorios no aportaban nada.
+- `DayDetail` añade `encuentros` y `esEstimado`: el panel debía mostrar con quién se acostó ese día y distinguir las proyecciones.
+- `fertileInWeek` devuelve `FertileWeekEntry` (mujer, fechas de la ventana, ovulación y `esEstimado`) en lugar de `WomanCalendar`, porque la vista necesita las fechas exactas.
+- `startOfWeek` se añadió al dominio para que la vista y los tests compartan el criterio de lunes.
+- El dashboard abre con dos pestañas y las olas 4 y 5 añaden la tercera y la cuarta, para no dejar pestañas vacías en ningún commit.
+- Las marcas se calculan para el mes enfocado ± 45 días en cada build; si el número de perfiles o registros creciera, el siguiente paso sería memoizar por mes visible y mover el filtro de rango a SQL.
+
+Límites que se mantienen: proyección de ciclos a ~18 meses (`CalendarRepository.defaultHorizonte`), máximo 4 glifos por celda y «+N», ventanas de ciclos proyectados atenuadas y etiquetadas como estimadas, y ausencia de deep links (sin `go_router`).
 
 ---
 

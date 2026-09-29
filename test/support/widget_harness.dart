@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/core/db/app_database_provider.dart';
+import 'package:ciclotrack/core/time/clock.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_repository.dart';
@@ -16,6 +17,7 @@ import 'package:ciclotrack/features/profiles/domain/woman_draft.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
+import 'package:ciclotrack/features/tracking/domain/tracking_options.dart';
 
 /// Andamiaje común de los tests de widget: base en memoria, montaje de la
 /// pantalla con `appDatabaseProvider` overridado y siembra de datos.
@@ -183,4 +185,65 @@ Future<void> seedAlertSettings(
     final row = await dao.getOrCreate();
     await dao.updateSettings(row.copyWith(masterEnabled: masterEnabled));
   });
+}
+
+/// Inserta un registro de ovulación y devuelve su id.
+Future<int> seedOvulation(
+  WidgetTester tester,
+  AppDatabase db, {
+  required int womanId,
+  required DateTime date,
+  double? temperature,
+  String? cervicalMucus,
+  bool? lhTest,
+}) {
+  return runReal(
+    tester,
+    () => TrackingRepository(TrackingDao(db)).createOvulation(
+      womanId,
+      OvulationDraft(
+        date: date,
+        temperature: temperature,
+        cervicalMucus: cervicalMucus,
+        lhTest: lhTest,
+      ),
+    ),
+  );
+}
+
+/// Inserta un síntoma y devuelve su id.
+Future<int> seedSymptom(
+  WidgetTester tester,
+  AppDatabase db, {
+  required int womanId,
+  required DateTime date,
+  String? type,
+  int severity = 1,
+  String notes = '',
+}) {
+  return runReal(
+    tester,
+    () => TrackingRepository(TrackingDao(db)).createSymptom(
+      womanId,
+      SymptomDraft(
+        date: date,
+        type: type ?? symptomTypes.first,
+        severity: severity,
+        notes: notes,
+      ),
+    ),
+  );
+}
+
+/// Fija el reloj de la aplicación para que "hoy" sea determinista en tests.
+Override fixedClock(DateTime now) =>
+    clockProvider.overrideWithValue(_FixedClock(now));
+
+class _FixedClock implements Clock {
+  const _FixedClock(this._now);
+
+  final DateTime _now;
+
+  @override
+  DateTime now() => _now;
 }
