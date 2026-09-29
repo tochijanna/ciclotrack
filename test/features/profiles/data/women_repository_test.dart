@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -22,6 +23,68 @@ void main() {
   });
 
   group('WomenRepository', () {
+    test('watchAllProfiles emits when tags change', () async {
+      final first = await repo.create(
+        const WomanDraft(name: 'María', initials: 'MR'),
+      );
+      final emissions = <List<WomanProfile>>[];
+      final sub = repo.watchAllProfiles().listen(emissions.add);
+      await pumpEventQueue();
+
+      await dao.replaceTags(first, ['Amiga']);
+      await pumpEventQueue();
+      await sub.cancel();
+
+      expect(emissions.last.single.tags, ['Amiga']);
+    });
+
+    test('watchAllProfiles emits when a woman name changes', () async {
+      final id = await repo.create(
+        const WomanDraft(name: 'María', initials: 'MR'),
+      );
+      final emissions = <List<WomanProfile>>[];
+      final sub = repo.watchAllProfiles().listen(emissions.add);
+      await pumpEventQueue();
+
+      await repo.update(id, const WomanDraft(name: 'Nuevo', initials: 'NV'));
+      await pumpEventQueue();
+      await sub.cancel();
+
+      expect(emissions.last.single.woman.name, 'Nuevo');
+    });
+
+    test('watchAllProfiles emits when tags are unlinked', () async {
+      final id = await repo.create(
+        const WomanDraft(name: 'María', initials: 'MR', tags: ['Amiga']),
+      );
+      final emissions = <List<WomanProfile>>[];
+      final sub = repo.watchAllProfiles().listen(emissions.add);
+      await pumpEventQueue();
+
+      await dao.unlinkAllTags(id);
+      await pumpEventQueue();
+      await sub.cancel();
+
+      expect(emissions.last.single.tags, isEmpty);
+    });
+
+    test('watchAllProfiles emits when a global tag is renamed', () async {
+      await repo.create(
+        const WomanDraft(name: 'María', initials: 'MR', tags: ['Amiga']),
+      );
+      final emissions = <List<WomanProfile>>[];
+      final sub = repo.watchAllProfiles().listen(emissions.add);
+      await pumpEventQueue();
+
+      await (db.update(db.tags)..where((t) => t.name.equals('Amiga'))).write(
+        const TagsCompanion(name: Value('Amiga cercana')),
+      );
+      await pumpEventQueue();
+      await sub.cancel();
+
+      expect(emissions.last.single.tags, ['Amiga cercana']);
+    });
+
     test('create inserts a woman and returns id', () async {
       const draft = WomanDraft(
         name: 'María',

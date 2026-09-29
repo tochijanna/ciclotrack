@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,6 +9,7 @@ import 'package:ciclotrack/features/profiles/domain/woman_draft.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_repository.dart';
 import 'package:ciclotrack/features/encounters/domain/encounter_draft.dart';
+import 'package:ciclotrack/features/encounters/domain/encounter_event.dart';
 
 void main() {
   late AppDatabase db;
@@ -36,6 +38,141 @@ void main() {
   });
 
   group('EncounterRepository', () {
+    test('watchAll emits when a participant changes', () async {
+      final id = await repo.create(
+        EncounterDraft(
+          encounterTime: DateTime(2026, 9, 5),
+          protection: 'Condón',
+          participants: [
+            EncounterParticipantDraft(
+              womanId: womanId1,
+              relationshipType: 'Vaginal',
+            ),
+          ],
+        ),
+      );
+      final emissions = <List<EncounterWithWomen>>[];
+      final sub = repo.watchAll().listen(emissions.add);
+      await pumpEventQueue();
+
+      await encounterDao
+          .updateEncounterWithWomen((await encounterDao.getById(id))!, [
+            EncounterWomenCompanion.insert(
+              encounterId: id,
+              womanId: womanId1,
+              relationshipType: const Value('Oral'),
+            ),
+          ]);
+      await pumpEventQueue();
+      await sub.cancel();
+
+      expect(
+        emissions.last.single.participants.single.relationshipType,
+        'Oral',
+      );
+    });
+
+    test('watchAll emits when a participant is removed', () async {
+      final id = await repo.create(
+        EncounterDraft(
+          encounterTime: DateTime(2026, 9, 5),
+          protection: 'Condón',
+          participants: [
+            EncounterParticipantDraft(
+              womanId: womanId1,
+              relationshipType: 'Vaginal',
+            ),
+            EncounterParticipantDraft(
+              womanId: womanId2,
+              relationshipType: 'Oral',
+            ),
+          ],
+        ),
+      );
+      final emissions = <List<EncounterWithWomen>>[];
+      final sub = repo.watchAll().listen(emissions.add);
+      await pumpEventQueue();
+
+      await encounterDao
+          .updateEncounterWithWomen((await encounterDao.getById(id))!, [
+            EncounterWomenCompanion.insert(
+              encounterId: id,
+              womanId: womanId1,
+              relationshipType: const Value('Vaginal'),
+            ),
+          ]);
+      await pumpEventQueue();
+      await sub.cancel();
+
+      expect(emissions.last.single.participants, hasLength(1));
+    });
+
+    test('watchAll emits when a participant name changes', () async {
+      await repo.create(
+        EncounterDraft(
+          encounterTime: DateTime(2026, 9, 5),
+          protection: 'Condón',
+          participants: [
+            EncounterParticipantDraft(
+              womanId: womanId1,
+              relationshipType: 'Vaginal',
+            ),
+          ],
+        ),
+      );
+      final emissions = <List<EncounterWithWomen>>[];
+      final sub = repo.watchAll().listen(emissions.add);
+      await pumpEventQueue();
+
+      await (db.update(db.women)..where((t) => t.id.equals(womanId1))).write(
+        const WomenCompanion(name: Value('Nombre nuevo')),
+      );
+      await pumpEventQueue();
+      await sub.cancel();
+
+      expect(
+        emissions.last.single.participants.single.womanName,
+        'Nombre nuevo',
+      );
+    });
+
+    test('watchByWoman emits when participant links change', () async {
+      final idToDelete = await repo.create(
+        EncounterDraft(
+          encounterTime: DateTime(2026, 9, 1),
+          protection: 'Condón',
+          participants: [
+            EncounterParticipantDraft(
+              womanId: womanId1,
+              relationshipType: 'Vaginal',
+            ),
+          ],
+        ),
+      );
+      final keptId = await repo.create(
+        EncounterDraft(
+          encounterTime: DateTime(2026, 9, 2),
+          protection: 'Natural',
+          participants: [
+            EncounterParticipantDraft(
+              womanId: womanId1,
+              relationshipType: 'Oral',
+            ),
+          ],
+        ),
+      );
+      final emissions = <List<EncounterWithWomen>>[];
+      final sub = repo.watchByWoman(womanId1).listen(emissions.add);
+      await pumpEventQueue();
+
+      await repo.delete(idToDelete);
+      await pumpEventQueue();
+      await sub.cancel();
+
+      expect(emissions.last, hasLength(1));
+      expect(emissions.last.single.encounterId, keptId);
+    });
+
     test('create inserts encounter with one woman', () async {
       final id = await repo.create(
         EncounterDraft(
