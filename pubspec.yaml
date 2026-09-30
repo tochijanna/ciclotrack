@@ -55,6 +55,14 @@ dependencies:
   # against the 2.1.4 that the Flutter SDK pins, so it is pinned exactly.
   fl_chart: 1.0.0
 
+  # Backup (phase 9). Versiones limitadas por Dart 3.8.1 / Flutter 3.32.7:
+  # csv 8.x y pdf 3.13.x piden Dart >=3.10; file_picker 13.x y share_plus 13.x
+  # piden Flutter >=3.38. Con estos carets pub resuelve al techo compatible.
+  csv: ^6.0.0
+  pdf: ^3.11.3
+  archive: ^3.6.1
+  file_picker: ^11.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
