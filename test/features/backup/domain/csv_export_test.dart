@@ -83,6 +83,18 @@ void main() {
       expect(bytes.take(3), [0xEF, 0xBB, 0xBF]);
     });
 
+    test('cada miembro declara su tamaño real en bytes', () {
+      final archive = descomprimir(buildCsvBundle(documento()));
+
+      for (final file in archive.files) {
+        final bytes = file.content as List<int>;
+        // Con el tamaño en caracteres (lo que hace `ArchiveFile.string`), los
+        // emojis y acentos dejan el encabezado del ZIP corto y los lectores
+        // estrictos ven un CRC roto.
+        expect(file.size, bytes.length, reason: file.name);
+      }
+    });
+
     test('las tablas sin filas llevan solo el encabezado', () {
       final archive = descomprimir(buildCsvBundle(documento()));
 
