@@ -1,10 +1,11 @@
 # AGENTS.md
 
 ## Project state
-- **Phases 0–7 done** (scaffold + gitflow, drift schema + prediction engine, profiles, tracking, encounters, alerts with local notifications, consolidated calendar views). On `develop`.
+- **Phases 0–8 done** (scaffold + gitflow, drift schema + prediction engine, profiles, tracking, encounters, alerts with local notifications, consolidated calendar views, reports and statistics). On `develop`.
 - Drift schema **v3, 10 tables**: `women`, `tags`, `woman_tags`, `period_logs`, `ovulation_logs`, `symptoms`, `encounters`, `encounter_women`, `reminders`, `alert_settings`. Feature DAOs, prediction engine, business UI and notification scheduling are implemented and tested.
 - Consolidated views live in `lib/features/calendar/`: week/month grid on `table_calendar`, fertility and encounters views, opened from the calendar icon in the profile list. `CycleTimeline` (`lib/features/prediction/domain/cycle_timeline.dart`) answers phase/fertile window for **any** date, and flags projected cycles as estimated.
-- **Open work: phases 8–10** (reports, backup, medication + polish). See `planDeDesarrollo.md`.
+- Reports live in `lib/features/reports/`: pure aggregation in `domain/report_builder.dart` over the calendar board (extended with each woman's period logs) and fl_chart graphs in `presentation/`, opened from the insights icon. Charts are not asserted pixel-wise: the numbers are tested in the domain and the widgets only as present.
+- **Open work: phases 9–10** (backup, medication + polish). See `planDeDesarrollo.md`.
 - Active gitflow branches: `main` (release history) and `develop` (integration). `feature/*` branches are created per phase task and merged into `develop`.
 - **Toolchain lives inside the repo at `.toolchain/` and is git-ignored:** Flutter 3.32.7 + Android SDK platforms 34/35 (build-tools 34.0.0) + OpenJDK 17 (system, `/usr/lib/jvm/java-17-openjdk`). Before any Flutter command, source the env:
   ```bash
@@ -15,7 +16,7 @@
   dart run build_runner build --delete-conflicting-outputs
   ```
 - Deleting `.toolchain/` fully uninstalls Flutter/SDK (no system-wide changes).
-- Drift version pinned to `2.31.0` (Dart 3.8.1); newer drift/riverpod require Dart ≥3.10 — do not bump without a Dart upgrade.
+- Drift version pinned to `2.31.0` (Dart 3.8.1); newer drift/riverpod require Dart ≥3.10 — do not bump without a Dart upgrade. Same for `fl_chart`: exactly `1.0.0`, because 1.1.x resolves but **does not compile** against the `vector_math 2.1.4` the SDK pins. Version solving and `flutter analyze` are not enough: verify every new dependency by compiling a widget test **and** `flutter build apk`.
 
 ## Reference docs (in priority order, all in Spanish)
 1. `Especificaciones.md` — functional requirements (source of truth for the business domain).
@@ -29,7 +30,7 @@
 - Prediction engine lives in `lib/features/prediction/domain/`; estimated ovulation = average cycle − 14 (standard luteal phase), fertility window = ovulation −5 / +2, defaults 24–32/28.
 - Local notifications via **flutter_local_notifications 20.1.0** + **timezone / flutter_timezone**; pending alerts are recomputed at start-up and after any period, encounter or settings change.
 - Shared runtime helpers: `lib/core/db/` (database + providers) and `lib/core/time/clock.dart` (`clockProvider`, injectable clock for tests).
-- Not installed yet, added per phase: `table_calendar` (7), `fl_chart` (8), `csv` + `pdf` + `file_picker` + `share_plus` (9), `intl` / `go_router` when needed.
+- Not installed yet, added per phase: `csv` + `pdf` + `file_picker` + `share_plus` (9); `go_router` only if needed.
 - The app is 100 % local/offline, no cloud. No secrets, no sensitive data in logs.
 
 ## Mandatory conventions (from BUENAS_PRACTICAS.md)

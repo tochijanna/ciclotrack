@@ -99,6 +99,7 @@ class CalendarRepository {
                   engine: _engine,
                 ),
                 eventos: eventosPorMujer[profile.woman.id] ?? const [],
+                periodos: periodosPorMujer[profile.woman.id] ?? const [],
               ),
           ],
           encuentros: encuentros,

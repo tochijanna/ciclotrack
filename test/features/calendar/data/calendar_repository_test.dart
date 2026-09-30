@@ -96,6 +96,9 @@ void main() {
     expect(board.women.single.woman.color, 0xFF123456);
     expect(board.women.single.eventos, hasLength(2));
     expect(board.encuentros, hasLength(1));
+    expect(board.women.single.periodos, hasLength(1));
+    expect(board.women.single.periodos.single.startDate, DateTime(2026, 9, 1));
+    expect(board.women.single.periodos.single.endDate, DateTime(2026, 9, 5));
 
     final marks = marksByDay(
       board,
@@ -173,6 +176,7 @@ void main() {
     final board = await repo.watchBoard(today: today).first;
 
     expect(board.women.single.timeline.spans, isEmpty);
+    expect(board.women.single.periodos, isEmpty);
     expect(marksByDay(board, desde: today, hasta: today), isEmpty);
     expect(detailsFor(board, today).single.fase, isNull);
   });

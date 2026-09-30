@@ -1,6 +1,7 @@
 import '../../encounters/domain/encounter_event.dart';
 import '../../prediction/domain/cycle_phase.dart';
 import '../../prediction/domain/cycle_timeline.dart';
+import '../../prediction/domain/prediction_calculator.dart';
 import '../../tracking/domain/tracking_event.dart';
 import 'day_mark.dart';
 
@@ -30,6 +31,7 @@ class WomanCalendar {
     required this.woman,
     required this.timeline,
     required this.eventos,
+    required this.periodos,
   });
 
   final CalendarWoman woman;
@@ -38,6 +40,10 @@ class WomanCalendar {
   /// Ovulaciones y síntomas registrados; los periodos ya se representan a
   /// través de la línea temporal.
   final List<TrackingEvent> eventos;
+
+  /// Periodos registrados con su inicio y fin reales, que los reportes usan
+  /// para recalcular duraciones de ciclo y de menstruación.
+  final List<PeriodLogInput> periodos;
 }
 
 /// Estado consolidado que consumen las cuatro vistas.

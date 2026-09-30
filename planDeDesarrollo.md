@@ -52,7 +52,7 @@ Las reglas de dominio requieren tests unitarios. Las fuentes reactivas usan `Str
 | `flutter_local_notifications` | Notificaciones locales | Instalado |
 | `timezone` + `flutter_timezone` | Programación por zona horaria | Instalado |
 | `table_calendar` | Vistas semana/mes | Instalado (3.2.1) |
-| `fl_chart` | Reportes/estadísticas | Pendiente, Fase 8 |
+| `fl_chart` | Reportes/estadísticas | `1.0.0`, Fase 8 — 1.1.x declara `vector_math ^2.1` pero usa API de 2.2 y no compila |
 | `csv` + `pdf` + `file_picker` + `share_plus` | Backup manual | Pendiente, Fase 9 |
 | `intl` | Fechas y localización es-ES | Instalado (0.20.2) + `flutter_localizations` |
 | `go_router` | Navegación avanzada | Pendiente según necesidad |
@@ -121,7 +121,7 @@ La predicción se muestra en la tarjeta superior del tracking individual y se ac
 | **5** | Predicción visible, riesgo, fertilidad, periodo, humor y libido | ✅ Completada | Predicción por mujer |
 | **6** | Alertas locales y ajustes persistidos en Drift | ✅ Completada | Notificaciones locales |
 | **7** | Vistas consolidadas: Semana, Mes, Fertilidad y Encuentros | ✅ Completada | Dashboard |
-| **8** | Reportes y estadísticas con gráficos | Pendiente | Análisis |
+| **8** | Reportes y estadísticas con gráficos | ✅ Completada | Análisis |
 | **9** | Export/import manual JSON, CSV y PDF | Pendiente | Backup |
 | **10** | Medicación, recordatorios personalizados, ajustes finales, iconos y pulido | Pendiente | Versión 1.0 |
 
@@ -270,6 +270,111 @@ Desviaciones respecto al plan, todas por simplificación y sin recortar alcance:
 - Las marcas se calculan para el mes enfocado ± 45 días en cada build; si el número de perfiles o registros creciera, el siguiente paso sería memoizar por mes visible y mover el filtro de rango a SQL.
 
 Límites que se mantienen: proyección de ciclos a ~18 meses (`CalendarRepository.defaultHorizonte`), máximo 4 glifos por celda y «+N», ventanas de ciclos proyectados atenuadas y etiquetadas como estimadas, y ausencia de deep links (sin `go_router`).
+
+### Fase 8: plan (reportes y estadísticas)
+
+**Rama:** `feature/fase-8-reportes` desde `develop`. **Schema:** sin cambios (sigue en v3); no hay migración ni código generado nuevo. **Alcances de commit:** `reports` (principal), con `calendar` en la extensión del tablero.
+
+#### Alcance (Especificaciones.md §9)
+
+| Punto de la spec | Entregable |
+|---|---|
+| Por mujer: gráficos de ciclos, duración media, síntomas recurrentes | Evolución de la duración del ciclo (línea), KPIs de duración media/mín/máx, síntomas ordenados por frecuencia (barras) |
+| Por encuentro: resumen de encuentros por mujer (quién participó) | Barras de encuentros por mujer + reparto por tipo de protección + lista con total, último y resultados |
+| Por mes: resumen de fertilidad y encuentros | Últimos 12 meses: encuentros, sin protección, días fértiles y periodos iniciados |
+| Globales: días de fertilidad total, encuentros sin protección, etc. | KPIs: perfiles, ciclos, media de ciclo, encuentros, % sin protección, días fértiles en 12 meses y mujer con más encuentros |
+
+#### Decisiones
+
+- **D1 — Una sola fuente de datos.** Los reportes reutilizan `calendarBoardProvider` en lugar de componer su propio agregado. Para ello `WomanCalendar` gana `periodos` (`List<PeriodLogInput>`), que es lo único que faltaba: el tablero ya trae perfiles, líneas temporales, ovulaciones, síntomas y encuentros. Descartado un `ReportsRepository` con su propia combinación de los cinco streams: serían dos fuentes de verdad del mismo agregado (precedente de composición cross-feature: `alerts`). Si aparece un tercer consumidor, se extrae un lector compartido.
+- **D2 — Todo el cálculo en dominio puro.** `reports/domain/` produce series y agregados como datos (`PuntoSerie`, `BarraValor`, `ReportKpis`); los widgets solo los pintan. Los gráficos no son testeables, los números sí: es la única forma de verificar de verdad un reporte (y cumple la regla de tests obligatorios en `domain/`).
+- **D3 — `fl_chart` 1.0.0, pin exacto.** La resolución de versiones deja instalar 1.1.0 (declara `vector_math ^2.1`), pero **no compila**: usa `Matrix4.translateByDouble`, que solo existe en vector_math 2.2, y el SDK 3.32.7 fija 2.1.4. `flutter analyze` no lo detecta porque no analiza el código de las dependencias; lo destapó la compilación del primer test de widget. `fl_chart >=1.1.1` directamente no resuelve. Con `^1.0.0` pub volvería a elegir 1.1.0, por eso el pin es exacto: no se sube sin subir Flutter.
+- **D4 — Ventana fija de 12 meses** (y últimos 12 ciclos por mujer). Sin selector de rango: la spec no lo pide y añadirlo multiplica estados y tests. Documentado como límite.
+- **D5 — Tipos de gráfico acotados:** `LineChart` (duración del ciclo), `BarChart` (síntomas, encuentros por mes y por mujer), `PieChart` (reparto de protección) y tarjetas de KPI. Sin `RadarChart` ni `ScatterChart`: no aportan a lo pedido.
+- **D6 — Selector de mujer** (`Todas` + una por perfil) en la propia pantalla: con «Todas» se ven los globales, el resumen por mes y los encuentros por mujer; al elegir una mujer, sus ciclos, sus síntomas y sus encuentros. Es lo que permite cubrir «por mujer» y «global» sin dos pantallas.
+- **D7 — «Sin protección» = `protección == 'Ninguno'`.** «Natural» no se reinterpreta como sin protección: el reparto completo por tipo está en el gráfico de protección, y la tarjeta indica la definición.
+- **D8 — Sin exportar.** CSV/PDF son la fase 9; esta fase solo agrega y pinta.
+- **D9 — Entrada:** icono `insights_outlined` en el `AppBar` de `WomenListScreen`, junto al calendario y las alertas. Con cuatro acciones el `AppBar` queda justo en pantallas estrechas: si molesta, la fase 10 las colapsa en un menú overflow (nota, no trabajo de esta fase).
+
+#### Contratos nuevos
+
+```dart
+// lib/features/reports/domain/report_models.dart
+class PuntoSerie { final DateTime fecha; final double valor; }
+class BarraValor { final String etiqueta; final double valor; }
+class ReportKpis {
+  int perfiles, ciclos, encuentros, encuentrosSinProteccion, diasFertilesAnio;
+  double mediaCiclo, mediaMenstruacion, porcentajeSinProteccion;
+  String? mujerConMasEncuentros; int maxEncuentros;
+}
+class WomanReport {
+  CalendarWoman woman; ReportKpis kpis; List<PuntoSerie> ciclos;
+  List<BarraValor> sintomas; DateTime? proximoPeriodo;
+  List<BarraValor> proteccion; List<EncounterWithWomen> encuentros;
+}
+class MonthReport {
+  DateTime mes; int encuentros, sinProteccion, diasFertiles, periodos;
+}
+class ReportsBoard {
+  ReportKpis globales; ReportKpis? mujerSeleccionada; List<WomanReport> mujeres;
+  List<MonthReport> meses; List<BarraValor> proteccion; List<BarraValor> encuentrosPorMujer;
+}
+
+ReportsBoard buildReports(CalendarBoard board, {required DateTime today, int meses = 12});
+
+// lib/features/reports/presentation/providers/reports_providers.dart
+final selectedWomanProvider = NotifierProvider<SelectedWomanNotifier, int?>;  // null = Todas
+final reportsBoardProvider = Provider<AsyncValue<ReportsBoard>>;  // whenData sobre calendarBoardProvider + predictionDayProvider
+```
+
+Y en `lib/features/calendar/domain/calendar_board.dart`: `WomanCalendar` gana `List<PeriodLogInput> periodos` (poblado por `CalendarRepository` desde `watchAllPeriodLogs()`).
+
+#### Ficheros
+
+Nuevos: `lib/features/reports/domain/{report_models.dart,report_builder.dart}`; `lib/features/reports/presentation/providers/reports_providers.dart`; `lib/features/reports/presentation/screens/reports_screen.dart`; `lib/features/reports/presentation/widgets/{kpi_card.dart,ciclos_chart.dart,sintomas_chart.dart,meses_chart.dart,proteccion_chart.dart,encuentros_por_mujer_chart.dart}`.
+
+Modificados: `pubspec.yaml` (`fl_chart`), `lib/features/calendar/domain/calendar_board.dart` y `lib/features/calendar/data/calendar_repository.dart` (periodos en el tablero), `lib/features/profiles/presentation/screens/women_list_screen.dart` (icono de entrada).
+
+#### Olas
+
+1. **Ola 0 — dependencia y periodos en el tablero.** `fl_chart ^1.1.0` + `WomanCalendar.periodos` (+ el poblado en `CalendarRepository`). *Criterio:* los tests del tablero siguen verdes y uno nuevo comprueba que cada mujer llega con sus periodos normalizados.
+2. **Ola 1 — dominio de reportes.** `buildReports` con todas las series y KPIs + `test/features/reports/domain/report_builder_test.dart`. *Criterio:* duración de ciclo por ciclo y media/mín/máx correctas; síntomas ordenados por frecuencia y con severidad media; ventana de 12 meses con corte exacto (13 meses atrás queda fuera); agregado de encuentros con «sin protección» = «Ninguno»; días fértiles por mes contados con la línea temporal; sin datos → series vacías y KPIs a cero; un solo ciclo → línea sin puntos.
+3. **Ola 2 — pantalla, KPIs y sección por mujer.** `reports_screen.dart` con el selector, tarjetas de KPI y los gráficos de ciclos y síntomas. Tests: `reports_screen_test.dart` (KPIs con datos sembrados, `LineChart`/`BarChart` presentes, el selector cambia el contenido, estado vacío sin perfiles).
+4. **Ola 3 — mes, encuentros y globales.** Gráfico de meses con encuentros y sin protección, reparto de protección, encuentros por mujer y KPIs globales + tests.
+5. **Ola 4 — entrada desde la lista de perfiles.** Icono + test de navegación.
+6. **Ola 5 — cierre.** `dart format`, `flutter analyze`, `flutter test`, `flutter build apk --debug` y `docs(reports)` con el resultado real (patrón de la fase 7).
+
+#### Riesgos y límites aceptados
+
+- `fl_chart` queda pineado en 1.0.0 mientras el SDK fije `vector_math 2.1.4`.
+- Ventana fija de 12 meses, sin selector de rango; los meses anteriores al primer registro salen a cero (no es un error).
+- La verificación de los gráficos es por presencia de widget y por el dominio: **no hay golden tests**, así que la forma exacta de las curvas se valida a mano sobre el APK.
+- Los reportes heredan los límites del tablero: horizonte de ~18 meses para lo proyectado y filtrado por rango en memoria.
+- Con cuatro acciones en el `AppBar` la cabecera queda justa en pantallas estrechas (se colapsa en la fase 10 si hace falta).
+
+### Fase 8: resultado
+
+Cerrada en la rama `feature/fase-8-reportes` con **9 commits** y **26 tests nuevos** (283 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni codegen. Los reportes se calculan sobre el tablero consolidado (extendido con los periodos registrados de cada mujer): una sola fuente de datos, sin un segundo agregado de los mismos cinco streams.
+
+| Punto de la spec | Implementación |
+|---|---|
+| Por mujer | KPIs (ciclos, duración media de ciclo y menstruación, encuentros, sin protección, días fértiles, próximo periodo) + `LineChart` de duración por ciclo + `BarChart` de síntomas recurrentes |
+| Por encuentro | `BarChart` de encuentros por mujer (con ceros) + `PieChart` de reparto por protección |
+| Por mes | `BarChart` de encuentros y sin protección por mes + detalle de los 12 meses con días fértiles y periodos |
+| Globales | KPIs de perfiles, ciclos, medias, encuentros, % sin protección, días fértiles y perfil con más encuentros |
+
+Ventanas, explícitas en cada tarjeta: ciclos, medias y series usan **todo el historial** (la línea se recorta a 12 ciclos); encuentros, protección, síntomas, periodos y días fértiles usan los **últimos 12 meses naturales**, mes en curso incluido y con días fértiles proyectados.
+
+Hallazgo relevante, aplicable a las fases siguientes: **`fl_chart` 1.1.0 no compila con el `vector_math 2.1.4` que fija el SDK** (usa `Matrix4.translateByDouble`, API de 2.2). `dart pub add --dry-run` lo daba por bueno porque la restricción declarada permite 2.1, y `flutter analyze` tampoco lo detecta porque no analiza el código de las dependencias: lo destapó la compilación del primer test de widget. El pin es exacto en **1.0.0** (con `^1.0.0` pub volvería a elegir 1.1.0, y 1.1.1+ ni resuelve). Lección: toda dependencia nueva se valida compilando un test **y** el APK, no solo resolviendo versiones.
+
+Desviaciones respecto al plan, por simplificación y sin recortar alcance:
+
+- Los cinco gráficos viven en `report_charts.dart` y las tarjetas en `kpi_card.dart`, en lugar de seis ficheros: comparten estilo, ejes y leyenda.
+- Las secciones de la pantalla son widgets privados de `reports_screen.dart` (solo se usan ahí).
+- El informe individual no lista sus encuentros (los KPIs y el reparto de protección los resumen; el listado está en la pestaña Encuentros del calendario).
+- Caso límite explícito: si una mujer tiene menos de dos ciclos cerrados, el gráfico de línea avisa en lugar de dibujar un punto suelto.
+
+Límites que se mantienen: ventana fija de 12 meses sin selector de rango, sin golden tests (la forma exacta de las curvas se valida a mano sobre el APK; los tests cubren los números y la presencia de los gráficos), y el `AppBar` de la lista de perfiles acumula ya cuatro acciones.
 
 ---
 

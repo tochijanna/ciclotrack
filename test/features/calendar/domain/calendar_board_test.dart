@@ -43,6 +43,12 @@ void main() {
         type: 'Acné',
       ),
     ],
+    periodos: [
+      PeriodLogInput(
+        startDate: DateTime(2026, 9, 1),
+        endDate: DateTime(2026, 9, 5),
+      ),
+    ],
   );
 
   // Bea: inicio registrado sin fin; ventana fértil 18-25 sep.
@@ -59,6 +65,7 @@ void main() {
       horizonte: limite,
     ),
     eventos: const [],
+    periodos: [PeriodLogInput(startDate: DateTime(2026, 9, 10))],
   );
 
   // Ce: sin registros.
@@ -72,6 +79,7 @@ void main() {
     ),
     timeline: CycleTimeline.from(logs: const [], horizonte: limite),
     eventos: const [],
+    periodos: const [],
   );
 
   EncounterWithWomen encuentro(

@@ -10,6 +10,7 @@ import '../../../encounters/presentation/screens/encounter_form_screen.dart';
 import '../../../encounters/presentation/screens/encounters_screen.dart';
 import '../../../alerts/presentation/screens/alerts_screen.dart';
 import '../../../calendar/presentation/screens/calendar_home_screen.dart';
+import '../../../reports/presentation/screens/reports_screen.dart';
 
 class WomenListScreen extends ConsumerWidget {
   const WomenListScreen({super.key});
@@ -30,6 +31,13 @@ class WomenListScreen extends ConsumerWidget {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const CalendarHomeScreen()),
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.insights_outlined),
+            tooltip: 'Reportes',
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const ReportsScreen())),
           ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
