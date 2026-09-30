@@ -53,7 +53,7 @@ Las reglas de dominio requieren tests unitarios. Las fuentes reactivas usan `Str
 | `timezone` + `flutter_timezone` | Programación por zona horaria | Instalado |
 | `table_calendar` | Vistas semana/mes | Instalado (3.2.1) |
 | `fl_chart` | Reportes/estadísticas | `1.0.0`, Fase 8 — 1.1.x declara `vector_math ^2.1` pero usa API de 2.2 y no compila |
-| `csv` + `pdf` + `file_picker` + `share_plus` | Backup manual | Pendiente, Fase 9 |
+| `csv` + `pdf` + `archive` + `file_picker` | Backup manual: ZIP de CSV, informe PDF e import/export por el selector del sistema | Instalado, Fase 9 — `pdf` 3.11.3 (3.12.x pide `vector_math ^2.2`), `archive` 3.6.1 (pdf exige `<4.1`), `csv` 6.0.0 y `file_picker` 11.0.3 |
 | `intl` | Fechas y localización es-ES | Instalado (0.20.2) + `flutter_localizations` |
 | `go_router` | Navegación avanzada | Pendiente según necesidad |
 | `ReorderableListView` | Orden de perfiles | Nativo, implementado |
@@ -122,7 +122,7 @@ La predicción se muestra en la tarjeta superior del tracking individual y se ac
 | **6** | Alertas locales y ajustes persistidos en Drift | ✅ Completada | Notificaciones locales |
 | **7** | Vistas consolidadas: Semana, Mes, Fertilidad y Encuentros | ✅ Completada | Dashboard |
 | **8** | Reportes y estadísticas con gráficos | ✅ Completada | Análisis |
-| **9** | Export/import manual JSON, CSV y PDF | Pendiente | Backup |
+| **9** | Export/import manual JSON, CSV y PDF | ✅ Completada | Backup |
 | **10** | Medicación, recordatorios personalizados, ajustes finales, iconos y pulido | Pendiente | Versión 1.0 |
 
 ### Fase 6: alcance actual
@@ -376,6 +376,41 @@ Desviaciones respecto al plan, por simplificación y sin recortar alcance:
 
 Límites que se mantienen: ventana fija de 12 meses sin selector de rango, sin golden tests (la forma exacta de las curvas se valida a mano sobre el APK; los tests cubren los números y la presencia de los gráficos), y el `AppBar` de la lista de perfiles acumula ya cuatro acciones.
 
+### Fase 9: resultado
+
+Cerrada en la rama `feature/fase-9-backup` con **4 commits** y **51 tests nuevos** (335 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni codegen: la copia se hace con `select` de drift y se restaura con los `Companion` generados.
+
+| Punto de la spec | Implementación |
+|---|---|
+| Copiar toda la base a un archivo local (JSON, CSV, PDF) | Pantalla propia con tres exportaciones: JSON completo, ZIP con un CSV por tabla (`manifest.json` incluido) e informe PDF A4 |
+| Importar desde un archivo | Solo JSON, el único formato completo y sin pérdidas; validación estricta y confirmación explícita antes de sustituir |
+
+Arquitectura: `domain/backup_document.dart` define el esquema de la copia (10 tablas, columnas con el nombre SQL drift, fecha `YYYY-MM-DD` e instante ISO local) y valida con mensajes en español; `data/backup_serializer.dart` traduce filas drift ↔ mapas JSON; `domain/csv_export.dart` y `domain/pdf_report.dart` son puros (`csv`/`archive`/`pdf` lo son); `data/backup_repository.dart` compone y `data/backup_file_gateway.dart` aísla el selector del sistema (SAF en Android, mismo patrón que `NotificationScheduler`). Los bytes nunca tocan el disco: se entregan y se leen en memoria.
+
+Detalles de comportamiento verificados con tests:
+
+- **Ida y vuelta exacta.** Drift guarda `DateTime` como segundos unix y lo devuelve en local; ida y vuelta conserva el segundo y reconstruye el mapa completo, emojis y acentos incluidos.
+- **Restauración atómica.** Un solo `transaction`: borrado de hijos a padres (`encounter_women` antes que `encounters`, porque esa FK no tiene cascade) e inserción de padres a hijos con los ids originales. Si algo falla (por ejemplo un `woman_tags` huérfano) revierte y la base destino queda intacta. Tras importar, `sqlite_sequence` avanza, así que un alta nueva recibe `maxId + 1`.
+- **Singleton de alertas.** Si la copia no trae fila de `alert_settings`, se recrea la fila por defecto `id=1`.
+- **Refresco tras importar.** `womenListProvider` (lee `.first`) y `availableTagsProvider` (cacheado) se refrescan a mano; las alertas se reprograman solas porque `AlertsCoordinator` escucha los cambios de las tablas relevantes.
+
+Hallazgos relevantes:
+
+- **`pdf` queda en 3.11.3, no en 3.12.** 3.12.x declara `vector_math ^2.2` y el SDK fija 2.1.4: mismo caso que `fl_chart` en la fase 8. Además `pdf` exige `archive >=3.4.0 <4.1.0`, así que el plan de añadir `archive ^4.3.0` no resuelve: se usa **`archive 3.6.1`**, que sí permite el ZIP en memoria (`ZipEncoder`/`ZipDecoder`) y evita el *fallback* de un único CSV.
+- **`utf8.decode` descarta el BOM.** Los CSV del ZIP llevan `EF BB BF` en crudo (y así se verifica), pero `utf8.decode` elimina el `U+FEFF` de cabecera; recortar un carácter «de más» rompía el encabezado.
+- **`ListToCsvConverter` escribe `null` literal** para las celdas nulas: los nulos se convierten a cadena vacía antes de convertir.
+- **Fuentes del PDF.** Helvetica usa WinAnsi, así que todo el texto pasa por un saneador que sustituye lo que quede por encima de Latin-1 por `?`: los emojis de perfiles y notas no aparecen en el informe.
+- **`pw.TableHelper.fromTextArray`** sustituye a `Table.fromTextArray`, ya deprecado.
+
+Desviaciones respecto al plan, por simplificación y sin recortar alcance:
+
+- **No se añade `share_plus`**: el selector de `FilePicker.saveFile` ya permite escribir en Descargas, Drive o cualquier proveedor registrado, y la spec solo pide copiar a un archivo local.
+- `buildPdfBlocks` recibe solo `(documento, tablero)`: el `today` que pedía el plan era redundante, porque el tablero ya trae el próximo periodo calculado.
+- `ImportSummary` devuelve solo los recuentos: la fecha de exportación ya la conoce quien aporta el documento.
+- Las secciones del informe PDF van en bloques con subtítulo propio (`Periodos registrados`, `Síntomas (12 meses)`) en lugar de dos tablas bajo el mismo encabezado.
+
+Límites aceptados: la restauración es destructiva (por eso pide confirmación y nunca se ejecuta sola); CSV y PDF son de solo lectura humana; el recorte del informe es de 200 encuentros y las notas de periodo se truncan a 60 caracteres; el `AppBar` de la lista de perfiles acumula ya cinco acciones (se colapsa en la fase 10, donde llega la pantalla de ajustes).
+
 ---
 
 ## 6. Verificación por fase
@@ -406,5 +441,6 @@ Estado actual de calidad: análisis limpio, suite completa verde y APK debug com
 - Las predicciones de humor/libido son orientativas y se basan solo en la fase del ciclo; no representan certezas sobre una persona.
 - La integración con wearables y las notificaciones push remotas no aplican al diseño offline actual.
 - El backup manual debe incluir schema, perfiles, tracking, encuentros, ajustes y futuras configuraciones de alertas.
+- La restauración de una copia sustituye todos los datos: se hace solo bajo confirmación explícita del usuario y dentro de una transacción, nunca de forma automática ni parcial.
 
 El orden sigue siendo incremental: cada fase debe ser usable, testeable y mergeada a `develop` antes de comenzar la siguiente.

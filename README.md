@@ -4,7 +4,7 @@ Aplicación Android personal para gestionar de forma privada los ciclos menstrua
 
 ## Estado
 
-Fases 0–8 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas de calendario y reportes con gráficos). Schema drift **v3 con 10 tablas**. Pendientes: fases 9–10 (backup e import/export, medicación y pulido). Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
+Fases 0–9 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas de calendario, reportes con gráficos y copia de seguridad manual). Schema drift **v3 con 10 tablas**. Pendiente: fase 10 (medicación y pulido). Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
 
 ## Stack
 
@@ -16,6 +16,7 @@ Fases 0–8 completadas (scaffold, base de datos + motor de predicción, perfile
 | Notificaciones | flutter_local_notifications 20.1.0, timezone + flutter_timezone |
 | Calendario | table_calendar 3.2.1 + intl 0.20.2 (es-ES) |
 | Gráficos | fl_chart 1.0.0 (pin exacto: 1.1.x no compila con el `vector_math` del SDK) |
+| Copia de seguridad | csv 6.0.0 + archive 3.6.1 + pdf 3.11.3 + file_picker 11.0.3 (selector del sistema, sin `share_plus`) |
 
 Arquitectura feature-first con 3 capas por feature: `presentation/` (UI) → `domain/` (lógica pura, sin Flutter) → `data/` (drift), con flujo unidireccional UI → Notifier → Repository → drift. El código compartido vive en `lib/core/`.
 
@@ -45,7 +46,7 @@ flutter build apk --debug                 # APK de depuración
 ```
 lib/
 ├── core/          # base de datos, providers y reloj inyectable
-└── features/      # profiles, tracking, encounters, prediction, alerts, settings
+└── features/      # profiles, tracking, encounters, prediction, alerts, calendar, reports, backup
     └── <feature>/
         ├── presentation/   # pantallas, widgets y providers
         ├── domain/         # lógica pura (tests unitarios obligatorios)
