@@ -9,6 +9,7 @@ import '../../../tracking/presentation/screens/tracking_screen.dart';
 import '../../../encounters/presentation/screens/encounter_form_screen.dart';
 import '../../../encounters/presentation/screens/encounters_screen.dart';
 import '../../../alerts/presentation/screens/alerts_screen.dart';
+import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../calendar/presentation/screens/calendar_home_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
 
@@ -38,6 +39,13 @@ class WomenListScreen extends ConsumerWidget {
             onPressed: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const ReportsScreen())),
+          ),
+          IconButton(
+            icon: const Icon(Icons.backup_outlined),
+            tooltip: 'Copia de seguridad',
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const BackupScreen())),
           ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
