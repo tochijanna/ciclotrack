@@ -378,7 +378,9 @@ Límites que se mantienen: ventana fija de 12 meses sin selector de rango, sin g
 
 ### Fase 9: resultado
 
-Cerrada en la rama `feature/fase-9-backup` con **4 commits** y **51 tests nuevos** (335 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni codegen: la copia se hace con `select` de drift y se restaura con los `Companion` generados.
+Cerrada en la rama `feature/fase-9-backup` con **5 commits** y **53 tests nuevos** (336 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni codegen: la copia se hace con `select` de drift y se restaura con los `Companion` generados.
+
+Verificación de extremo a extremo sin dispositivo (no hay `adb` ni emulador en el entorno): un humo desechable sobre SQLite **en disco** sembró dos perfiles con periodo, síntoma, encuentro compartido y ajustes, escribió las tres exportaciones en `/tmp`, borró el fichero de base («pm clear») y reimportó el JSON comparando recuentos y filas. Los artefactos se validaron con herramientas externas: `json.load` (10 tablas, `schemaVersion 3`, emojis y `Ñ` intactos), `zipfile.testzip()` (CRC correcto en los 11 miembros, BOM presente) y `qpdf --check` + `pdftotext` (PDF válido con el resumen, las tablas por perfil y el listado de encuentros). Lo que **no** se pudo comprobar es el selector SAF real de Android (`FilePicker.saveFile`/`pickFiles`) ni instalar la APK: eso queda para la primera prueba en dispositivo.
 
 | Punto de la spec | Implementación |
 |---|---|
@@ -398,6 +400,7 @@ Hallazgos relevantes:
 
 - **`pdf` queda en 3.11.3, no en 3.12.** 3.12.x declara `vector_math ^2.2` y el SDK fija 2.1.4: mismo caso que `fl_chart` en la fase 8. Además `pdf` exige `archive >=3.4.0 <4.1.0`, así que el plan de añadir `archive ^4.3.0` no resuelve: se usa **`archive 3.6.1`**, que sí permite el ZIP en memoria (`ZipEncoder`/`ZipDecoder`) y evita el *fallback* de un único CSV.
 - **`utf8.decode` descarta el BOM.** Los CSV del ZIP llevan `EF BB BF` en crudo (y así se verifica), pero `utf8.decode` elimina el `U+FEFF` de cabecera; recortar un carácter «de más» rompía el encabezado.
+- **`ArchiveFile.string` declara el tamaño en caracteres, no en bytes.** Como el emoji de perfil y los acentos son la norma, el encabezado del ZIP quedaba corto y los lectores estrictos (`python -m zipfile`, `testzip`) veían **CRC roto** en esos miembros: Dart lo abría bien, Windows/7-Zip no. Se añaden los ficheros con los bytes UTF-8 y su longitud real, y un test compara el tamaño declarado de cada miembro con el real (falla con la implementación anterior).
 - **`ListToCsvConverter` escribe `null` literal** para las celdas nulas: los nulos se convierten a cadena vacía antes de convertir.
 - **Fuentes del PDF.** Helvetica usa WinAnsi, así que todo el texto pasa por un saneador que sustituye lo que quede por encima de Latin-1 por `?`: los emojis de perfiles y notas no aparecen en el informe.
 - **`pw.TableHelper.fromTextArray`** sustituye a `Table.fromTextArray`, ya deprecado.
