@@ -126,7 +126,11 @@ void main() {
     );
     await coordinator.start();
     scheduler.pendingItems.add(
-      const PendingNotification(id: 999, title: 'old', body: 'old'),
+      const PendingNotification(
+        id: alertNotificationIdBase,
+        title: 'old',
+        body: 'old',
+      ),
     );
 
     final womanId = await WomenRepository(
@@ -137,7 +141,7 @@ void main() {
     ).createPeriod(womanId, PeriodDraft(startDate: DateTime(2026, 9, 1)));
     await Future<void>.delayed(const Duration(milliseconds: 400));
 
-    expect(scheduler.cancelledIds, contains(999));
+    expect(scheduler.cancelledIds, contains(alertNotificationIdBase));
   });
 
   test(
@@ -188,6 +192,7 @@ class FakeNotificationScheduler implements NotificationScheduler {
 
   @override
   Future<void> cancel(List<int> ids) async {
+    cancelCalls++;
     cancelledIds.addAll(ids);
     scheduled.removeWhere((item) => ids.contains(item.id));
     pendingItems.removeWhere((item) => ids.contains(item.id));

@@ -39,7 +39,11 @@ class AlertsRepository {
     final settings = _toDomain(dbSettings);
 
     if (!settings.masterEnabled) {
-      await scheduler.cancelAll();
+      final ids = (await scheduler.pending())
+          .map((item) => item.id)
+          .where(isAlertNotificationId)
+          .toList();
+      await scheduler.cancel(ids);
       return;
     }
 
@@ -72,7 +76,10 @@ class AlertsRepository {
     );
 
     // Programar primero; así un fallo no deja al usuario sin las anteriores.
-    final oldIds = (await scheduler.pending()).map((item) => item.id).toSet();
+    final oldIds = (await scheduler.pending())
+        .map((item) => item.id)
+        .where(isAlertNotificationId)
+        .toSet();
     final newIds = items.map((item) => item.id).toSet();
     for (final item in items) {
       await scheduler.schedule(item);
