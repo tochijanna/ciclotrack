@@ -8,6 +8,7 @@ enum AlertType {
   advertenciaPostEncuentro,
   multiplesMujeresFertilidad,
   ventanaCombinada,
+  medicacion,
 }
 
 /// Etiqueta legible en español para cada tipo.
@@ -29,6 +30,8 @@ String alertTypeLabel(AlertType type) {
       return 'Múltiples mujeres + fertilidad';
     case AlertType.ventanaCombinada:
       return 'Ventana combinada';
+    case AlertType.medicacion:
+      return 'Medicación';
   }
 }
 
@@ -51,6 +54,8 @@ String alertTypeDescription(AlertType type) {
       return 'Avisa si un encuentro múltiple coincide con fertilidad';
     case AlertType.ventanaCombinada:
       return 'Resumen semanal de ventanas de todas las mujeres';
+    case AlertType.medicacion:
+      return 'Recuerda la toma de los medicamentos de cada mujer';
   }
 }
 

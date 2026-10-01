@@ -1,13 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/alerts/data/alerts_coordinator.dart';
 import 'package:ciclotrack/features/alerts/data/notification_scheduler.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_item.dart';
+import 'package:ciclotrack/features/alerts/domain/alert_settings.dart';
+import 'package:ciclotrack/features/alerts/domain/alert_types.dart';
+import 'package:ciclotrack/features/medications/presentation/screens/medications_screen.dart';
 import 'package:ciclotrack/features/alerts/presentation/providers/alerts_providers.dart';
 import 'package:ciclotrack/features/alerts/presentation/screens/alerts_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/widget_harness.dart';
 
@@ -74,6 +76,7 @@ void main() {
     required bool permissionGranted,
     required bool masterEnabled,
   }) async {
+    coordinator = null;
     db = createTestDatabase();
     await seedAlertSettings(tester, db, masterEnabled: masterEnabled);
     final scheduler = _FakeScheduler(permissionGranted: permissionGranted);
@@ -95,6 +98,40 @@ void main() {
     );
     return scheduler;
   }
+
+  testWidgets('abre medicación y permite desactivar su tipo de alerta', (
+    tester,
+  ) async {
+    await pumpAlerts(tester, permissionGranted: true, masterEnabled: true);
+    try {
+      await tester.tap(find.byTooltip('Medicación'));
+      await settleProviders(tester);
+      expect(find.byType(MedicationsScreen), findsOneWidget);
+      await tester.pageBack();
+      await settleProviders(tester);
+      final medicationType = find.widgetWithText(
+        CheckboxListTile,
+        'Medicación',
+      );
+      await tester.scrollUntilVisible(medicationType, 250);
+      expect(tester.widget<CheckboxListTile>(medicationType).value, true);
+      await tester.tap(medicationType);
+      await settleProviders(tester);
+      final settings = await runReal(
+        tester,
+        () => AlertSettingsDao(db).getOrCreate(),
+      );
+      expect(
+        AlertSettings.enabledTypesFromCsv(settings.enabledTypes),
+        isNot(contains(AlertType.medicacion)),
+      );
+      expect(tester.widget<CheckboxListTile>(medicationType).value, false);
+    } finally {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 1));
+      await closeTestDatabase(tester, db);
+    }
+  });
 
   testWidgets('master switch stays off when the permission is denied', (
     tester,
@@ -121,6 +158,8 @@ void main() {
     );
     expect(settings.masterEnabled, isFalse);
 
+    await settleProviders(tester);
+    await tester.pump(const Duration(seconds: 1));
     await closeTestDatabase(tester, db);
   });
 
@@ -144,6 +183,8 @@ void main() {
     );
     expect(settings.masterEnabled, isTrue);
 
+    await settleProviders(tester);
+    await tester.pump(const Duration(seconds: 1));
     await closeTestDatabase(tester, db);
   });
 
@@ -167,6 +208,8 @@ void main() {
     );
     expect(settings.masterEnabled, isFalse);
 
+    await settleProviders(tester);
+    await tester.pump(const Duration(seconds: 1));
     await closeTestDatabase(tester, db);
   });
 }

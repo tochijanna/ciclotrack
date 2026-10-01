@@ -1,10 +1,12 @@
 import '../../encounters/data/encounter_repository.dart';
+import '../../medications/data/medication_dao.dart';
 import '../../prediction/data/prediction_repository.dart';
 import '../../profiles/data/women_repository.dart';
 import '../domain/alert_item.dart';
 import '../domain/alert_rule_engine.dart';
 import '../domain/alert_settings.dart' as domain;
 import '../domain/alert_types.dart';
+import '../domain/medication_alert_input.dart';
 import 'alert_settings_dao.dart';
 import 'notification_scheduler.dart';
 
@@ -16,6 +18,7 @@ class AlertsRepository {
     required this.predictionRepo,
     required this.encounterRepo,
     required this.womenRepo,
+    required this.medicationDao,
     this.engine = const AlertRuleEngine(),
   });
 
@@ -24,6 +27,7 @@ class AlertsRepository {
   final PredictionRepository predictionRepo;
   final EncounterRepository encounterRepo;
   final WomenRepository womenRepo;
+  final MedicationDao medicationDao;
   final AlertRuleEngine engine;
 
   /// Recalcula y reprograma todas las alertas.
@@ -63,6 +67,7 @@ class AlertsRepository {
       today: now,
       women: women,
       encounters: encounters,
+      medications: await _medications(),
       settings: settings,
     );
 
@@ -102,9 +107,24 @@ class AlertsRepository {
       today: now,
       women: women,
       encounters: encounters,
+      medications: await _medications(),
       settings: settings,
     );
   }
+
+  Future<List<MedicationAlertInput>> _medications() async =>
+      (await medicationDao.watchAll().first)
+          .map(
+            (m) => MedicationAlertInput(
+              id: m.id,
+              womanId: m.womanId,
+              name: m.name,
+              hour: m.hour,
+              minute: m.minute,
+              enabled: m.enabled,
+            ),
+          )
+          .toList();
 
   /// Actualiza un ajuste individual.
   Future<void> updateMasterEnabled(bool value) async {

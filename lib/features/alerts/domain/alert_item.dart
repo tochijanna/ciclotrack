@@ -8,8 +8,10 @@ class AlertItem {
     required this.title,
     required this.body,
     required this.womanIds,
+    this.medicationId,
   });
 
+  final int? medicationId;
   final AlertType type;
   final DateTime fireDate;
   final String title;
@@ -21,6 +23,7 @@ class AlertItem {
     final sorted = [...womanIds]..sort();
     final key =
         '${type.name}_${sorted.join(",")}_${fireDate.toIso8601String().substring(0, 10)}';
-    return key.hashCode & 0x7FFFFFFF;
+    final uniqueKey = medicationId == null ? key : '${key}_$medicationId';
+    return uniqueKey.hashCode & 0x7FFFFFFF;
   }
 }

@@ -7,20 +7,21 @@ import '../../../../core/db/app_database.dart';
 import '../../../../core/db/app_database_provider.dart';
 import '../../../encounters/data/encounter_dao.dart';
 import '../../../encounters/data/encounter_repository.dart';
+import '../../../medications/data/medication_dao.dart';
 import '../../../prediction/data/prediction_dao.dart';
 import '../../../prediction/data/prediction_repository.dart';
 import '../../../prediction/domain/prediction_calculator.dart';
 import '../../../prediction/domain/prediction_engine.dart';
 import '../../../profiles/data/women_dao.dart';
 import '../../../profiles/data/women_repository.dart';
-import '../../domain/alert_item.dart';
-import '../../domain/alert_rule_engine.dart';
 import '../../data/alert_settings_dao.dart';
 import '../../data/alerts_change_dao.dart';
 import '../../data/alerts_coordinator.dart';
 import '../../data/alerts_repository.dart';
-import '../../data/notification_scheduler.dart';
 import '../../data/local_notification_scheduler.dart';
+import '../../data/notification_scheduler.dart';
+import '../../domain/alert_item.dart';
+import '../../domain/alert_rule_engine.dart';
 
 // --- Providers base ---
 
@@ -58,6 +59,7 @@ final alertsRepositoryProvider = Provider<AlertsRepository>((ref) {
     predictionRepo: predictionRepo,
     encounterRepo: encounterRepo,
     womenRepo: womenRepo,
+    medicationDao: MedicationDao(db),
     engine: ref.watch(alertRuleEngineProvider),
   );
 });

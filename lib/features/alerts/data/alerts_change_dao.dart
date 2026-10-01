@@ -7,7 +7,14 @@ part 'alerts_change_dao.g.dart';
 
 /// Stream ligero que se activa cuando cambian datos relevantes para alertas.
 @DriftAccessor(
-  tables: [Women, PeriodLogs, Encounters, EncounterWomen, AlertSettings],
+  tables: [
+    Women,
+    PeriodLogs,
+    Encounters,
+    EncounterWomen,
+    AlertSettings,
+    Medications,
+  ],
 )
 class AlertsChangeDao extends DatabaseAccessor<AppDatabase>
     with _$AlertsChangeDaoMixin {
@@ -16,7 +23,14 @@ class AlertsChangeDao extends DatabaseAccessor<AppDatabase>
   Stream<void> watchRelevantChanges() {
     return customSelect(
       'SELECT 1 AS change_id',
-      readsFrom: {women, periodLogs, encounters, encounterWomen, alertSettings},
+      readsFrom: {
+        women,
+        periodLogs,
+        encounters,
+        encounterWomen,
+        alertSettings,
+        medications,
+      },
     ).watch().map((_) {});
   }
 }
