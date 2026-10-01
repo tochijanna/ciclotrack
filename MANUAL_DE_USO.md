@@ -19,7 +19,7 @@ CicloTrack permite llevar el seguimiento de varios perfiles. Funciona sin conexi
 - [Medicación](#medicación)
 - [Recordatorios personalizados](#recordatorios-personalizados)
 - [Preguntas frecuentes](#preguntas-frecuentes)
-- [Privacidad y funciones pendientes](#privacidad-y-funciones-pendientes)
+- [Privacidad y límites](#privacidad-y-límites)
 
 ## Primeros pasos
 
@@ -302,7 +302,7 @@ Las marcas atenuadas son proyecciones. El calendario permite navegar más allá 
 
 No hay deshacer. Puedes restaurar o trasladar los datos con una copia JSON desde **Copia de seguridad**; al importarla se sustituye todo el contenido del dispositivo destino.
 
-## Privacidad y funciones pendientes
+## Privacidad y límites
 
 Los datos se guardan localmente. El uso cotidiano no necesita internet ni una cuenta. Las notas pueden verse en la lista de perfiles y los avisos incluyen información de los registros; ajusta la visibilidad de notificaciones en Android si quieres limitar lo que aparece en la pantalla de bloqueo.
 
