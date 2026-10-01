@@ -2,6 +2,10 @@
 
 Aplicación Android personal para gestionar de forma privada los ciclos menstruales de varias mujeres: perfiles, tracking, encuentros, predicción de fertilidad y alertas locales. Todos los datos se quedan en el dispositivo; no hay nube, sincronización ni secretos.
 
+## Manual de uso
+
+Consulta el [manual de uso de CicloTrack](MANUAL_DE_USO.md) para aprender a gestionar perfiles, registrar periodos y encuentros, consultar predicciones y calendarios, y configurar las alertas.
+
 ## Estado
 
 Fases 0–9 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas de calendario, reportes con gráficos y copia de seguridad manual). Schema drift **v3 con 10 tablas**. Pendiente: fase 10 (medicación y pulido). Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
