@@ -1,12 +1,11 @@
 import 'dart:io';
 
-import 'package:drift/native.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sqlite3/sqlite3.dart' as sqlite3;
-
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/profiles/data/women_dao.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 void main() {
   late AppDatabase db;
@@ -21,15 +20,15 @@ void main() {
     await db.close();
   });
 
-  group('schema v3', () {
-    test('schemaVersion is 3', () {
-      expect(db.schemaVersion, 3);
+  group('schema v4', () {
+    test('schemaVersion is 4', () {
+      expect(db.schemaVersion, 4);
     });
 
     test('alert_settings table exists', () {
       final tableNames = db.allTables.map((t) => t.actualTableName).toSet();
       expect(tableNames, contains('alert_settings'));
-      expect(tableNames.length, 10);
+      expect(tableNames.length, 11);
     });
   });
 
@@ -82,7 +81,7 @@ void main() {
       await directory.delete(recursive: true);
     });
 
-    expect(upgraded.schemaVersion, 3);
+    expect(upgraded.schemaVersion, 4);
     final women = await upgraded.select(upgraded.women).get();
     expect(women, hasLength(1));
     expect(women.single.name, 'Legacy');
@@ -100,6 +99,58 @@ void main() {
     final settings = await settingsDao.getOrCreate();
     expect(settings.id, 1);
     expect(settings.masterEnabled, isFalse);
+  });
+
+  test('upgrades v3 to v4 preserving profiles and period logs', () async {
+    await db.close();
+    final directory = await Directory.systemTemp.createTemp('medications_v3_');
+    final file = File('${directory.path}/v3.sqlite');
+    final original = AppDatabase.forTesting(NativeDatabase(file));
+    await original
+        .into(original.women)
+        .insert(
+          WomenCompanion.insert(
+            name: 'María',
+            initials: 'MR',
+            createdAt: DateTime(2026, 9, 1),
+          ),
+        );
+    await original
+        .into(original.periodLogs)
+        .insert(
+          PeriodLogsCompanion.insert(
+            womanId: 1,
+            startDate: DateTime(2026, 9, 1),
+          ),
+        );
+    await original.close();
+    final legacy = sqlite3.sqlite3.open(file.path);
+    legacy.execute('DROP TABLE medications');
+    legacy.execute('PRAGMA user_version = 3');
+    legacy.dispose();
+    final upgraded = AppDatabase.forTesting(NativeDatabase(file));
+    try {
+      expect(
+        (await upgraded.select(upgraded.women).get()).single.name,
+        'María',
+      );
+      expect(await upgraded.select(upgraded.periodLogs).get(), hasLength(1));
+      expect(await upgraded.select(upgraded.medications).get(), isEmpty);
+      await upgraded
+          .into(upgraded.medications)
+          .insert(
+            MedicationsCompanion.insert(
+              womanId: 1,
+              name: 'Hierro',
+              hour: 23,
+              minute: 59,
+            ),
+          );
+      expect(await upgraded.select(upgraded.medications).get(), hasLength(1));
+    } finally {
+      await upgraded.close();
+      await directory.delete(recursive: true);
+    }
   });
 
   group('alert_settings', () {
