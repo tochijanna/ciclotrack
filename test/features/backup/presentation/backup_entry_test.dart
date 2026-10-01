@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -25,7 +24,10 @@ void main() {
       overrides: [fixedClock(DateTime(2026, 9, 30, 21, 15))],
     );
 
-    await tester.tap(find.byIcon(Icons.backup_outlined));
+    await tester.tap(find.byTooltip('Más opciones'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('Copia de seguridad'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 

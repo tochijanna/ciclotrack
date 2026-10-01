@@ -12,6 +12,9 @@ import '../../../alerts/presentation/screens/alerts_screen.dart';
 import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../calendar/presentation/screens/calendar_home_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
+import '../../../settings/presentation/screens/settings_screen.dart';
+
+enum _MenuAction { views, reports, backup, alerts, refresh }
 
 class WomenListScreen extends ConsumerWidget {
   const WomenListScreen({super.key});
@@ -27,35 +30,31 @@ class WomenListScreen extends ConsumerWidget {
         title: const Text('CicloTrack'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.calendar_month_outlined),
-            tooltip: 'Vistas',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const CalendarHomeScreen()),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.insights_outlined),
-            tooltip: 'Reportes',
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Ajustes',
             onPressed: () => Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => const ReportsScreen())),
+            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
-          IconButton(
-            icon: const Icon(Icons.backup_outlined),
-            tooltip: 'Copia de seguridad',
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const BackupScreen())),
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const AlertsScreen())),
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(womenListProvider.notifier).refresh(),
+          PopupMenuButton<_MenuAction>(
+            tooltip: 'Más opciones',
+            onSelected: (action) => _onMenuAction(context, ref, action),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: _MenuAction.views, child: Text('Vistas')),
+              PopupMenuItem(
+                value: _MenuAction.reports,
+                child: Text('Reportes'),
+              ),
+              PopupMenuItem(
+                value: _MenuAction.backup,
+                child: Text('Copia de seguridad'),
+              ),
+              PopupMenuItem(value: _MenuAction.alerts, child: Text('Alertas')),
+              PopupMenuItem(
+                value: _MenuAction.refresh,
+                child: Text('Actualizar'),
+              ),
+            ],
           ),
         ],
       ),
@@ -131,6 +130,24 @@ class WomenListScreen extends ConsumerWidget {
         label: const Text('Nuevo'),
       ),
     );
+  }
+
+  void _onMenuAction(BuildContext context, WidgetRef ref, _MenuAction action) {
+    final Widget screen;
+    switch (action) {
+      case _MenuAction.views:
+        screen = const CalendarHomeScreen();
+      case _MenuAction.reports:
+        screen = const ReportsScreen();
+      case _MenuAction.backup:
+        screen = const BackupScreen();
+      case _MenuAction.alerts:
+        screen = const AlertsScreen();
+      case _MenuAction.refresh:
+        ref.read(womenListProvider.notifier).refresh();
+        return;
+    }
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
   void _showAddMenu(BuildContext context, WidgetRef ref) {
