@@ -1,17 +1,17 @@
 import 'dart:convert';
 
 import 'package:archive/archive.dart';
-import 'package:drift/native.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/features/backup/data/backup_repository.dart';
 import 'package:ciclotrack/features/backup/domain/backup_document.dart';
+import 'package:ciclotrack/features/backup/domain/pdf_report.dart';
 import 'package:ciclotrack/features/calendar/domain/calendar_board.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_repository.dart';
 import 'package:ciclotrack/features/encounters/domain/encounter_draft.dart';
 import 'package:ciclotrack/features/encounters/domain/encounter_options.dart';
+import 'package:ciclotrack/features/medications/data/medication_dao.dart';
+import 'package:ciclotrack/features/medications/data/medication_repository.dart';
 import 'package:ciclotrack/features/prediction/domain/cycle_timeline.dart';
 import 'package:ciclotrack/features/prediction/domain/prediction_calculator.dart';
 import 'package:ciclotrack/features/profiles/data/women_dao.dart';
@@ -22,6 +22,8 @@ import 'package:ciclotrack/features/reports/domain/report_models.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final now = DateTime(2026, 9, 30, 21, 15);
@@ -71,6 +73,14 @@ void main() {
         ],
       ),
     );
+    await MedicationRepository(MedicationDao(target)).save(
+      womanId: ana,
+      name: 'Hierro',
+      dose: '20 mg',
+      hour: 23,
+      minute: 59,
+      enabled: true,
+    );
     return [ana, bea];
   }
 
@@ -118,13 +128,15 @@ void main() {
     final leido = BackupDocument.fromBytes(file.bytes);
     expect(leido.exportedAt, now);
     expect(leido.tables, esperado.tables);
+    expect(leido.schemaVersion, 4);
+    expect(leido.rows('medications').single['name'], 'Hierro');
     expect(leido.rows('women'), hasLength(2));
     expect(leido.rows('period_logs'), hasLength(1));
     expect(leido.rows('encounters'), hasLength(1));
     expect(leido.rows('encounter_women'), hasLength(2));
   });
 
-  test('exportCsv devuelve un ZIP con las diez tablas', () async {
+  test('exportCsv devuelve un ZIP con las once tablas', () async {
     await seedAll(db);
 
     final file = await repo.exportCsv(now: now);
@@ -141,6 +153,11 @@ void main() {
   test('exportPdf devuelve un informe A4', () async {
     await seedAll(db);
 
+    final blocks = buildPdfBlocks(await repo.dump(now: now), tablero());
+    final medications = blocks.singleWhere((b) => b.titulo == 'Medicación');
+    expect(medications.tabla, [
+      ['Ana', 'Hierro', '20 mg', '23:59', 'Activo'],
+    ]);
     final file = await repo.exportPdf(board: tablero(), now: now);
 
     expect(file.name, 'ciclotrack-informe-20260930-211500.pdf');

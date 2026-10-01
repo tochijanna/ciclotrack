@@ -1,19 +1,21 @@
-import 'package:drift/native.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/backup/data/backup_serializer.dart';
+import 'package:ciclotrack/features/backup/domain/backup_document.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_repository.dart';
 import 'package:ciclotrack/features/encounters/domain/encounter_draft.dart';
 import 'package:ciclotrack/features/encounters/domain/encounter_options.dart';
+import 'package:ciclotrack/features/medications/data/medication_dao.dart';
+import 'package:ciclotrack/features/medications/data/medication_repository.dart';
 import 'package:ciclotrack/features/profiles/data/women_dao.dart';
 import 'package:ciclotrack/features/profiles/data/women_repository.dart';
 import 'package:ciclotrack/features/profiles/domain/woman_draft.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final now = DateTime(2026, 9, 30, 21, 15);
@@ -115,8 +117,26 @@ void main() {
       ),
     );
 
+    await MedicationRepository(MedicationDao(target)).save(
+      womanId: ana,
+      name: 'Hierro',
+      dose: '20 mg',
+      hour: 23,
+      minute: 59,
+      enabled: true,
+    );
     return [ana, bea];
   }
+
+  test('restaura v3 y vacía medicamentos existentes', () async {
+    await seedAll(db);
+    final json = (await dumpDatabase(db, now: now)).toJson()
+      ..['schemaVersion'] = 3;
+    (json['tables']! as Map<String, Object?>).remove('medications');
+    await restoreDatabase(db, BackupDocument.fromJson(json));
+    expect(await db.select(db.women).get(), hasLength(2));
+    expect(await db.select(db.medications).get(), isEmpty);
+  });
 
   test('el volcado reproduce las diez tablas', () async {
     await seedAll(db);

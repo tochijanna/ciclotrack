@@ -1,11 +1,10 @@
 import 'dart:convert';
 
 import 'package:archive/archive.dart';
-import 'package:csv/csv.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:ciclotrack/features/backup/domain/backup_document.dart';
 import 'package:ciclotrack/features/backup/domain/csv_export.dart';
+import 'package:csv/csv.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   BackupDocument documento() => BackupDocument(
@@ -72,7 +71,7 @@ void main() {
               as Map<String, Object?>;
 
       expect(manifest['app'], 'cicloTrack'.toLowerCase());
-      expect(manifest['schemaVersion'], 3);
+      expect(manifest['schemaVersion'], 4);
       expect(manifest['exportedAt'], '2026-09-30T21:15:00.000');
     });
 

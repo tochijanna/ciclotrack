@@ -190,6 +190,7 @@ void main() {
         'Bea (BE)',
         'Periodos registrados',
         'Síntomas (12 meses)',
+        'Medicación',
         'Encuentros',
       ]);
       expect(blocks.last.titulo, 'Encuentros');
