@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:ciclotrack/features/backup/domain/backup_document.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   /// Copia con las diez tablas, emojis, acentos, comas y saltos de línea.
@@ -92,6 +91,17 @@ void main() {
           'encounter_id': 1,
           'woman_id': 1,
           'relationship_type': 'Vaginal',
+        },
+      ],
+      'medications': [
+        {
+          'id': 1,
+          'woman_id': 1,
+          'name': 'Hierro',
+          'dose': '20 mg',
+          'hour': 23,
+          'minute': 59,
+          'enabled': true,
         },
       ],
       'reminders': [
@@ -187,6 +197,19 @@ void main() {
     });
   });
 
+  test('lee v3 sin medications y rechaza v4 incompleto', () {
+    final json = muestra().toJson()..['schemaVersion'] = 3;
+    (json['tables']! as Map<String, Object?>).remove('medications');
+    final document = BackupDocument.fromJson(json);
+    expect(document.rows('medications'), isEmpty);
+    expect(document.rows('women'), hasLength(2));
+    json['schemaVersion'] = 4;
+    expect(
+      () => BackupDocument.fromJson(json),
+      throwsA(isA<BackupFormatException>()),
+    );
+  });
+
   group('validación', () {
     test('rechaza un archivo que no es de CicloTrack', () {
       final json = muestra().toJson()..['app'] = 'otra-app';
@@ -204,7 +227,7 @@ void main() {
     });
 
     test('rechaza una versión de schema distinta', () {
-      final json = muestra().toJson()..['schemaVersion'] = 4;
+      final json = muestra().toJson()..['schemaVersion'] = 5;
 
       expect(
         () => BackupDocument.fromJson(json),
@@ -212,7 +235,7 @@ void main() {
           isA<BackupFormatException>().having(
             (e) => e.message,
             'message',
-            'Versión de copia no soportada (v4)',
+            'Versión de copia no soportada (v5)',
           ),
         ),
       );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../medications/presentation/screens/medications_screen.dart';
 import '../../domain/alert_settings.dart';
 import '../../domain/alert_types.dart';
 import '../providers/alerts_providers.dart';
@@ -17,6 +18,18 @@ class AlertsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Alertas'),
         actions: [
+          IconButton(
+            tooltip: 'Medicación',
+            icon: const Icon(Icons.medication_outlined),
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const MedicationsScreen(),
+                ),
+              );
+              if (context.mounted) ref.invalidate(upcomingAlertsProvider);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () async {

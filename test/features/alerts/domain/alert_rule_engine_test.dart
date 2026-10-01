@@ -1,11 +1,12 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_item.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_rule_engine.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_settings.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_types.dart';
+import 'package:ciclotrack/features/alerts/domain/medication_alert_input.dart';
 import 'package:ciclotrack/features/encounters/domain/encounter_event.dart';
 import 'package:ciclotrack/features/prediction/domain/cycle_phase.dart';
 import 'package:ciclotrack/features/prediction/domain/woman_prediction.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const engine = AlertRuleEngine();
@@ -59,6 +60,71 @@ void main() {
     );
   }
 
+  group('medicación', () {
+    List<AlertItem> evaluate({
+      int hour = 12,
+      bool enabled = true,
+      bool master = true,
+      bool type = true,
+      bool profile = true,
+    }) => engine.evaluate(
+      today: DateTime(2026, 9, 10, 10),
+      women: profile ? [ctx(1, 'María', estado: EstadoRiesgo.sinDatos)] : [],
+      encounters: [],
+      medications: [
+        MedicationAlertInput(
+          id: 1,
+          womanId: 1,
+          name: 'Hierro',
+          hour: hour,
+          minute: 30,
+          enabled: enabled,
+        ),
+      ],
+      settings: settings(
+        master: master,
+        types: type ? {AlertType.medicacion} : {},
+      ),
+    );
+
+    test('hora futura hoy y perfil sin periodos', () {
+      final item = evaluate().single;
+      expect(item.type, AlertType.medicacion);
+      expect(item.fireDate, DateTime(2026, 9, 10, 12, 30));
+      expect(item.body, 'Es hora de la pastilla para María: Hierro');
+      expect(item.womanIds, [1]);
+    });
+    test('hora pasada se programa mañana', () {
+      expect(evaluate(hour: 8).single.fireDate, DateTime(2026, 9, 11, 8, 30));
+    });
+    test('respeta medicamento, tipo, maestro y perfil', () {
+      expect(evaluate(enabled: false), isEmpty);
+      expect(evaluate(type: false), isEmpty);
+      expect(evaluate(master: false), isEmpty);
+      expect(evaluate(profile: false), isEmpty);
+    });
+    test('conserva dos medicamentos de la misma mujer a la misma hora', () {
+      final items = engine.evaluate(
+        today: DateTime(2026, 9, 10, 10),
+        women: [ctx(1, 'María')],
+        encounters: [],
+        medications: [
+          for (final id in [1, 2])
+            MedicationAlertInput(
+              id: id,
+              womanId: 1,
+              name: 'Pastilla',
+              hour: 12,
+              minute: 0,
+            ),
+        ],
+        settings: settings(types: {AlertType.medicacion}),
+      );
+      expect(items, hasLength(2));
+      expect(items.map((a) => a.id).toSet(), hasLength(2));
+    });
+  });
+
   group('AlertRuleEngine - fertilidadInminente', () {
     test('fires when ovulation is tomorrow', () {
       final today = DateTime(2026, 9, 10);
@@ -75,6 +141,7 @@ void main() {
             periodoPrevisto: DateTime(2026, 9, 27),
           ),
         ],
+        medications: const [],
         encounters: const [],
         settings: settings(),
       );
@@ -98,6 +165,7 @@ void main() {
             periodoPrevisto: DateTime(2026, 9, 27),
           ),
         ],
+        medications: const [],
         encounters: const [],
         settings: settings(),
       );
@@ -123,6 +191,7 @@ void main() {
             periodoPrevisto: DateTime(2026, 9, 27),
           ),
         ],
+        medications: const [],
         encounters: const [],
         settings: settings(hour: 8), // early enough to fire
       );
@@ -139,6 +208,7 @@ void main() {
       final alerts = engine.evaluate(
         today: today,
         women: [ctx(1, 'María', periodoPrevisto: DateTime(2026, 9, 27))],
+        medications: const [],
         encounters: const [],
         settings: settings(),
       );
@@ -172,6 +242,7 @@ void main() {
             periodoPrevisto: DateTime(2026, 9, 26),
           ),
         ],
+        medications: const [],
         encounters: const [],
         settings: settings(hour: 8),
       );
@@ -205,6 +276,7 @@ void main() {
             periodoPrevisto: DateTime(2026, 10, 5),
           ),
         ],
+        medications: const [],
         encounters: const [],
         settings: settings(hour: 8),
       );
@@ -247,6 +319,7 @@ void main() {
             periodoPrevisto: DateTime(2026, 9, 27),
           ),
         ],
+        medications: const [],
         encounters: encounters,
         settings: settings(hour: 8),
       );
@@ -273,6 +346,7 @@ void main() {
             periodoPrevisto: DateTime(2026, 9, 27),
           ),
         ],
+        medications: const [],
         encounters: const [],
         settings: settings(master: false),
       );
@@ -284,6 +358,7 @@ void main() {
       final alerts = engine.evaluate(
         today: today,
         women: [ctx(1, 'María', periodoPrevisto: DateTime(2026, 9, 27))],
+        medications: const [],
         encounters: const [],
         settings: settings(
           types: {AlertType.diaDeRiesgo},
@@ -309,6 +384,7 @@ void main() {
             periodoPrevisto: DateTime(2026, 9, 27),
           ),
         ],
+        medications: const [],
         encounters: const [],
         settings: settings(hour: 9, minute: 0), // 09:00 already passed
       );
@@ -321,6 +397,7 @@ void main() {
       final alerts = engine.evaluate(
         today: DateTime(2026, 9, 10),
         women: [ctx(1, 'María', estado: EstadoRiesgo.sinDatos)],
+        medications: const [],
         encounters: const [],
         settings: settings(),
       );

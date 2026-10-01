@@ -15,6 +15,7 @@ const backupDeleteOrder = <String>[
   'encounters',
   'reminders',
   'alert_settings',
+  'medications',
   'women',
   'tags',
 ];
@@ -22,6 +23,7 @@ const backupDeleteOrder = <String>[
 /// Orden de inserción, padres primero.
 const backupInsertOrder = <String>[
   'women',
+  'medications',
   'tags',
   'woman_tags',
   'period_logs',
@@ -33,7 +35,7 @@ const backupInsertOrder = <String>[
   'alert_settings',
 ];
 
-/// Lee las diez tablas completas y las convierte a documento de copia.
+/// Lee las tablas completas y las convierte a documento de copia.
 Future<BackupDocument> dumpDatabase(
   AppDatabase db, {
   required DateTime now,
@@ -64,6 +66,20 @@ Future<List<Map<String, Object?>>> _dumpTable(
   String table,
 ) async {
   switch (table) {
+    case 'medications':
+      final rows = await db.select(db.medications).get();
+      return [
+        for (final row in rows)
+          {
+            'id': row.id,
+            'woman_id': row.womanId,
+            'name': row.name,
+            'dose': row.dose,
+            'hour': row.hour,
+            'minute': row.minute,
+            'enabled': row.enabled,
+          },
+      ];
     case 'women':
       final rows = await db.select(db.women).get();
       return [
@@ -185,6 +201,8 @@ Future<List<Map<String, Object?>>> _dumpTable(
 
 Future<void> _deleteTable(AppDatabase db, String table) async {
   switch (table) {
+    case 'medications':
+      await db.delete(db.medications).go();
     case 'women':
       await db.delete(db.women).go();
     case 'tags':
@@ -216,6 +234,22 @@ Future<void> _insertTable(
   List<Map<String, Object?>> rows,
 ) async {
   switch (table) {
+    case 'medications':
+      if (rows.isEmpty) return;
+      await db.batch((batch) {
+        batch.insertAll(db.medications, [
+          for (final row in rows)
+            MedicationsCompanion(
+              id: Value(row['id']! as int),
+              womanId: Value(row['woman_id']! as int),
+              name: Value(row['name']! as String),
+              dose: Value(row['dose']! as String),
+              hour: Value(row['hour']! as int),
+              minute: Value(row['minute']! as int),
+              enabled: Value(row['enabled']! as bool),
+            ),
+        ]);
+      });
     case 'women':
       if (rows.isEmpty) return;
       await db.batch((batch) {

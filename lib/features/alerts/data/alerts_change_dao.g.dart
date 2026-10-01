@@ -9,6 +9,7 @@ mixin _$AlertsChangeDaoMixin on DatabaseAccessor<AppDatabase> {
   $EncountersTable get encounters => attachedDatabase.encounters;
   $EncounterWomenTable get encounterWomen => attachedDatabase.encounterWomen;
   $AlertSettingsTable get alertSettings => attachedDatabase.alertSettings;
+  $MedicationsTable get medications => attachedDatabase.medications;
   AlertsChangeDaoManager get managers => AlertsChangeDaoManager(this);
 }
 
@@ -28,4 +29,6 @@ class AlertsChangeDaoManager {
       );
   $$AlertSettingsTableTableManager get alertSettings =>
       $$AlertSettingsTableTableManager(_db.attachedDatabase, _db.alertSettings);
+  $$MedicationsTableTableManager get medications =>
+      $$MedicationsTableTableManager(_db.attachedDatabase, _db.medications);
 }

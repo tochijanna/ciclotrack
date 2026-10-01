@@ -76,6 +76,20 @@ List<PdfBlock> buildPdfBlocks(BackupDocument doc, ReportsBoard board) {
       ),
     ],
     PdfBlock(
+      titulo: 'Medicación',
+      cabeceras: const ['Mujer', 'Medicamento', 'Dosis', 'Hora', 'Estado'],
+      tabla: [
+        for (final row in doc.rows('medications'))
+          [
+            _safe(nombres[row['woman_id']] ?? '?'),
+            _safe(row['name']! as String),
+            _safe(row['dose']! as String),
+            '${(row['hour']! as int).toString().padLeft(2, '0')}:${(row['minute']! as int).toString().padLeft(2, '0')}',
+            row['enabled'] == true ? 'Activo' : 'Inactivo',
+          ],
+      ],
+    ),
+    PdfBlock(
       titulo: 'Encuentros',
       parrafos: encuentros.length > pdfMaxEncuentros
           ? [

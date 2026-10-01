@@ -3,6 +3,7 @@ import '../../prediction/domain/woman_prediction.dart';
 import 'alert_item.dart';
 import 'alert_settings.dart';
 import 'alert_types.dart';
+import 'medication_alert_input.dart';
 
 /// Contexto de una mujer para la evaluación de alertas.
 class WomanAlertContext {
@@ -27,6 +28,7 @@ class AlertRuleEngine {
     required DateTime today,
     required List<WomanAlertContext> women,
     required List<EncounterWithWomen> encounters,
+    required List<MedicationAlertInput> medications,
     required AlertSettings settings,
   }) {
     if (!settings.masterEnabled) return [];
@@ -261,6 +263,41 @@ class AlertRuleEngine {
             title: 'Ventana combinada',
             body: '${resumen.join('. ')}.',
             womanIds: women.map((w) => w.womanId).toList(),
+          ),
+        );
+      }
+    }
+
+    if (settings.isEnabled(AlertType.medicacion)) {
+      for (final medication in medications) {
+        if (!medication.enabled) continue;
+        final profiles = women.where((w) => w.womanId == medication.womanId);
+        if (profiles.isEmpty) continue;
+        final scheduled = DateTime(
+          today.year,
+          today.month,
+          today.day,
+          medication.hour,
+          medication.minute,
+        );
+        final fire = scheduled.isBefore(today)
+            ? DateTime(
+                today.year,
+                today.month,
+                today.day + 1,
+                medication.hour,
+                medication.minute,
+              )
+            : scheduled;
+        alerts.add(
+          AlertItem(
+            type: AlertType.medicacion,
+            fireDate: fire,
+            title: 'Medicación',
+            body:
+                'Es hora de la pastilla para ${profiles.first.name}: ${medication.name}',
+            womanIds: [medication.womanId],
+            medicationId: medication.id,
           ),
         );
       }

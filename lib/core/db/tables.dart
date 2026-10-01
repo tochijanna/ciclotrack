@@ -113,3 +113,18 @@ class AlertSettings extends Table {
   TextColumn get enabledTypes => text().withDefault(const Constant(''))();
   IntColumn get horizonDays => integer().withDefault(const Constant(7))();
 }
+
+@DataClassName('Medication')
+class Medications extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get womanId =>
+      integer().references(Women, #id, onDelete: KeyAction.cascade)();
+  TextColumn get name => text().withLength(min: 1, max: 80)();
+  TextColumn get dose =>
+      text().withLength(max: 60).withDefault(const Constant(''))();
+  IntColumn get hour =>
+      integer().customConstraint('NOT NULL CHECK (hour BETWEEN 0 AND 23)')();
+  IntColumn get minute =>
+      integer().customConstraint('NOT NULL CHECK (minute BETWEEN 0 AND 59)')();
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+}

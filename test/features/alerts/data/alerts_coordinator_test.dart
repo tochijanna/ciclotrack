@@ -1,6 +1,3 @@
-import 'package:drift/native.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/alerts/data/alerts_change_dao.dart';
@@ -11,6 +8,7 @@ import 'package:ciclotrack/features/alerts/domain/alert_item.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_types.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_repository.dart';
+import 'package:ciclotrack/features/medications/data/medication_dao.dart';
 import 'package:ciclotrack/features/prediction/data/prediction_dao.dart';
 import 'package:ciclotrack/features/prediction/data/prediction_repository.dart';
 import 'package:ciclotrack/features/prediction/domain/prediction_calculator.dart';
@@ -21,6 +19,8 @@ import 'package:ciclotrack/features/profiles/domain/woman_draft.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   late AppDatabase db;
@@ -44,6 +44,7 @@ void main() {
       settingsDao: settingsDao,
       predictionRepo: predictionRepo,
       encounterRepo: encounterRepo,
+      medicationDao: MedicationDao(db),
       womenRepo: womenRepo,
     );
     coordinator = AlertsCoordinator(
@@ -57,6 +58,55 @@ void main() {
     await coordinator.dispose();
     await db.close();
   });
+
+  test(
+    'reprograma medicación al insertar, editar y borrar sin periodos',
+    () async {
+      final settings = await settingsDao.getOrCreate();
+      await settingsDao.updateSettings(
+        settings.copyWith(masterEnabled: true, enabledTypes: 'medicacion'),
+      );
+      final womanId = await db
+          .into(db.women)
+          .insert(
+            WomenCompanion.insert(
+              name: 'María',
+              initials: 'MR',
+              createdAt: DateTime(2026, 9, 10),
+            ),
+          );
+      await coordinator.start();
+      final medicationId = await MedicationDao(db).insert(
+        MedicationsCompanion.insert(
+          womanId: womanId,
+          name: 'Hierro',
+          hour: 23,
+          minute: 59,
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      expect(
+        scheduler.scheduled.where((a) => a.type == AlertType.medicacion),
+        isNotEmpty,
+      );
+      final medication = (await MedicationDao(
+        db,
+      ).watchByWoman(womanId).first).single;
+      await MedicationDao(
+        db,
+      ).updateMedication(medication.copyWith(enabled: false));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      expect(scheduler.pendingItems, isEmpty);
+      await MedicationDao(
+        db,
+      ).updateMedication(medication.copyWith(enabled: true));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      expect(scheduler.pendingItems, isNotEmpty);
+      await MedicationDao(db).deleteMedication(medicationId);
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      expect(scheduler.pendingItems, isEmpty);
+    },
+  );
 
   test('initializes scheduler and keeps new installations disabled', () async {
     await coordinator.start();
@@ -76,7 +126,11 @@ void main() {
     );
     await coordinator.start();
     scheduler.pendingItems.add(
-      const PendingNotification(id: 999, title: 'old', body: 'old'),
+      const PendingNotification(
+        id: alertNotificationIdBase,
+        title: 'old',
+        body: 'old',
+      ),
     );
 
     final womanId = await WomenRepository(
@@ -87,7 +141,7 @@ void main() {
     ).createPeriod(womanId, PeriodDraft(startDate: DateTime(2026, 9, 1)));
     await Future<void>.delayed(const Duration(milliseconds: 400));
 
-    expect(scheduler.cancelledIds, contains(999));
+    expect(scheduler.cancelledIds, contains(alertNotificationIdBase));
   });
 
   test(
@@ -128,11 +182,17 @@ class FakeNotificationScheduler implements NotificationScheduler {
 
   @override
   Future<void> schedule(AlertItem item) async {
+    scheduled.removeWhere((a) => a.id == item.id);
     scheduled.add(item);
+    pendingItems.removeWhere((a) => a.id == item.id);
+    pendingItems.add(
+      PendingNotification(id: item.id, title: item.title, body: item.body),
+    );
   }
 
   @override
   Future<void> cancel(List<int> ids) async {
+    cancelCalls++;
     cancelledIds.addAll(ids);
     scheduled.removeWhere((item) => ids.contains(item.id));
     pendingItems.removeWhere((item) => ids.contains(item.id));
@@ -142,6 +202,7 @@ class FakeNotificationScheduler implements NotificationScheduler {
   Future<void> cancelAll() async {
     cancelCalls++;
     scheduled.clear();
+    pendingItems.clear();
   }
 
   @override

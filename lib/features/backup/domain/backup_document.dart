@@ -3,8 +3,8 @@ import 'dart:convert';
 /// Identificador que firma los documentos de copia de CicloTrack.
 const backupAppId = 'ciclotrack';
 
-/// Versión del schema que sabe leer y escribir esta copia (drift v3).
-const backupSchemaVersion = 3;
+/// Versión del schema que sabe leer y escribir esta copia (drift v4).
+const backupSchemaVersion = 4;
 
 /// Tablas incluidas, en el orden del esquema. El volcado y la restauración
 /// usan además [backupDeleteOrder] y [backupInsertOrder], marcados por las
@@ -20,6 +20,7 @@ const backupTables = <String>[
   'encounter_women',
   'reminders',
   'alert_settings',
+  'medications',
 ];
 
 /// Tipo lógico de cada columna dentro del documento de copia.
@@ -119,6 +120,15 @@ const _schema = <String, Map<String, _Column>>{
     'message': _Column(_ColumnKind.texto),
     'enabled': _Column(_ColumnKind.booleano),
   },
+  'medications': {
+    'id': _Column(_ColumnKind.entero),
+    'woman_id': _Column(_ColumnKind.entero),
+    'name': _Column(_ColumnKind.texto),
+    'dose': _Column(_ColumnKind.texto),
+    'hour': _Column(_ColumnKind.entero),
+    'minute': _Column(_ColumnKind.entero),
+    'enabled': _Column(_ColumnKind.booleano),
+  },
   'alert_settings': {
     'id': _Column(_ColumnKind.entero),
     'master_enabled': _Column(_ColumnKind.booleano),
@@ -205,7 +215,7 @@ class BackupDocument {
     }
 
     final version = json['schemaVersion'];
-    if (version is! int || version != backupSchemaVersion) {
+    if (version is! int || (version < 3 || version > backupSchemaVersion)) {
       throw BackupFormatException('Versión de copia no soportada (v$version)');
     }
 
@@ -222,6 +232,12 @@ class BackupDocument {
 
     final tables = <String, List<Map<String, Object?>>>{};
     for (final table in backupTables) {
+      if (version == 3 &&
+          table == 'medications' &&
+          !rawTables.containsKey(table)) {
+        tables[table] = [];
+        continue;
+      }
       if (!rawTables.containsKey(table)) {
         throw BackupFormatException('Falta la tabla $table');
       }
