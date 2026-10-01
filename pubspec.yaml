@@ -30,14 +30,47 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Local SQLite database
+  drift: ^2.31.0
+  drift_flutter: ^0.2.8
+  flutter_local_notifications: ^20.1.0
+  timezone: ^0.10.1
+  flutter_timezone: ^5.1.0
+
+  # Calendar views (phase 7)
+  table_calendar: ^3.2.1
+  intl: ^0.20.2
+
+  # Reports (phase 8). 1.1.x needs vector_math 2.2 and does not compile
+  # against the 2.1.4 that the Flutter SDK pins, so it is pinned exactly.
+  fl_chart: 1.0.0
+
+  # Backup (phase 9). Versiones limitadas por Dart 3.8.1 / Flutter 3.32.7:
+  # csv 8.x y pdf 3.13.x piden Dart >=3.10; file_picker 13.x y share_plus 13.x
+  # piden Flutter >=3.38. Con estos carets pub resuelve al techo compatible.
+  csv: ^6.0.0
+  pdf: ^3.11.3
+  archive: ^3.6.1
+  file_picker: ^11.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  sqlite3: ^2.9.4
+
+  # drift code generation
+  drift_dev: ^2.31.0
+  build_runner: ^2.15.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

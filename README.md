@@ -1,16 +1,62 @@
-# ciclotrack
+# CicloTrack
 
-A new Flutter project.
+Aplicación Android personal para gestionar de forma privada los ciclos menstruales de varias mujeres: perfiles, tracking, encuentros, predicción de fertilidad y alertas locales. Una pantalla de ajustes reúne el acceso a alertas, copia de seguridad, informes, vistas y medicación, junto al «Acerca de». Todos los datos se quedan en el dispositivo; no hay nube, sincronización ni secretos.
 
-## Getting Started
+## Manual de uso
 
-This project is a starting point for a Flutter application.
+Consulta el [manual de uso de CicloTrack](MANUAL_DE_USO.md) para aprender a gestionar perfiles, registrar periodos y encuentros, consultar predicciones y calendarios, configurar alertas, medicación y recordatorios, y exportar o restaurar copias.
 
-A few resources to get you started if this is your first Flutter project:
+## Estado
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Fases 0–10 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas, reportes, copia de seguridad manual, medicación, recordatorios personalizados y ajustes/pulido). Schema drift **v4 con 11 tablas**. La cabecera reúne Ajustes y Más opciones; la app tiene icono y etiqueta propios. La fase 10 no añade dependencias. La entrega real de notificaciones, permisos, selector de archivos e icono queda por comprobar en dispositivo Android. Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Stack
+
+| Capa | Tecnología |
+|---|---|
+| UI | Flutter 3.32.7 (Android-only), Material |
+| Estado | Riverpod 2.6.1 |
+| Datos | SQLite vía drift 2.31.0 + drift_flutter |
+| Notificaciones | flutter_local_notifications 20.1.0, timezone + flutter_timezone |
+| Calendario | table_calendar 3.2.1 + intl 0.20.2 (es-ES) |
+| Gráficos | fl_chart 1.0.0 (pin exacto: 1.1.x no compila con el `vector_math` del SDK) |
+| Copia de seguridad | csv 6.0.0 + archive 3.6.1 + pdf 3.11.3 + file_picker 11.0.3 (selector del sistema, sin `share_plus`) |
+
+Arquitectura feature-first con 3 capas por feature: `presentation/` (UI) → `domain/` (lógica pura, sin Flutter) → `data/` (drift), con flujo unidireccional UI → Notifier → Repository → drift. El código compartido vive en `lib/core/`.
+
+## Entorno
+
+El toolchain (Flutter 3.32.7, Android SDK 34/35, OpenJDK 17) vive en `.toolchain/` y está ignorado por git. Antes de cualquier comando Flutter/Dart:
+
+```bash
+source .toolchain/env.sh
+```
+
+Borrar `.toolchain/` desinstala Flutter/SDK por completo; no hay cambios a nivel de sistema.
+
+## Comandos
+
+```bash
+source .toolchain/env.sh
+dart format lib test                      # formato
+flutter analyze                           # análisis estático (debe quedar limpio)
+flutter test                              # suite completa
+dart run build_runner build --delete-conflicting-outputs   # codegen tras tocar tablas/DAOs
+flutter build apk --debug                 # APK de depuración
+```
+
+## Estructura
+
+```
+lib/
+├── core/          # base de datos, providers y reloj inyectable
+└── features/      # profiles, tracking, encounters, prediction, alerts, calendar, reports, backup, medications, settings
+    └── <feature>/
+        ├── presentation/   # pantallas, widgets y providers
+        ├── domain/         # lógica pura (tests unitarios obligatorios)
+        └── data/           # DAOs, repositorios y drift
+```
+
+## Convenciones
+
+Commits en Conventional Commits, Gitflow completo y reglas de estilo en [`BUENAS_PRACTICAS.md`](BUENAS_PRACTICAS.md). El historial de fixes y sus decisiones queda en [`fixs.md`](fixs.md).
