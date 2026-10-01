@@ -14,6 +14,7 @@ CicloTrack permite llevar el seguimiento de varios perfiles. Funciona sin conexi
 - [Registro de encuentros](#registro-de-encuentros)
 - [Vistas de calendario](#vistas-de-calendario)
 - [Alertas y notificaciones](#alertas-y-notificaciones)
+- [Recordatorios personalizados](#recordatorios-personalizados)
 - [Preguntas frecuentes](#preguntas-frecuentes)
 - [Privacidad y funciones pendientes](#privacidad-y-funciones-pendientes)
 
@@ -223,6 +224,27 @@ La aplicación recalcula las notificaciones al arrancar y cuando cambian los dat
 
 Si Android no permite alarmas exactas, la aplicación utiliza programación inexacta; la entrega puede no coincidir con el minuto elegido.
 
+## Recordatorios personalizados
+
+Un recordatorio es un aviso propio asociado a un perfil y a unos días concretos de su ciclo, por ejemplo «Mejor evitar sexo» en los días 5-7. El día 1 es el inicio del último periodo registrado de ese perfil.
+
+### Configurar
+
+1. Abre el seguimiento de un perfil y pulsa el icono **Recordatorios** de la barra superior.
+2. Pulsa **Nuevo recordatorio**.
+3. Escribe el **Mensaje** (hasta 120 caracteres) y el **Día inicial del ciclo** (entre 1 y 60). El **Día final** es opcional; déjalo vacío si el recordatorio es de un solo día.
+4. Deja **Activo** encendido y pulsa **Crear recordatorio**. Si Android solicita permiso para enviar notificaciones, concédelo; si lo deniegas, el recordatorio se guarda, pero no recibirás el aviso.
+
+En la lista, toca un recordatorio para editarlo, usa su interruptor para activarlo o desactivarlo y la papelera para eliminarlo.
+
+### Cómo se notifican
+
+- Cada recordatorio activo genera **un único aviso por ciclo**, el día inicial del rango, a la **Hora de notificación** elegida en los ajustes de alertas (09:00 si no la has cambiado). Si el rango abarca varios días, el aviso los indica, pero no se repite cada día.
+- Si ese día ya ha pasado en el ciclo actual, el aviso se programa para el ciclo siguiente, calculado con la duración media de los ciclos registrados (28 días si todavía no hay dos periodos).
+- El perfil necesita al menos un periodo registrado; sin él no hay día 1 desde el que contar y no se programa ningún aviso.
+- Los recordatorios no dependen del interruptor **Alertas activadas**: cada uno tiene su propio estado.
+- Los avisos se recalculan al arrancar la aplicación, al cambiar los periodos o la hora de notificación y al guardar, activar, desactivar o eliminar un recordatorio.
+
 ## Preguntas frecuentes
 
 ### No encuentro un perfil
@@ -265,6 +287,6 @@ Esta guía cubre las funciones implementadas. Siguen pendientes:
 
 - Informes y estadísticas con gráficos.
 - Copias de seguridad, importación y exportación manual en JSON, CSV y PDF.
-- Registro de medicación y recordatorios personalizados.
+- Registro de medicación.
 
 Para consultar el estado de desarrollo, véase [planDeDesarrollo.md](planDeDesarrollo.md). Para volver a la documentación general, véase [README.md](README.md).

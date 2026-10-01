@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../prediction/presentation/providers/prediction_providers.dart';
 import '../../../prediction/presentation/widgets/prediction_card.dart';
 import '../../../profiles/data/women_repository.dart';
+import '../../../settings/presentation/screens/reminders_screen.dart';
 import '../../domain/tracking_event.dart';
 import '../providers/tracking_providers.dart';
 import '../widgets/tracking_event_card.dart';
@@ -38,6 +39,18 @@ class TrackingScreen extends ConsumerWidget {
             Text(woman.name),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Recordatorios',
+            icon: const Icon(Icons.event_repeat_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    RemindersScreen(womanId: woman.id, womanName: woman.name),
+              ),
+            ),
+          ),
+        ],
       ),
       body: timelineAsync.when(
         data: (events) {

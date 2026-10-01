@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/db/app_database_provider.dart';
 import 'features/alerts/presentation/providers/alerts_providers.dart';
 import 'features/profiles/presentation/screens/women_list_screen.dart';
+import 'features/settings/presentation/providers/reminder_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,7 @@ class CicloTrackApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(appDatabaseProvider);
     ref.watch(alertsCoordinatorProvider);
+    ref.watch(reminderCoordinatorProvider);
     return MaterialApp(
       title: 'CicloTrack',
       locale: const Locale('es', 'ES'),
