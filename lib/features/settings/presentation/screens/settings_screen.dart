@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../alerts/presentation/screens/alerts_screen.dart';
 import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../calendar/presentation/screens/calendar_home_screen.dart';
+import '../../../medications/presentation/screens/medications_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
 
 /// Versión publicada en `pubspec.yaml`; se actualiza a la vez que aquella.
@@ -19,6 +20,13 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         children: [
           const _SectionHeader('General'),
+          ListTile(
+            leading: const Icon(Icons.medication_outlined),
+            title: const Text('Medicación'),
+            subtitle: const Text('Pastillas y horas de aviso, por mujer'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _open(context, const MedicationsScreen()),
+          ),
           ListTile(
             leading: const Icon(Icons.notifications_outlined),
             title: const Text('Alertas'),

@@ -1,14 +1,14 @@
 # CicloTrack
 
-Aplicación Android personal para gestionar de forma privada los ciclos menstruales de varias mujeres: perfiles, tracking, encuentros, predicción de fertilidad y alertas locales. Una pantalla de ajustes reúne el acceso a alertas, copia de seguridad, informes y vistas, junto al «Acerca de». Todos los datos se quedan en el dispositivo; no hay nube, sincronización ni secretos.
+Aplicación Android personal para gestionar de forma privada los ciclos menstruales de varias mujeres: perfiles, tracking, encuentros, predicción de fertilidad y alertas locales. Una pantalla de ajustes reúne el acceso a alertas, copia de seguridad, informes, vistas y medicación, junto al «Acerca de». Todos los datos se quedan en el dispositivo; no hay nube, sincronización ni secretos.
 
 ## Manual de uso
 
-Consulta el [manual de uso de CicloTrack](MANUAL_DE_USO.md) para aprender a gestionar perfiles, registrar periodos y encuentros, consultar predicciones y calendarios, y configurar las alertas.
+Consulta el [manual de uso de CicloTrack](MANUAL_DE_USO.md) para aprender a gestionar perfiles, registrar periodos y encuentros, consultar predicciones y calendarios, configurar alertas, medicación y recordatorios, y exportar o restaurar copias.
 
 ## Estado
 
-Fases 0–9 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas de calendario, reportes con gráficos y copia de seguridad manual). Schema drift **v3 con 10 tablas**. Fase 10 **en curso**: ya están la pantalla de ajustes, la cabecera de la lista de perfiles colapsada (ajustes + menú de más opciones) y el icono y la etiqueta propios de la app; queda pendiente el resto de la fase (medicación, recordatorios personalizados y pulido final). Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
+Fases 0–10 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas, reportes, copia de seguridad manual, medicación, recordatorios personalizados y ajustes/pulido). Schema drift **v4 con 11 tablas**. La cabecera reúne Ajustes y Más opciones; la app tiene icono y etiqueta propios. La fase 10 no añade dependencias. La entrega real de notificaciones, permisos, selector de archivos e icono queda por comprobar en dispositivo Android. Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
 
 ## Stack
 
@@ -50,7 +50,7 @@ flutter build apk --debug                 # APK de depuración
 ```
 lib/
 ├── core/          # base de datos, providers y reloj inyectable
-└── features/      # profiles, tracking, encounters, prediction, alerts, calendar, reports, backup
+└── features/      # profiles, tracking, encounters, prediction, alerts, calendar, reports, backup, medications, settings
     └── <feature>/
         ├── presentation/   # pantallas, widgets y providers
         ├── domain/         # lógica pura (tests unitarios obligatorios)

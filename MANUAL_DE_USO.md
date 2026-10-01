@@ -1,6 +1,6 @@
 # Manual de uso de CicloTrack
 
-Guía para la versión con perfiles, registro individual, encuentros, predicciones, alertas y vistas de calendario (fases 0–7). Se presupone que la aplicación ya está instalada en un dispositivo Android.
+Guía para la versión con perfiles, registro individual, encuentros, predicciones, alertas, calendarios, informes, copias de seguridad, medicación y recordatorios (fases 0–10). Se presupone que la aplicación ya está instalada en un dispositivo Android.
 
 CicloTrack permite llevar el seguimiento de varios perfiles. Funciona sin conexión y guarda la información en el dispositivo, sin cuentas ni sincronización con la nube.
 
@@ -14,6 +14,9 @@ CicloTrack permite llevar el seguimiento de varios perfiles. Funciona sin conexi
 - [Registro de encuentros](#registro-de-encuentros)
 - [Vistas de calendario](#vistas-de-calendario)
 - [Alertas y notificaciones](#alertas-y-notificaciones)
+- [Informes y estadísticas](#informes-y-estadísticas)
+- [Copia de seguridad](#copia-de-seguridad)
+- [Medicación](#medicación)
 - [Recordatorios personalizados](#recordatorios-personalizados)
 - [Preguntas frecuentes](#preguntas-frecuentes)
 - [Privacidad y funciones pendientes](#privacidad-y-funciones-pendientes)
@@ -26,7 +29,7 @@ CicloTrack permite llevar el seguimiento de varios perfiles. Funciona sin conexi
 4. Toca la tarjeta del perfil para abrir su seguimiento.
 5. Pulsa **Registrar → Periodo**, selecciona la fecha de inicio de un periodo real y pulsa **Guardar**. Puedes completar la fecha de fin más adelante.
 6. Consulta la tarjeta de predicción que aparece sobre el historial.
-7. Vuelve a la pantalla principal y pulsa el icono de calendario para abrir **Vistas**. En **Mes**, toca una fecha para ver su detalle.
+7. Vuelve a la pantalla principal y abre **Más opciones → Vistas**. En **Mes**, toca una fecha para ver su detalle.
 
 Los ejemplos de este manual son ficticios. En los formularios, **Guardar** confirma los cambios; volver atrás sin guardar abandona la edición.
 
@@ -41,9 +44,9 @@ La pantalla principal se llama **CicloTrack** y contiene la lista de perfiles.
 | **Nuevo → Nuevo perfil** | Crea otro perfil. |
 | **Nuevo → Nuevo encuentro** | Registra un encuentro. |
 | **Nuevo → Ver encuentros** | Abre la lista donde puedes editar y eliminar encuentros. |
-| Icono de calendario, **Vistas** | Abre Semana, Mes, Fertilidad y Encuentros. |
-| Icono de campana | Abre los ajustes de alertas. |
-| Icono de actualizar | Recarga la lista de perfiles. |
+| Icono de **Ajustes** | Reúne Medicación, Alertas, Copia de seguridad, Informes, Vistas y Acerca de. |
+| Menú **Más opciones** | Ofrece Vistas, Reportes, Copia de seguridad, Alertas y Actualizar. |
+| **Más opciones → Actualizar** | Recarga la lista de perfiles. |
 
 También puedes deslizar la lista de perfiles hacia abajo para actualizarla. Usa la flecha de vuelta o el gesto de volver de Android para regresar a la pantalla anterior.
 
@@ -157,7 +160,7 @@ La pestaña **Encuentros** dentro de **Vistas** sirve para consultar y filtrar; 
 
 ## Vistas de calendario
 
-Pulsa el icono de calendario de la pantalla principal. Se abre **Vistas**, con cuatro pestañas.
+Abre **Más opciones → Vistas** o **Ajustes → Vistas** desde la pantalla principal. Se abre **Vistas**, con cuatro pestañas.
 
 ### Semana y Mes
 
@@ -195,13 +198,13 @@ La lista incluye el historial de encuentros, no solo los del día seleccionado e
 
 ### Configurar
 
-1. Vuelve a la pantalla principal y pulsa la campana.
+1. Vuelve a la pantalla principal y abre **Ajustes → Alertas** o **Más opciones → Alertas**.
 2. Activa **Alertas activadas**. Si Android solicita permiso para enviar notificaciones, concédelo para completar la activación.
 3. Toca **Hora de notificación** y elige la hora deseada.
 4. Marca los **Tipos de alerta** que quieras recibir.
 5. Revisa **Próximas alertas**, que muestra las previstas para los próximos siete días.
 
-Los ajustes se guardan al cambiarlos; no hay un botón de guardado adicional. Desactivar **Alertas activadas** desactiva todas las notificaciones.
+Los ajustes se guardan al cambiarlos; no hay un botón de guardado adicional. Desactivar **Alertas activadas** desactiva las alertas de ciclo, encuentros y medicación; los recordatorios personalizados conservan su propio estado y siguen funcionando.
 
 ### Tipos disponibles
 
@@ -215,6 +218,7 @@ Los ajustes se guardan al cambiarlos; no hay un botón de guardado adicional. De
 | **Advertencia post-encuentro** | Aviso cuando han pasado aproximadamente 14 días desde un encuentro. |
 | **Múltiples mujeres + fertilidad** | Coincidencia de un encuentro múltiple con fertilidad calculada. |
 | **Ventana combinada** | Resumen semanal de las ventanas de los perfiles. |
+| **Medicación** | Aviso de la pastilla a la hora propia de cada medicamento activo. |
 
 Las alertas dependen de los registros y de sus estimaciones; no confirman resultados médicos. Si no hay condiciones que generen avisos, la vista previa puede estar vacía.
 
@@ -224,13 +228,34 @@ La aplicación recalcula las notificaciones al arrancar y cuando cambian los dat
 
 Si Android no permite alarmas exactas, la aplicación utiliza programación inexacta; la entrega puede no coincidir con el minuto elegido.
 
+## Informes y estadísticas
+
+Abre **Más opciones → Reportes** o **Ajustes → Informes**. Consulta los resúmenes globales, por mujer, por encuentro y por mes, con gráficos de ciclos, síntomas y protección. Los ciclos usan todo el historial; las estadísticas de encuentros, síntomas, periodos y días fértiles abarcan los últimos 12 meses naturales, incluido el actual. Con pocos ciclos, el gráfico individual puede indicar que faltan datos.
+
+## Copia de seguridad
+
+Abre **Ajustes → Copia de seguridad** o la misma entrada en **Más opciones**. Exporta un **JSON** para conservar y trasladar todos los datos, un **ZIP de CSV** para leer las tablas o un **PDF** como informe. El selector de Android permite elegir dónde guardar el archivo.
+
+Para restaurar, selecciona una copia JSON y revisa la confirmación: la importación **sustituye todos los datos actuales**. CSV y PDF no se pueden importar. Las copias actuales incluyen medicamentos y recordatorios; las copias v3 admitidas se restauran sin medicamentos. Guarda una copia fuera de los datos de la app antes de desinstalar o borrar su almacenamiento.
+
+## Medicación
+
+1. Abre **Ajustes → Medicación**. También puedes entrar con el icono **Medicación** de la pantalla **Alertas**.
+2. Pulsa **Añadir medicamento**, selecciona la **Mujer** y escribe el **Medicamento** (obligatorio, hasta 80 caracteres).
+3. Añade **Dosis (opcional)** (hasta 60 caracteres), elige **Hora de la toma**, deja **Activo** encendido y pulsa **Guardar**.
+4. En **Alertas**, activa **Alertas activadas** y el tipo **Medicación**, y concede el permiso de notificaciones de Android.
+
+La lista agrupa los medicamentos por mujer. Toca uno para editarlo, usa el interruptor para activarlo o desactivarlo y **Eliminar medicamento** para borrarlo tras confirmar.
+
+El aviso usa el texto **«Es hora de la pastilla para …»** con el nombre de la mujer, a la hora configurada en ese medicamento, independientemente de la hora general de alertas. No necesita periodos registrados. En cada recálculo se programa la siguiente toma: hoy si la hora aún no ha pasado, mañana en caso contrario. Hay una hora diaria por medicamento; no se registra si se tomó, ni se configuran frecuencias semanales o fecha de fin. Abre la app para mantener actualizada la programación: no hay una repetición diaria indefinida ya programada.
+
 ## Recordatorios personalizados
 
 Un recordatorio es un aviso propio asociado a un perfil y a unos días concretos de su ciclo, por ejemplo «Mejor evitar sexo» en los días 5-7. El día 1 es el inicio del último periodo registrado de ese perfil.
 
 ### Configurar
 
-1. Abre el seguimiento de un perfil y pulsa el icono **Recordatorios** de la barra superior.
+1. Abre el seguimiento de un perfil y pulsa el icono **Recordatorios** de la barra superior. Son propios de esa mujer; no existe una entrada global en Ajustes.
 2. Pulsa **Nuevo recordatorio**.
 3. Escribe el **Mensaje** (hasta 120 caracteres) y el **Día inicial del ciclo** (entre 1 y 60). El **Día final** es opcional; déjalo vacío si el recordatorio es de un solo día.
 4. Deja **Activo** encendido y pulsa **Crear recordatorio**. Si Android solicita permiso para enviar notificaciones, concédelo; si lo deniegas, el recordatorio se guarda, pero no recibirás el aviso.
@@ -249,7 +274,7 @@ En la lista, toca un recordatorio para editarlo, usa su interruptor para activar
 
 ### No encuentro un perfil
 
-Selecciona **Todas** en los filtros de la pantalla principal. Si habías elegido una etiqueta, solo se mostraban los perfiles asociados. También puedes actualizar la lista con el icono de actualizar.
+Selecciona **Todas** en los filtros de la pantalla principal. Si habías elegido una etiqueta, solo se mostraban los perfiles asociados. También puedes actualizar la lista con **Más opciones → Actualizar**.
 
 ### No puedo ordenar los perfiles
 
@@ -267,7 +292,7 @@ Si aparece **No se pudo guardar el periodo**, revisa los periodos existentes por
 
 ### No recibo notificaciones
 
-Comprueba que **Alertas activadas** esté encendido, que hayas seleccionado los tipos deseados y que existan datos para generar esos avisos. Revisa el permiso de notificaciones de CicloTrack en los ajustes de Android. Si fue denegado, habilítalo allí y vuelve a activar las alertas. Pulsa **Recalcular ahora** y consulta **Próximas alertas**.
+Para las alertas de ciclo, encuentros o medicación, comprueba que **Alertas activadas** esté encendido, que hayas seleccionado los tipos deseados y que existan datos para generar esos avisos. Revisa el permiso de notificaciones de CicloTrack en los ajustes de Android. Si fue denegado, habilítalo allí y vuelve a activar las alertas. Pulsa **Recalcular ahora** y consulta **Próximas alertas**. Para medicación, revisa también el tipo **Medicación**, el estado del medicamento y su hora propia. Para recordatorios personalizados, revisa su estado activo y que la mujer tenga un periodo registrado; no requieren el interruptor maestro.
 
 ### Veo marcas estimadas o faltan marcas en una fecha lejana
 
@@ -275,18 +300,14 @@ Las marcas atenuadas son proyecciones. El calendario permite navegar más allá 
 
 ### ¿Puedo recuperar un registro eliminado o pasar los datos a otro teléfono?
 
-Esta versión no dispone de deshacer, restauración ni exportación/importación desde la aplicación. No ofrece un traslado de datos entre dispositivos.
+No hay deshacer. Puedes restaurar o trasladar los datos con una copia JSON desde **Copia de seguridad**; al importarla se sustituye todo el contenido del dispositivo destino.
 
 ## Privacidad y funciones pendientes
 
 Los datos se guardan localmente. El uso cotidiano no necesita internet ni una cuenta. Las notas pueden verse en la lista de perfiles y los avisos incluyen información de los registros; ajusta la visibilidad de notificaciones en Android si quieres limitar lo que aparece en la pantalla de bloqueo.
 
-Eliminar datos de la aplicación desde Android elimina también su información local. La aplicación todavía no ofrece una copia de seguridad manual que permita recuperarla.
+Eliminar datos de la aplicación desde Android elimina también su información local. Una copia JSON manual guardada fuera del almacenamiento de la app permite restaurarla.
 
-Esta guía cubre las funciones implementadas. Siguen pendientes:
-
-- Informes y estadísticas con gráficos.
-- Copias de seguridad, importación y exportación manual en JSON, CSV y PDF.
-- Registro de medicación.
+Esta guía cubre las fases 0–10 implementadas. La entrega y puntualidad de las notificaciones, los permisos, el selector de archivos y la apariencia del icono requieren validación en un dispositivo Android real.
 
 Para consultar el estado de desarrollo, véase [planDeDesarrollo.md](planDeDesarrollo.md). Para volver a la documentación general, véase [README.md](README.md).

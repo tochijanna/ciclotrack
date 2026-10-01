@@ -70,7 +70,7 @@ No actualizar Drift/Riverpod sin actualizar Dart: Drift está fijado en `2.31.0`
 
 ## 3. Schema SQLite actual
 
-Schema version **3**, con 10 tablas:
+Schema version **4**, con 11 tablas:
 
 - **`women`** — perfiles, avatar, color, notas, orden y fecha de creación.
 - **`tags`** — etiquetas únicas compartidas.
@@ -80,7 +80,8 @@ Schema version **3**, con 10 tablas:
 - **`symptoms`** — tipo, fecha, intensidad y notas.
 - **`encounters`** — fecha/hora, protección, resultado y notas.
 - **`encounter_women`** — relación N:M encuentro-mujer con tipo de relación.
-- **`reminders`** — recordatorios por día del ciclo.
+- **`reminders`** — recordatorios por mujer y rango de días del ciclo.
+- **`medications`** — medicamento, dosis, hora y estado por mujer; FK con borrado en cascada.
 - **`alert_settings`** — ajustes singleton de alertas: activación, hora, tipos y horizonte.
 
 Las nuevas instalaciones tienen claves foráneas con cascade. Para bases antiguas, `WomenRepository.delete()` ejecuta una eliminación transaccional de todos los datos dependientes.
@@ -123,7 +124,7 @@ La predicción se muestra en la tarjeta superior del tracking individual y se ac
 | **7** | Vistas consolidadas: Semana, Mes, Fertilidad y Encuentros | ✅ Completada | Dashboard |
 | **8** | Reportes y estadísticas con gráficos | ✅ Completada | Análisis |
 | **9** | Export/import manual JSON, CSV y PDF | ✅ Completada | Backup |
-| **10** | Medicación, recordatorios personalizados, ajustes finales, iconos y pulido | Pendiente | Versión 1.0 |
+| **10** | Medicación, recordatorios personalizados, ajustes finales, iconos y pulido | ✅ Completada | Versión 1.0 |
 
 ### Fase 6: alcance actual
 
@@ -437,7 +438,30 @@ y hora/minuto. La UI observa los streams del repositorio con Riverpod.
 **Límites:** una hora diaria por medicamento; sin historial de tomas,
 frecuencias semanales ni fecha de fin. El motor programa la siguiente toma
 en cada recálculo de alertas. Recordatorios personalizados, ajustes finales,
-iconos y pulido se entregan por separado: la fase 10 permanece pendiente.
+iconos y pulido se integraron después; el cierre completo se recoge en el resultado siguiente.
+
+### Fase 10: resultado
+
+Integrada en `develop` mediante las ramas `feature/fase-10-medicacion`, `feature/fase-10-recordatorios`, `feature/fase-10-ajustes-pulido` y el cierre `feature/fase-10-pulido`, con merges `--no-ff`. Las tres piezas reúnen **16 commits de implementación, tests y documentación** (sin contar merges); el cierre añade **3 commits atómicos**: enlace de Medicación (`feat(settings)`), navegación (`test(test)`) y manual/estado de fase (`docs(docs)`). Schema **v4 con 11 tablas**, sin dependencias nuevas.
+
+| Punto de la spec | Implementación |
+|---|---|
+| Medicación | CRUD por mujer, dosis opcional y una hora diaria propia; lista agrupada, activación y borrado confirmado; entrada desde Ajustes y Alertas |
+| Avisos de medicación | Texto «Es hora de la pastilla para …», siguiente toma hoy o mañana, maestro y tipo Medicación activos; no requiere periodos |
+| Recordatorios personalizados | CRUD desde el tracking de cada mujer, mensaje de hasta 120 caracteres y días 1–60; un aviso por ciclo al inicio del rango, a la hora general de alertas, independiente del maestro |
+| Ajustes y navegación | General reúne Medicación, Alertas, Copia de seguridad, Informes y Vistas; Acerca de muestra versión y privacidad; AppBar de perfiles con Ajustes y Más opciones |
+| Iconos y etiqueta | Recursos launcher sustituidos y etiqueta Android CicloTrack |
+| Backup | JSON v4 con medicamentos y recordatorios, importación compatible con v3 sin medicamentos; CSV de medicamentos y listado PDF |
+
+Verificación del cierre: `dart format lib test` sin cambios, `flutter analyze` limpio, **406 tests verdes** (70 más que al cerrar la fase 9) y `flutter build apk --debug` correcto. Los dos tests nuevos abren la pantalla real de Medicación desde Ajustes y la de Alertas desde Más opciones; usan la base drift en memoria con `ProviderScope` overridado y cierre dentro del test. El test de Alertas sustituye solo el provider de vista previa por una lista vacía: no necesita fakes de scheduler ni coordinador. Tras el merge se repiten análisis y suite en `develop`, y se comprueba la ascendencia de la rama de pulido.
+
+Desviaciones y límites reales:
+
+- Los recordatorios viven en `settings` y se abren por mujer desde tracking, sin entrada global en Ajustes. Se programa un aviso al inicio del rango, no uno diario durante todo el rango.
+- Medicación programa la siguiente toma en cada recálculo, sin repetición diaria indefinida, historial de tomas, frecuencias semanales ni fecha de fin. Los recordatorios requieren al menos un periodo y proyectan el ciclo siguiente con la media (28 días por defecto).
+- Las notificaciones de alertas y recordatorios preservan los IDs de la otra función; desactivar el maestro no cancela los recordatorios personalizados.
+- No se ha instalado ni probado la app en dispositivo en este cierre: entrega real y puntualidad de avisos, permisos Android, selector SAF, apariencia del icono/etiqueta y pulido visual requieren esa comprobación. Compilar el APK no demuestra esos comportamientos.
+- El cierre técnico de fase no publica una release: sin push, tag ni cambios en `main`.
 
 ## 6. Verificación por fase
 
