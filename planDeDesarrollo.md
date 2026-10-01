@@ -416,6 +416,29 @@ Límites aceptados: la restauración es destructiva (por eso pide confirmación 
 
 ---
 
+### Fase 10 — avance (medicación)
+
+**Entregado:** medicación por mujer con alta, edición, activación y borrado,
+lista agrupada por perfil y acceso desde el AppBar de Alertas. El formulario
+valida nombre (obligatorio, hasta 80 caracteres), dosis opcional (hasta 60)
+y hora/minuto. La UI observa los streams del repositorio con Riverpod.
+
+**Decisiones:**
+- Schema drift **v4**, tabla `medications` con FK a `women` y borrado en cascada.
+  La migración añade la tabla sin modificar los datos anteriores.
+- Tipo de alerta **Medicación**, con hora propia por medicamento. Programa la
+  siguiente toma hoy o mañana si ya pasó; respeta el maestro, el tipo y el
+  estado activo. No necesita periodos registrados. El ID del medicamento
+  distingue las tomas de una misma mujer incluso si comparten hora.
+- Copia JSON **v4** con medicamentos; importación compatible con v3, que deja
+  la tabla nueva vacía. El ZIP incluye `medications.csv` y el informe PDF
+  incluye un listado con mujer, medicamento, dosis, hora y estado.
+
+**Límites:** una hora diaria por medicamento; sin historial de tomas,
+frecuencias semanales ni fecha de fin. El motor programa la siguiente toma
+en cada recálculo de alertas. Recordatorios personalizados, ajustes finales,
+iconos y pulido se entregan por separado: la fase 10 permanece pendiente.
+
 ## 6. Verificación por fase
 
 Antes de cada commit:
