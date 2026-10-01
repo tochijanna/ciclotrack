@@ -4,11 +4,11 @@
 
 | Ítem | Estado |
 |---|---|
-| Proyecto | Flutter Android-only `ciclotrack`, en `develop` |
+| Proyecto | Flutter Android-only `ciclotrack`; fases 0–10 publicadas como **v1.0.0** (tag sobre `main`), `develop` como rama de integración |
 | Repositorio | GitHub: `https://github.com/tochijanna/ciclotrack.git` |
-| Flutter | 3.32.7 en `.toolchain/` |
+| Flutter | 3.32.7 en `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` (ignorado por git; los worktrees nuevos no lo incluyen) |
 | Dart | 3.8.1 |
-| Android SDK | 34/35 en `.toolchain/` |
+| Android SDK | 34/35 en la misma carpeta `.toolchain/` |
 | Java | OpenJDK 17 del sistema |
 | Calidad | `flutter analyze` limpio, suite completa verde |
 | APK debug | Compila correctamente |
@@ -16,7 +16,7 @@
 Antes de cualquier comando Flutter/Dart:
 
 ```bash
-source .toolchain/env.sh
+source /home/tochi/Proyectos/CalendarioMenstrual/.toolchain/env.sh
 ```
 
 La aplicación es 100 % local/offline. No utiliza nube, sincronización remota ni secretos.
@@ -55,7 +55,7 @@ Las reglas de dominio requieren tests unitarios. Las fuentes reactivas usan `Str
 | `fl_chart` | Reportes/estadísticas | `1.0.0`, Fase 8 — 1.1.x declara `vector_math ^2.1` pero usa API de 2.2 y no compila |
 | `csv` + `pdf` + `archive` + `file_picker` | Backup manual: ZIP de CSV, informe PDF e import/export por el selector del sistema | Instalado, Fase 9 — `pdf` 3.11.3 (3.12.x pide `vector_math ^2.2`), `archive` 3.6.1 (pdf exige `<4.1`), `csv` 6.0.0 y `file_picker` 11.0.3 |
 | `intl` | Fechas y localización es-ES | Instalado (0.20.2) + `flutter_localizations` |
-| `go_router` | Navegación avanzada | Pendiente según necesidad |
+| `go_router` | Navegación avanzada | **No instalado**: la navegación usa `MaterialPageRoute` (pantalla de Ajustes y menú overflow). Descartado, sin deep links |
 | `ReorderableListView` | Orden de perfiles | Nativo, implementado |
 
 Después de modificar tablas o DAOs:
@@ -461,14 +461,14 @@ Desviaciones y límites reales:
 - Medicación programa la siguiente toma en cada recálculo, sin repetición diaria indefinida, historial de tomas, frecuencias semanales ni fecha de fin. Los recordatorios requieren al menos un periodo y proyectan el ciclo siguiente con la media (28 días por defecto).
 - Las notificaciones de alertas y recordatorios preservan los IDs de la otra función; desactivar el maestro no cancela los recordatorios personalizados.
 - No se ha instalado ni probado la app en dispositivo en este cierre: entrega real y puntualidad de avisos, permisos Android, selector SAF, apariencia del icono/etiqueta y pulido visual requieren esa comprobación. Compilar el APK no demuestra esos comportamientos.
-- El cierre técnico de fase no publica una release: sin push, tag ni cambios en `main`.
+- Release publicada: PR #4 (`release/1.0.0` → `main`) fusionado con merge commit `7987c91d` y tag anotado `v1.0.0` sobre ese commit; `develop` quedó en `09f9454`.
 
 ## 6. Verificación por fase
 
 Antes de cada commit:
 
 ```bash
-source .toolchain/env.sh
+source /home/tochi/Proyectos/CalendarioMenstrual/.toolchain/env.sh
 dart format lib test
 flutter analyze
 flutter test
