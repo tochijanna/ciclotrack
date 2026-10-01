@@ -1,22 +1,23 @@
 # AGENTS.md
 
 ## Project state
-- **Phases 0–9 done** (scaffold + gitflow, drift schema + prediction engine, profiles, tracking, encounters, alerts with local notifications, consolidated calendar views, reports and statistics, manual backup). On `develop`.
-- Drift schema **v3, 10 tables**: `women`, `tags`, `woman_tags`, `period_logs`, `ovulation_logs`, `symptoms`, `encounters`, `encounter_women`, `reminders`, `alert_settings`. Feature DAOs, prediction engine, business UI and notification scheduling are implemented and tested.
+- **Phases 0–10 done and released as v1.0.0** (tag `v1.0.0` on `main`, merge commit `7987c91d`; `develop` is the integration branch). Scope: scaffold + gitflow, drift schema + prediction engine, profiles, tracking, encounters, alerts with local notifications, consolidated calendar views, reports and statistics, manual backup, medication, personalized reminders and settings/polish.
+- Drift schema **v4, 11 tables**: `women`, `tags`, `woman_tags`, `period_logs`, `ovulation_logs`, `symptoms`, `encounters`, `encounter_women`, `reminders`, `alert_settings`, `medications`. Migration v3 → v4 creates `medications`; a JSON backup written in the v3 format still imports (its `medications` table arrives empty).
 - Consolidated views live in `lib/features/calendar/`: week/month grid on `table_calendar`, fertility and encounters views, opened from the calendar icon in the profile list. `CycleTimeline` (`lib/features/prediction/domain/cycle_timeline.dart`) answers phase/fertile window for **any** date, and flags projected cycles as estimated.
 - Reports live in `lib/features/reports/`: pure aggregation in `domain/report_builder.dart` over the calendar board (extended with each woman's period logs) and fl_chart graphs in `presentation/`, opened from the insights icon. Charts are not asserted pixel-wise: the numbers are tested in the domain and the widgets only as present.
 - Backup lives in `lib/features/backup/`: full JSON export/import (with confirmation), a ZIP of one CSV per table and an A4 PDF report, opened from the backup icon. JSON is the only lossless format; CSV/PDF are human-readable only. Restores replace everything inside one transaction.
-- **Open work: phase 10** (medication + polish). See `planDeDesarrollo.md`.
+- Medication lives in `lib/features/medications/` (per-woman daily dose + time) and adds `AlertType.medicacion`. Personalized reminders live in `lib/features/settings/` (per-woman cycle-day range, one notification per cycle) and do not depend on the alerts master switch. Alert notification ids are reserved to `[100000, 999999]` and reminder ids start at `1000000` (`lib/features/alerts/domain/alert_item.dart`, `lib/features/settings/data/reminder_notifier.dart`).
+- **No open phase.** The only unverified area is on-device behaviour (real delivery/timing of notifications, Android permissions, SAF picker, icon and label): it needs a physical Android device or an emulator with a system image, and neither exists in this environment (`adb devices` empty, no `emulator/` or `system-images/` under the SDK). See `planDeDesarrollo.md`.
 - Active gitflow branches: `main` (release history) and `develop` (integration). `feature/*` branches are created per phase task and merged into `develop`.
-- **Toolchain lives inside the repo at `.toolchain/` and is git-ignored:** Flutter 3.32.7 + Android SDK platforms 34/35 (build-tools 34.0.0) + OpenJDK 17 (system, `/usr/lib/jvm/java-17-openjdk`). Before any Flutter command, source the env:
+- **The toolchain is git-ignored and normally lives outside the checkout:** the canonical install is `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` (Flutter 3.32.7 + Android SDK platforms 34/35, build-tools 34.0.0) with OpenJDK 17 from the system (`/usr/lib/jvm/java-17-openjdk`). Fresh clones and Orca worktrees do not carry it, so source the absolute env script before any Flutter/Dart command (adjust the path if your checkout keeps it elsewhere):
   ```bash
-  source .toolchain/env.sh
+  source /home/tochi/Proyectos/CalendarioMenstrual/.toolchain/env.sh
   ```
 - **Codegen:** after editing drift tables or DAOs, regenerate before testing:
   ```bash
   dart run build_runner build --delete-conflicting-outputs
   ```
-- Deleting `.toolchain/` fully uninstalls Flutter/SDK (no system-wide changes).
+- Deleting `.toolchain/` fully uninstalls Flutter/SDK (no system-wide changes) (in this checkout, deleting it means deleting that absolute directory).
 - Drift version pinned to `2.31.0` (Dart 3.8.1); newer drift/riverpod require Dart ≥3.10 — do not bump without a Dart upgrade. Same for `fl_chart`: exactly `1.0.0`, because 1.1.x resolves but **does not compile** against the `vector_math 2.1.4` the SDK pins. Version solving and `flutter analyze` are not enough: verify every new dependency by compiling a widget test **and** `flutter build apk`.
 
 ## Reference docs (in priority order, all in Spanish)
@@ -31,7 +32,7 @@
 - Prediction engine lives in `lib/features/prediction/domain/`; estimated ovulation = average cycle − 14 (standard luteal phase), fertility window = ovulation −5 / +2, defaults 24–32/28.
 - Local notifications via **flutter_local_notifications 20.1.0** + **timezone / flutter_timezone**; pending alerts are recomputed at start-up and after any period, encounter or settings change.
 - Shared runtime helpers: `lib/core/db/` (database + providers) and `lib/core/time/clock.dart` (`clockProvider`, injectable clock for tests).
-- Not installed yet, added per phase: `go_router` only if needed. Backup uses `csv` 6.0.0 + `pdf` 3.11.3 + `archive` 3.6.1 + `file_picker` 11.0.3 (no `share_plus`: the system picker already writes anywhere). `pdf` must stay below 3.12 (needs `vector_math ^2.2`) and `archive` below 4.1 (what `pdf` allows).
+- Navigation uses plain `MaterialPageRoute` throughout (the settings hub and the profile-list overflow menu): `go_router` was never needed and is not installed. Backup uses `csv` 6.0.0 + `pdf` 3.11.3 + `archive` 3.6.1 + `file_picker` 11.0.3 (no `share_plus`: the system picker already writes anywhere). `pdf` must stay below 3.12 (needs `vector_math ^2.2`) and `archive` below 4.1 (what `pdf` allows).
 - The app is 100 % local/offline, no cloud. No secrets, no sensitive data in logs.
 
 ## Mandatory conventions (from BUENAS_PRACTICAS.md)
@@ -43,5 +44,5 @@
 - All UI copy and project docs are in Spanish.
 
 ## Working rule
-- Follow the phases in `planDeDesarrollo.md` in order; each phase maps to a `feature/...` branch merged into `develop` and closes with `test`/`docs` commits. Phases 0–9 are closed; **phase 10 is the open work**.
+- Follow the phases in `planDeDesarrollo.md` in order; each phase maps to a `feature/...` branch merged into `develop` and closes with `test`/`docs` commits. Phases 0–10 are closed and released as `v1.0.0`; new work starts on a `feature/` branch from `develop` and reaches `main` only through `release/` or `hotfix/` plus a tag.
 - Remoto `origin` en GitHub: `https://github.com/tochijanna/ciclotrack.git`. Las ramas `main` y `develop` ya han sido pushadas.
