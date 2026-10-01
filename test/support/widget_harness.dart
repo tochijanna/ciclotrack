@@ -14,6 +14,9 @@ import 'package:ciclotrack/features/encounters/domain/encounter_options.dart';
 import 'package:ciclotrack/features/profiles/data/women_dao.dart';
 import 'package:ciclotrack/features/profiles/data/women_repository.dart';
 import 'package:ciclotrack/features/profiles/domain/woman_draft.dart';
+import 'package:ciclotrack/features/settings/data/reminder_dao.dart';
+import 'package:ciclotrack/features/settings/data/reminder_repository.dart';
+import 'package:ciclotrack/features/settings/domain/reminder_validators.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
@@ -230,6 +233,30 @@ Future<int> seedSymptom(
         type: type ?? symptomTypes.first,
         severity: severity,
         notes: notes,
+      ),
+    ),
+  );
+}
+
+/// Inserta un recordatorio personalizado y devuelve su id.
+Future<int> seedReminder(
+  WidgetTester tester,
+  AppDatabase db, {
+  required int womanId,
+  String message = 'Mejor evitar sexo',
+  int cycleDayStart = 5,
+  int? cycleDayEnd,
+  bool enabled = true,
+}) {
+  return runReal(
+    tester,
+    () => ReminderRepository(ReminderDao(db)).create(
+      womanId,
+      ReminderDraft(
+        message: message,
+        cycleDayStart: cycleDayStart,
+        cycleDayEnd: cycleDayEnd ?? cycleDayStart,
+        enabled: enabled,
       ),
     ),
   );
