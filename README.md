@@ -26,10 +26,10 @@ Arquitectura feature-first con 3 capas por feature: `presentation/` (UI) → `do
 
 ## Entorno
 
-El toolchain (Flutter 3.32.7, Android SDK 34/35, OpenJDK 17) vive en `.toolchain/` y está ignorado por git. Antes de cualquier comando Flutter/Dart:
+El toolchain (Flutter 3.32.7, Android SDK 34/35, OpenJDK 17) vive en una carpeta `.toolchain/` ignorada por git; en esta máquina está en `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` y los worktrees nuevos no la incluyen. Antes de cualquier comando Flutter/Dart:
 
 ```bash
-source .toolchain/env.sh
+source /home/tochi/Proyectos/CalendarioMenstrual/.toolchain/env.sh
 ```
 
 Borrar `.toolchain/` desinstala Flutter/SDK por completo; no hay cambios a nivel de sistema.
@@ -37,7 +37,7 @@ Borrar `.toolchain/` desinstala Flutter/SDK por completo; no hay cambios a nivel
 ## Comandos
 
 ```bash
-source .toolchain/env.sh
+source /home/tochi/Proyectos/CalendarioMenstrual/.toolchain/env.sh
 dart format lib test                      # formato
 flutter analyze                           # análisis estático (debe quedar limpio)
 flutter test                              # suite completa
