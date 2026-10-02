@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ciclotrack/features/prediction/domain/cycle_phase.dart';
+import 'package:ciclotrack/features/prediction/domain/cycle_timeline.dart';
 import 'package:ciclotrack/features/prediction/domain/prediction_calculator.dart';
 import 'package:ciclotrack/features/prediction/domain/woman_prediction.dart';
 
@@ -232,6 +233,78 @@ void main() {
     test('empty forecast when sinDatos', () {
       final pred = calc.calculate(periodLogs: []);
       expect(pred.pronostico, isEmpty);
+    });
+  });
+
+  group('PredictionCalculator - dedup de fechas duplicadas', () {
+    test('ignores inicios duplicados en lugar de ciclos de longitud 0', () {
+      final pred = calc.calculate(
+        periodLogs: [
+          PeriodLogInput(startDate: DateTime(2026, 1, 1)),
+          PeriodLogInput(startDate: DateTime(2026, 1, 1)),
+          PeriodLogInput(startDate: DateTime(2026, 1, 29)),
+        ],
+        today: DateTime(2026, 2, 1),
+      );
+
+      expect(pred.minCiclo, greaterThanOrEqualTo(1));
+      expect(pred.periodoPrevisto, isNotNull);
+      expect(
+        pred.ventanaFertilFin!.isBefore(pred.ventanaFertilInicio!),
+        isFalse,
+        reason: 'la ventana fértil no debe quedar invertida',
+      );
+      expect(pred.ciclosReales, 1);
+    });
+
+    test(
+      'calculate y CycleTimeline.from coinciden en media con duplicados',
+      () {
+        final logs = [
+          PeriodLogInput(startDate: DateTime(2026, 1, 1)),
+          PeriodLogInput(startDate: DateTime(2026, 1, 1)),
+        ];
+        final pred = calc.calculate(
+          periodLogs: logs,
+          today: DateTime(2026, 1, 15),
+        );
+        final timeline = CycleTimeline.from(
+          logs: logs,
+          horizonte: DateTime(2026, 3, 1),
+        );
+
+        // Ambos deduplican: sin ciclos reales, media por defecto 28.
+        expect(pred.mediaCiclo, 28.0);
+        expect(timeline.spans[1].start, DateTime(2026, 1, 29));
+      },
+    );
+  });
+
+  group('PredictionCalculator - DST (días de calendario)', () {
+    test('un ciclo que cruza el cambio de hora mide 28 días', () {
+      final pred = calc.calculate(
+        periodLogs: [
+          PeriodLogInput(startDate: DateTime.utc(2026, 2, 22)),
+          PeriodLogInput(startDate: DateTime.utc(2026, 3, 22)),
+        ],
+        today: DateTime(2026, 3, 23),
+      );
+      expect(pred.ciclosReales, 1);
+      expect(pred.mediaCiclo, 28.0);
+      expect(pred.minCiclo, 28);
+      expect(pred.maxCiclo, 28);
+    });
+
+    test('fechas consecutivas spring-forward miden 1 día', () {
+      final pred = calc.calculate(
+        periodLogs: [
+          PeriodLogInput(startDate: DateTime.utc(2026, 3, 8)),
+          PeriodLogInput(startDate: DateTime.utc(2026, 3, 9)),
+        ],
+        today: DateTime(2026, 3, 10),
+      );
+      expect(pred.ciclosReales, 1);
+      expect(pred.mediaCiclo, 1.0);
     });
   });
 }
