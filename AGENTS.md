@@ -9,16 +9,16 @@
 - Medication lives in `lib/features/medications/` (per-woman daily dose + time) and adds `AlertType.medicacion`. Personalized reminders live in `lib/features/settings/` (per-woman cycle-day range, one notification per cycle) and do not depend on the alerts master switch. Alert notification ids are reserved to `[100000, 999999]` and reminder ids start at `1000000` (`lib/features/alerts/domain/alert_item.dart`, `lib/features/settings/data/reminder_notifier.dart`).
 - **No open phase.** The only unverified area is on-device behaviour (real delivery/timing of notifications, Android permissions, SAF picker, icon and label): it needs a physical Android device or an emulator with a system image, and neither exists in this environment (`adb devices` empty, no `emulator/` or `system-images/` under the SDK). See `planDeDesarrollo.md`.
 - Active gitflow branches: `main` (release history) and `develop` (integration). `feature/*` branches are created per phase task and merged into `develop`.
-- **The toolchain is git-ignored and normally lives outside the checkout:** the canonical install is `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` (Flutter 3.32.7 + Android SDK platforms 34/35, build-tools 34.0.0) with OpenJDK 17 from the system (`/usr/lib/jvm/java-17-openjdk`). Fresh clones and Orca worktrees do not carry it, so source the absolute env script before any Flutter/Dart command (adjust the path if your checkout keeps it elsewhere):
+- **The toolchain is git-ignored and normally lives outside the checkout:** the canonical install is `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` (Flutter 3.47.4 + Android SDK platform 36.0.0, build-tools 36.0.0) with OpenJDK 17 from the system (`/usr/lib/jvm/java-17-openjdk`; JDK 17+ — Jenkins usa JDK 21). Fresh clones and Orca worktrees do not carry it, so source the absolute env script before any Flutter/Dart command (adjust the path if your checkout keeps it elsewhere):
   ```bash
   source /home/tochi/Proyectos/CalendarioMenstrual/.toolchain/env.sh
   ```
 - **Codegen:** after editing drift tables or DAOs, regenerate before testing:
   ```bash
-  dart run build_runner build --delete-conflicting-outputs
+  dart run build_runner build
   ```
 - Deleting `.toolchain/` fully uninstalls Flutter/SDK (no system-wide changes) (in this checkout, deleting it means deleting that absolute directory).
-- Drift version pinned to `2.31.0` (Dart 3.8.1); newer drift/riverpod require Dart ≥3.10 — do not bump without a Dart upgrade. Same for `fl_chart`: exactly `1.0.0`, because 1.1.x resolves but **does not compile** against the `vector_math 2.1.4` the SDK pins. Version solving and `flutter analyze` are not enough: verify every new dependency by compiling a widget test **and** `flutter build apk`.
+- Dependencies aligned to Dart 3.13.3: `drift 2.35.1` (+ `drift_flutter 0.3.1`), `sqlite3 3.7.0` (native assets/build hooks), `fl_chart 1.2.0`, `pdf 3.12.0`, `archive 4.0.9`, `csv 8.0.0`, `file_picker 13.1.0`. Version solving and `flutter analyze` are not enough: verify every new dependency by compiling a widget test **and** `flutter build apk`.
 
 ## Reference docs (in priority order, all in Spanish)
 1. `Especificaciones.md` — functional requirements (source of truth for the business domain).
@@ -27,12 +27,12 @@
 4. `fixs.md` — historical fix backlog (F-01…F-19) plus the coverage plan; every item is resolved. Read it for past decisions and test-harness rules, not as pending work.
 
 ## Decided stack
-- Flutter + SQLite via **drift** (2.31.0), state management with **Riverpod** (flutter_riverpod 2.6.1, already in pubspec).
+- Flutter + SQLite via **drift** (2.35.1), state management with **Riverpod** (flutter_riverpod 2.6.1, already in pubspec).
 - Feature-first architecture, 3 layers per feature: `presentation/` (UI) → `domain/` (pure Dart logic, no Flutter, unit-testable) → `data/` (drift). Shared code lives in `lib/core/`. Unidirectional flow: UI → Notifier → Repository → drift.
 - Prediction engine lives in `lib/features/prediction/domain/`; estimated ovulation = average cycle − 14 (standard luteal phase), fertility window = ovulation −5 / +2, defaults 24–32/28.
 - Local notifications via **flutter_local_notifications 20.1.0** + **timezone / flutter_timezone**; pending alerts are recomputed at start-up and after any period, encounter or settings change.
 - Shared runtime helpers: `lib/core/db/` (database + providers) and `lib/core/time/clock.dart` (`clockProvider`, injectable clock for tests).
-- Navigation uses plain `MaterialPageRoute` throughout (the settings hub and the profile-list overflow menu): `go_router` was never needed and is not installed. Backup uses `csv` 6.0.0 + `pdf` 3.11.3 + `archive` 3.6.1 + `file_picker` 11.0.3 (no `share_plus`: the system picker already writes anywhere). `pdf` must stay below 3.12 (needs `vector_math ^2.2`) and `archive` below 4.1 (what `pdf` allows).
+- Navigation uses plain `MaterialPageRoute` throughout (the settings hub and the profile-list overflow menu): `go_router` was never needed and is not installed. Backup uses `csv` 8.0.0 + `pdf` 3.12.0 + `archive` 4.0.9 + `file_picker` 13.1.0 (no `share_plus`: the system picker already writes anywhere). `pdf` stays below 3.13 (3.13+ requires `xml 7.x`, incompatible with `flutter_local_notifications 20.1.0`) and `archive` below 4.1 (what `pdf` 3.12 allows).
 - The app is 100 % local/offline, no cloud. No secrets, no sensitive data in logs.
 
 ## Mandatory conventions (from BUENAS_PRACTICAS.md)
