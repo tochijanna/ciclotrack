@@ -36,6 +36,18 @@ void main() {
     expect(find.text('Copia de seguridad'), findsOneWidget);
     expect(find.text('Informes'), findsOneWidget);
     expect(find.text('Vistas'), findsOneWidget);
+
+    // La sección «Acerca de» queda bajo el nuevo bloque «Seguridad»; se
+    // desplaza el listado para revelarla antes de aseverar su contenido.
+    await tester.scrollUntilVisible(
+      find.text('100 % local y sin nube'),
+      200,
+      scrollable: find.descendant(
+        of: find.byType(SettingsScreen),
+        matching: find.byType(Scrollable),
+      ),
+    );
+
     expect(find.text('CicloTrack'), findsOneWidget);
     expect(find.text('Versión 1.0.0+1'), findsOneWidget);
     expect(find.text('100 % local y sin nube'), findsOneWidget);

@@ -63,6 +63,10 @@ dependencies:
   archive: ^3.6.1
   file_picker: ^11.0.3
 
+  # Seguridad (bloqueo de acceso opcional con PIN/huella).
+  local_auth: ^2.3.0
+  shared_preferences: ^2.5.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
