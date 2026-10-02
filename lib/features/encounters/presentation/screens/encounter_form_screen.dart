@@ -230,7 +230,7 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: DropdownButtonFormField<String>(
-                              value: _selectedWomen[profile.woman.id],
+                              initialValue: _selectedWomen[profile.woman.id],
                               decoration: const InputDecoration(
                                 labelText: 'Tipo de relación',
                                 isDense: true,

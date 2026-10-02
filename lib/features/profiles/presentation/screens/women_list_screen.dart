@@ -221,8 +221,8 @@ class WomenListScreen extends ConsumerWidget {
     return ReorderableListView.builder(
       padding: const EdgeInsets.only(bottom: 80),
       itemCount: profiles.length,
-      onReorder: (oldIndex, newIndex) {
-        if (newIndex > oldIndex) newIndex--;
+      onReorderItem: (oldIndex, newIndex) {
+        // onReorderItem entrega newIndex ya ajustado (sin decrementar).
         final ordered = profiles.map((p) => p.woman).toList();
         final item = ordered.removeAt(oldIndex);
         ordered.insert(newIndex, item);

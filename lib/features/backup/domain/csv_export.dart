@@ -18,24 +18,18 @@ List<int> buildCsvBundle(BackupDocument doc) {
   }
   _addText(archive, 'manifest.json', _manifest(doc));
 
-  final bytes = ZipEncoder().encode(archive);
-  if (bytes == null) {
-    throw StateError('No se pudo comprimir la copia CSV');
-  }
-  return bytes;
+  return ZipEncoder().encode(archive);
 }
 
-/// Añade texto como UTF-8 con el tamaño en **bytes**: `ArchiveFile.string`
-/// usa la longitud en caracteres, y con emojis o acentos el encabezado del ZIP
-/// declara menos bytes de los que hay (los lectores estrictos lo ven como CRC
-/// inválido).
+/// Añade texto como UTF-8 con el tamaño en **bytes**: `ArchiveFile.bytes`
+/// usa los bytes reales, no la longitud en caracteres.
 void _addText(Archive archive, String name, String content) {
   final bytes = Uint8List.fromList(utf8.encode(content));
-  archive.addFile(ArchiveFile(name, bytes.length, bytes));
+  archive.addFile(ArchiveFile.bytes(name, bytes));
 }
 
 /// CSV de una tabla: BOM UTF-8 + encabezado + filas, RFC-4180 vía
-/// `ListToCsvConverter`. Los valores nulos van vacíos.
+/// `Csv`. Los valores nulos van vacíos.
 String buildTableCsv(String table, List<Map<String, Object?>> rows) {
   final columns = backupColumns[table] ?? const <String>[];
   final data = <List<Object?>>[
@@ -43,7 +37,7 @@ String buildTableCsv(String table, List<Map<String, Object?>> rows) {
     for (final row in rows) [for (final column in columns) _cell(row[column])],
   ];
   // El BOM hace que Excel respete los acentos; el resto es UTF-8.
-  return '\uFEFF${const ListToCsvConverter().convert(data)}';
+  return '\uFEFF${Csv().encode(data)}';
 }
 
 String _manifest(BackupDocument doc) =>
@@ -53,5 +47,5 @@ String _manifest(BackupDocument doc) =>
       'exportedAt': doc.exportedAt.toIso8601String(),
     });
 
-/// Celda CSV: los nulos van vacíos (`ListToCsvConverter` escribiría `null`).
+/// Celda CSV: los nulos van vacíos (`Csv` escribiría `null`).
 String _cell(Object? value) => value?.toString() ?? '';

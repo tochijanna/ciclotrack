@@ -14,19 +14,19 @@ Fases 0–10 completadas (scaffold, base de datos + motor de predicción, perfil
 
 | Capa | Tecnología |
 |---|---|
-| UI | Flutter 3.32.7 (Android-only), Material |
+| UI | Flutter 3.47.4 (Android-only), Material |
 | Estado | Riverpod 2.6.1 |
-| Datos | SQLite vía drift 2.31.0 + drift_flutter |
+| Datos | SQLite vía drift 2.35.1 + drift_flutter |
 | Notificaciones | flutter_local_notifications 20.1.0, timezone + flutter_timezone |
 | Calendario | table_calendar 3.2.1 + intl 0.20.2 (es-ES) |
-| Gráficos | fl_chart 1.0.0 (pin exacto: 1.1.x no compila con el `vector_math` del SDK) |
-| Copia de seguridad | csv 6.0.0 + archive 3.6.1 + pdf 3.11.3 + file_picker 11.0.3 (selector del sistema, sin `share_plus`) |
+| Gráficos | fl_chart 1.2.0 |
+| Copia de seguridad | csv 8.0.0 + archive 4.0.9 + pdf 3.12.0 + file_picker 13.1.0 (selector del sistema, sin `share_plus`) |
 
 Arquitectura feature-first con 3 capas por feature: `presentation/` (UI) → `domain/` (lógica pura, sin Flutter) → `data/` (drift), con flujo unidireccional UI → Notifier → Repository → drift. El código compartido vive en `lib/core/`.
 
 ## Entorno
 
-El toolchain (Flutter 3.32.7, Android SDK 34/35, OpenJDK 17) vive en una carpeta `.toolchain/` ignorada por git; en esta máquina está en `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` y los worktrees nuevos no la incluyen. Antes de cualquier comando Flutter/Dart:
+El toolchain (Flutter 3.47.4, Android SDK 36, OpenJDK 17) vive en una carpeta `.toolchain/` ignorada por git; en esta máquina está en `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` y los worktrees nuevos no la incluyen. Antes de cualquier comando Flutter/Dart:
 
 ```bash
 source /home/tochi/Proyectos/CalendarioMenstrual/.toolchain/env.sh
