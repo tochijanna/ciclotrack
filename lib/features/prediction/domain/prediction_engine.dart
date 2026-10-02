@@ -37,25 +37,29 @@ final class PredictionEngine {
     }
     return [
       for (var i = 1; i < dates.length; i++)
-        dates[i].difference(dates[i - 1]).inDays,
+        if (dates[i] != dates[i - 1]) _daysBetween(dates[i - 1], dates[i]),
     ];
   }
 
   CyclePrediction predict({List<int> cycleLengths = const []}) {
-    final min = cycleLengths.isEmpty
+    // Descarta longitudes inválidas (<= 0) para no contaminar min/max/media.
+    final valid = cycleLengths
+        .where((length) => length > 0)
+        .toList(growable: false);
+    final min = valid.isEmpty
         ? defaultCycleMinLength
-        : (cycleLengths.reduce((a, b) => a < b ? a : b));
-    final max = cycleLengths.isEmpty
+        : (valid.reduce((a, b) => a < b ? a : b));
+    final max = valid.isEmpty
         ? defaultCycleMaxLength
-        : (cycleLengths.reduce((a, b) => a > b ? a : b));
-    final average = cycleLengths.isEmpty
+        : (valid.reduce((a, b) => a > b ? a : b));
+    final average = valid.isEmpty
         ? defaultCycleLength.toDouble()
-        : cycleLengths.reduce((a, b) => a + b) / cycleLengths.length;
+        : valid.reduce((a, b) => a + b) / valid.length;
 
-    final rangeStart = cycleLengths.isEmpty
+    final rangeStart = valid.isEmpty
         ? 11
         : _clamp(11 - (28 - min), min: 1, max: max);
-    final rangeEnd = cycleLengths.isEmpty
+    final rangeEnd = valid.isEmpty
         ? 17
         : _clamp(17 + (max - 28), min: 1, max: max);
     final estimated = _clamp((average - 14).round(), min: 1, max: max);
@@ -89,3 +93,11 @@ final class PredictionEngine {
   int _clamp(int value, {required int min, required int max}) =>
       value < min ? min : (value > max ? max : value);
 }
+
+/// Días de calendario entre dos fechas, insensible a cambios de hora (DST):
+/// se normaliza a UTC antes de restar para que 28 días reales midan 28.
+int _daysBetween(DateTime from, DateTime to) => DateTime.utc(
+  to.year,
+  to.month,
+  to.day,
+).difference(DateTime.utc(from.year, from.month, from.day)).inDays;

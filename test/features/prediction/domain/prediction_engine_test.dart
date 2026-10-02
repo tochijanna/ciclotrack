@@ -28,6 +28,35 @@ void main() {
       ]);
       expect(lengths, [28, 28]);
     });
+
+    test(
+      'omits consecutive duplicate starts instead of zero-length cycles',
+      () {
+        final lengths = engine.cycleLengthsFrom([
+          DateTime(2026, 1, 1),
+          DateTime(2026, 1, 1),
+          DateTime(2026, 1, 29),
+        ]);
+        expect(lengths, [28]);
+      },
+    );
+
+    test('measures calendar days insensitive to DST (UTC)', () {
+      expect(
+        engine.cycleLengthsFrom([
+          DateTime.utc(2026, 2, 22),
+          DateTime.utc(2026, 3, 22),
+        ]),
+        [28],
+      );
+      expect(
+        engine.cycleLengthsFrom([
+          DateTime.utc(2026, 3, 8),
+          DateTime.utc(2026, 3, 9),
+        ]),
+        [1],
+      );
+    });
   });
 
   group('predict', () {
@@ -71,6 +100,17 @@ void main() {
       final p = engine.predict(cycleLengths: [20, 20, 20]);
       expect(p.fertilityWindowStart, 1);
       expect(p.fertilityWindowEnd, 8);
+    });
+
+    test('ignores non-positive lengths to avoid inverted windows', () {
+      final p = engine.predict(cycleLengths: [0, 0]);
+      expect(p.minCycle, 24);
+      expect(p.maxCycle, 32);
+      expect(p.averageCycle, 28);
+      expect(
+        p.fertilityWindowEnd,
+        greaterThanOrEqualTo(p.fertilityWindowStart),
+      );
     });
   });
 

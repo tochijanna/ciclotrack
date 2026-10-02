@@ -148,8 +148,8 @@ class CycleTimeline {
   CyclePhase? phaseOn(DateTime day) {
     final span = spanFor(day);
     if (span == null) return null;
-    final cycleDay = _calendarDate(day).difference(span.start).inDays + 1;
-    final periodDays = span.periodEnd.difference(span.start).inDays + 1;
+    final cycleDay = _daysBetween(span.start, day) + 1;
+    final periodDays = _daysBetween(span.start, span.periodEnd) + 1;
     return phaseForCycleDay(
       cycleDay,
       _prediction,
@@ -203,8 +203,7 @@ class CycleTimeline {
 int _duracionMedia(List<PeriodLogInput> logs) {
   final duraciones = [
     for (final log in logs)
-      if (log.endDate != null)
-        log.endDate!.difference(log.startDate).inDays + 1,
+      if (log.endDate != null) _daysBetween(log.startDate, log.endDate!) + 1,
   ];
   if (duraciones.isEmpty) return defaultPeriodDuration;
   return (duraciones.reduce((a, b) => a + b) / duraciones.length).round();
@@ -238,6 +237,13 @@ PeriodLogInput _normalizar(PeriodLogInput log) => PeriodLogInput(
 
 DateTime _calendarDate(DateTime value) =>
     DateTime(value.year, value.month, value.day);
+
+/// Días de calendario entre dos fechas, insensible a cambios de hora (DST).
+int _daysBetween(DateTime from, DateTime to) => DateTime.utc(
+  to.year,
+  to.month,
+  to.day,
+).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
 
 DateTime _addDays(DateTime base, int days) =>
     DateTime(base.year, base.month, base.day + days);

@@ -15,6 +15,7 @@ void main() {
   WomanAlertContext ctx(
     int id,
     String name, {
+    String? initials,
     DateTime? ovulacion,
     DateTime? ventanaIni,
     DateTime? ventanaFin,
@@ -25,6 +26,7 @@ void main() {
     return WomanAlertContext(
       womanId: id,
       name: name,
+      initials: initials ?? name.substring(0, 1).toUpperCase(),
       prediction: WomanPrediction(
         estadoRiesgo: estado,
         faseHoy: CyclePhase.follicular,
@@ -91,11 +93,14 @@ void main() {
       final item = evaluate().single;
       expect(item.type, AlertType.medicacion);
       expect(item.fireDate, DateTime(2026, 9, 10, 12, 30));
-      expect(item.body, 'Es hora de la pastilla para María: Hierro');
+      expect(item.body, 'Es hora de tu medicación (12:30)');
       expect(item.womanIds, [1]);
     });
     test('hora pasada se programa mañana', () {
       expect(evaluate(hour: 8).single.fireDate, DateTime(2026, 9, 11, 8, 30));
+    });
+    test('medicación es recurrente a diario', () {
+      expect(evaluate().single.recurringDaily, isTrue);
     });
     test('respeta medicamento, tipo, maestro y perfil', () {
       expect(evaluate(enabled: false), isEmpty);
@@ -122,6 +127,65 @@ void main() {
       );
       expect(items, hasLength(2));
       expect(items.map((a) => a.id).toSet(), hasLength(2));
+    });
+  });
+
+  group('privacidad de los cuerpos (SEC-01-04)', () {
+    test('los cuerpos no exponen nombres reales ni nombres de medicación', () {
+      final today = DateTime(2026, 9, 10);
+      final alerts = engine.evaluate(
+        today: today,
+        women: [
+          ctx(
+            1,
+            'María',
+            initials: 'MR',
+            ovulacion: DateTime(2026, 9, 11),
+            ventanaIni: DateTime(2026, 9, 9),
+            ventanaFin: DateTime(2026, 9, 16),
+            periodoPrevisto: DateTime(2026, 9, 27),
+            estado: EstadoRiesgo.diaDeRiesgo,
+          ),
+        ],
+        encounters: [
+          EncounterWithWomen(
+            encounterId: 1,
+            encounterTime: DateTime(2026, 9, 8),
+            protection: 'Condón',
+            participants: [
+              EncounterParticipant(
+                womanId: 1,
+                womanName: 'María',
+                womanInitials: 'MR',
+                womanEmoji: '👩',
+                womanColor: 0xFFE91E63,
+                relationshipType: 'Vaginal',
+              ),
+            ],
+          ),
+        ],
+        medications: [
+          MedicationAlertInput(
+            id: 1,
+            womanId: 1,
+            name: 'Hierro',
+            hour: 12,
+            minute: 0,
+          ),
+        ],
+        settings: settings(),
+      );
+      final bodies = alerts.map((a) => a.body).join('\n');
+      expect(bodies, isNot(contains('María')));
+      expect(bodies, isNot(contains('Hierro')));
+      expect(bodies, isNot(contains('Te acostaste')));
+      expect(bodies, contains('MR'));
+      expect(
+        alerts
+            .where((a) => a.type != AlertType.medicacion)
+            .every((a) => !a.recurringDaily),
+        isTrue,
+      );
     });
   });
 

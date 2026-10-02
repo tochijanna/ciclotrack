@@ -6,6 +6,7 @@ import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../calendar/presentation/screens/calendar_home_screen.dart';
 import '../../../medications/presentation/screens/medications_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
+import '../providers/app_lock_provider.dart';
 
 /// Versión publicada en `pubspec.yaml`; se actualiza a la vez que aquella.
 const appVersion = '1.0.0+1';
@@ -15,6 +16,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appLock = ref.watch(appLockProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
@@ -54,6 +56,22 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: const Text('Calendario, fertilidad y encuentros'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _open(context, const CalendarHomeScreen()),
+          ),
+          const Divider(),
+          const _SectionHeader('Seguridad'),
+          SwitchListTile(
+            secondary: const Icon(Icons.fingerprint),
+            title: const Text('Bloqueo de acceso (PIN/huella)'),
+            subtitle: Text(
+              appLock.supported
+                  ? 'Requiere PIN o huella al abrir la app'
+                  : 'No disponible en este dispositivo',
+            ),
+            value: appLock.enabled,
+            onChanged: appLock.supported
+                ? (value) =>
+                      ref.read(appLockProvider.notifier).setEnabled(value)
+                : null,
           ),
           const Divider(),
           const _SectionHeader('Acerca de'),
