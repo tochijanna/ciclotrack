@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -71,7 +72,13 @@ final alertsCoordinatorProvider = Provider<AlertsCoordinator>((ref) {
     changeDao: ref.watch(alertsChangeDaoProvider),
   );
   unawaited(coordinator.start());
-  ref.onDispose(coordinator.dispose);
+  final lifecycle = AppLifecycleListener(
+    onResume: () => unawaited(coordinator.refreshNow()),
+  );
+  ref.onDispose(() {
+    lifecycle.dispose();
+    coordinator.dispose();
+  });
   return coordinator;
 });
 

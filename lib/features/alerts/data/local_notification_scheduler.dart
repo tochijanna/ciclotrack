@@ -76,6 +76,7 @@ class LocalNotificationScheduler implements NotificationScheduler {
       channelDescription: 'Notificaciones de fertilidad y ciclo',
       importance: Importance.high,
       priority: Priority.high,
+      visibility: NotificationVisibility.secret,
     );
     final details = NotificationDetails(android: androidDetails);
 
@@ -103,6 +104,9 @@ class LocalNotificationScheduler implements NotificationScheduler {
       scheduledDate: tzDateTime,
       notificationDetails: details,
       androidScheduleMode: mode,
+      matchDateTimeComponents: item.recurringDaily
+          ? DateTimeComponents.time
+          : null,
     );
   }
 

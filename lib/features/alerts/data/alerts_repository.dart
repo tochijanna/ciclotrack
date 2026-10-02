@@ -57,6 +57,7 @@ class AlertsRepository {
           WomanAlertContext(
             womanId: profile.woman.id,
             name: profile.woman.name,
+            initials: profile.woman.initials,
             prediction: pred,
           ),
         );
@@ -102,6 +103,7 @@ class AlertsRepository {
           WomanAlertContext(
             womanId: profile.woman.id,
             name: profile.woman.name,
+            initials: profile.woman.initials,
             prediction: pred,
           ),
         );

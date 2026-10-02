@@ -18,6 +18,7 @@ class AlertItem {
     required this.body,
     required this.womanIds,
     this.medicationId,
+    this.recurringDaily = false,
   });
 
   final int? medicationId;
@@ -26,6 +27,7 @@ class AlertItem {
   final String title;
   final String body;
   final List<int> womanIds;
+  final bool recurringDaily;
 
   /// Id determinista basado en tipo + mujeres + fecha (para deduplicación).
   int get id {
