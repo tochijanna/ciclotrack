@@ -72,6 +72,7 @@ class LocalReminderNotifier implements ReminderNotifier {
       channelDescription: 'Recordatorios personalizados por día del ciclo',
       importance: Importance.high,
       priority: Priority.high,
+      visibility: NotificationVisibility.secret,
     );
     const details = NotificationDetails(android: androidDetails);
 

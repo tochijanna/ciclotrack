@@ -48,9 +48,10 @@ class PredictionCalculator {
         .where((p) => p.endDate != null)
         .map(
           (p) =>
-              _calendarDate(
-                p.endDate!,
-              ).difference(_calendarDate(p.startDate)).inDays +
+              _daysBetween(
+                _calendarDate(p.startDate),
+                _calendarDate(p.endDate!),
+              ) +
               1,
         )
         .toList();
@@ -70,13 +71,13 @@ class PredictionCalculator {
     final isDefault = cycleLengths.isEmpty;
 
     // Día actual del ciclo.
-    final cycleDay = now.difference(lastStart).inDays + 1;
+    final cycleDay = _daysBetween(lastStart, now) + 1;
     final lastEnd = periodLogs.last.endDate == null
         ? null
         : _calendarDate(periodLogs.last.endDate!);
     final periodDurationToday = lastEnd == null
         ? periodDuration
-        : lastEnd.difference(lastStart).inDays + 1;
+        : _daysBetween(lastStart, lastEnd) + 1;
 
     // Fase y humor de hoy.
     final phase = phaseForCycleDay(
@@ -145,6 +146,13 @@ class PredictionCalculator {
   DateTime _calendarDate(DateTime value) =>
       DateTime(value.year, value.month, value.day);
 
+  /// Días de calendario entre dos fechas, insensible a cambios de hora (DST).
+  int _daysBetween(DateTime from, DateTime to) => DateTime.utc(
+    to.year,
+    to.month,
+    to.day,
+  ).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
+
   EstadoRiesgo _estadoRiesgo(
     int cycleDay,
     CyclePrediction prediction,
@@ -184,7 +192,7 @@ class PredictionCalculator {
     var dayStart = now;
 
     while (dayStart.isBefore(expectedPeriod)) {
-      final cycleDayOfStart = dayStart.difference(lastStart).inDays + 1;
+      final cycleDayOfStart = _daysBetween(lastStart, dayStart) + 1;
       final phase = phaseForCycleDay(
         cycleDayOfStart,
         prediction,
@@ -198,7 +206,7 @@ class PredictionCalculator {
       while (true) {
         final nextDay = DateTime(dayEnd.year, dayEnd.month, dayEnd.day + 1);
         if (!nextDay.isBefore(expectedPeriod)) break;
-        final nextCycleDay = nextDay.difference(lastStart).inDays + 1;
+        final nextCycleDay = _daysBetween(lastStart, nextDay) + 1;
         final nextPhase = phaseForCycleDay(
           nextCycleDay,
           prediction,
