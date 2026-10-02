@@ -9,7 +9,7 @@ import '../../../reports/presentation/screens/reports_screen.dart';
 import '../providers/app_lock_provider.dart';
 
 /// Versión publicada en `pubspec.yaml`; se actualiza a la vez que aquella.
-const appVersion = '1.1.0+2';
+const appVersion = '1.1.1+3';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
