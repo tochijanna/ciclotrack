@@ -45,9 +45,8 @@ void main() {
 
   /// `utf8.decode` ya descarta el BOM de cabecera; el recorte cubre la ruta
   /// en memoria, que sí lo conserva.
-  List<List<dynamic>> parsear(String csv) => const CsvToListConverter(
-    shouldParseNumbers: false,
-  ).convert(csv.startsWith('\uFEFF') ? csv.substring(1) : csv);
+  List<List<dynamic>> parsear(String csv) =>
+      Csv().decode(csv.startsWith('\uFEFF') ? csv.substring(1) : csv);
 
   String contenido(Archive archive, String nombre) =>
       utf8.decode(miembro(archive, nombre).content as List<int>);

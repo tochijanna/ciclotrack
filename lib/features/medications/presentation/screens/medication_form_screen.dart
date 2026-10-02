@@ -100,7 +100,7 @@ class _MedicationFormScreenState extends ConsumerState<MedicationFormScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 DropdownButtonFormField<int>(
-                  value: selected,
+                  initialValue: selected,
                   decoration: const InputDecoration(labelText: 'Mujer'),
                   items: [
                     for (final profile in women)
