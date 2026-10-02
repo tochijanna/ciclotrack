@@ -1,0 +1,12 @@
+# Plantilla de configuración de firma para el build de release.
+#
+# Copia este fichero como `key.properties` (junto a este archivo, dentro de
+# `android/`) y rellena los valores con las credenciales de tu keystore de
+# release. `key.properties` está ignorado por git y NUNCA debe compartirse.
+#
+# `storeFile` es la ruta al fichero del keystore, relativa al módulo
+# `android/app/`. También puedes usar una ruta absoluta.
+storePassword=cambiar-por-la-contrasena-del-keystore
+keyPassword=cambiar-por-la-contrasena-de-la-clave
+keyAlias=cambiar-por-el-alias-de-la-clave
+storeFile=../carpeta-del-keystore/tu-keystore.jks
