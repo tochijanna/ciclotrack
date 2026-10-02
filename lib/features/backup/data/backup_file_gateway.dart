@@ -15,8 +15,8 @@ class BackupFile {
 /// Es un *seam* para que los tests de widget no toquen el sistema de ficheros,
 /// igual que `NotificationScheduler` en la feature `alerts`.
 abstract class BackupFileGateway {
-  /// Devuelve la ruta elegida, o `null` si el usuario cancela.
-  Future<String?> save({
+  /// Devuelve la URI elegida, o `null` si el usuario cancela.
+  Future<Uri?> save({
     required String fileName,
     required Uint8List bytes,
     required List<String> extensions,
@@ -32,7 +32,7 @@ class LocalBackupFileGateway implements BackupFileGateway {
   const LocalBackupFileGateway();
 
   @override
-  Future<String?> save({
+  Future<Uri?> save({
     required String fileName,
     required Uint8List bytes,
     required List<String> extensions,
@@ -50,14 +50,8 @@ class LocalBackupFileGateway implements BackupFileGateway {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: extensions,
-      withData: true,
     );
-    if (result == null) return null;
-
-    final bytes = result.files.single.bytes;
-    if (bytes == null) {
-      throw StateError('El archivo seleccionado no se pudo leer');
-    }
-    return bytes;
+    if (result.isEmpty) return null;
+    return result.single.readAsBytes();
   }
 }

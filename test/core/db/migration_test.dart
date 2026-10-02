@@ -73,7 +73,7 @@ void main() {
           VALUES (1, 1798848000000, 'periodo legacy')
         ''');
     legacy.execute('PRAGMA user_version = 1');
-    legacy.dispose();
+    legacy.close();
 
     final upgraded = AppDatabase.forTesting(NativeDatabase(file));
     addTearDown(() async {
@@ -127,7 +127,7 @@ void main() {
     final legacy = sqlite3.sqlite3.open(file.path);
     legacy.execute('DROP TABLE medications');
     legacy.execute('PRAGMA user_version = 3');
-    legacy.dispose();
+    legacy.close();
     final upgraded = AppDatabase.forTesting(NativeDatabase(file));
     try {
       expect(

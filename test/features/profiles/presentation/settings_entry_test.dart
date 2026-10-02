@@ -48,8 +48,16 @@ void main() {
       ),
     );
 
-    expect(find.text('CicloTrack'), findsOneWidget);
-    expect(find.text('Versión 1.0.0+1'), findsOneWidget);
+    // «CicloTrack» también es el título de la AppBar de la lista de perfiles,
+    // que sigue en el árbol tras navegar; se acota a la pantalla de ajustes.
+    expect(
+      find.descendant(
+        of: find.byType(SettingsScreen),
+        matching: find.text('CicloTrack'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Versión $appVersion'), findsOneWidget);
     expect(find.text('100 % local y sin nube'), findsOneWidget);
 
     await closeTestDatabase(tester, db);

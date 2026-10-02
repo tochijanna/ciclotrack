@@ -402,7 +402,7 @@ Hallazgos relevantes:
 - **`pdf` queda en 3.11.3, no en 3.12.** 3.12.x declara `vector_math ^2.2` y el SDK fija 2.1.4: mismo caso que `fl_chart` en la fase 8. Además `pdf` exige `archive >=3.4.0 <4.1.0`, así que el plan de añadir `archive ^4.3.0` no resuelve: se usa **`archive 3.6.1`**, que sí permite el ZIP en memoria (`ZipEncoder`/`ZipDecoder`) y evita el *fallback* de un único CSV.
 - **`utf8.decode` descarta el BOM.** Los CSV del ZIP llevan `EF BB BF` en crudo (y así se verifica), pero `utf8.decode` elimina el `U+FEFF` de cabecera; recortar un carácter «de más» rompía el encabezado.
 - **`ArchiveFile.string` declara el tamaño en caracteres, no en bytes.** Como el emoji de perfil y los acentos son la norma, el encabezado del ZIP quedaba corto y los lectores estrictos (`python -m zipfile`, `testzip`) veían **CRC roto** en esos miembros: Dart lo abría bien, Windows/7-Zip no. Se añaden los ficheros con los bytes UTF-8 y su longitud real, y un test compara el tamaño declarado de cada miembro con el real (falla con la implementación anterior).
-- **`ListToCsvConverter` escribe `null` literal** para las celdas nulas: los nulos se convierten a cadena vacía antes de convertir.
+- **`Csv` escribe `null` literal** para las celdas nulas: los nulos se convierten a cadena vacía antes de convertir.
 - **Fuentes del PDF.** Helvetica usa WinAnsi, así que todo el texto pasa por un saneador que sustituye lo que quede por encima de Latin-1 por `?`: los emojis de perfiles y notas no aparecen en el informe.
 - **`pw.TableHelper.fromTextArray`** sustituye a `Table.fromTextArray`, ya deprecado.
 

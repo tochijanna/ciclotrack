@@ -4234,7 +4234,7 @@ final class $$WomenTableReferences
   static MultiTypedResultKey<$WomanTagsTable, List<WomanTag>>
   _womanTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.womanTags,
-    aliasName: $_aliasNameGenerator(db.women.id, db.womanTags.womanId),
+    aliasName: 'women__id__woman_tags__woman_id',
   );
 
   $$WomanTagsTableProcessedTableManager get womanTagsRefs {
@@ -4252,7 +4252,7 @@ final class $$WomenTableReferences
   static MultiTypedResultKey<$PeriodLogsTable, List<PeriodLog>>
   _periodLogsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.periodLogs,
-    aliasName: $_aliasNameGenerator(db.women.id, db.periodLogs.womanId),
+    aliasName: 'women__id__period_logs__woman_id',
   );
 
   $$PeriodLogsTableProcessedTableManager get periodLogsRefs {
@@ -4270,7 +4270,7 @@ final class $$WomenTableReferences
   static MultiTypedResultKey<$OvulationLogsTable, List<OvulationLog>>
   _ovulationLogsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.ovulationLogs,
-    aliasName: $_aliasNameGenerator(db.women.id, db.ovulationLogs.womanId),
+    aliasName: 'women__id__ovulation_logs__woman_id',
   );
 
   $$OvulationLogsTableProcessedTableManager get ovulationLogsRefs {
@@ -4288,7 +4288,7 @@ final class $$WomenTableReferences
   static MultiTypedResultKey<$SymptomsTable, List<SymptomLog>>
   _symptomsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.symptoms,
-    aliasName: $_aliasNameGenerator(db.women.id, db.symptoms.womanId),
+    aliasName: 'women__id__symptoms__woman_id',
   );
 
   $$SymptomsTableProcessedTableManager get symptomsRefs {
@@ -4306,7 +4306,7 @@ final class $$WomenTableReferences
   static MultiTypedResultKey<$EncounterWomenTable, List<EncounterWoman>>
   _encounterWomenRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.encounterWomen,
-    aliasName: $_aliasNameGenerator(db.women.id, db.encounterWomen.womanId),
+    aliasName: 'women__id__encounter_women__woman_id',
   );
 
   $$EncounterWomenTableProcessedTableManager get encounterWomenRefs {
@@ -4324,7 +4324,7 @@ final class $$WomenTableReferences
   static MultiTypedResultKey<$RemindersTable, List<Reminder>>
   _remindersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.reminders,
-    aliasName: $_aliasNameGenerator(db.women.id, db.reminders.womanId),
+    aliasName: 'women__id__reminders__woman_id',
   );
 
   $$RemindersTableProcessedTableManager get remindersRefs {
@@ -4342,7 +4342,7 @@ final class $$WomenTableReferences
   static MultiTypedResultKey<$MedicationsTable, List<Medication>>
   _medicationsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.medications,
-    aliasName: $_aliasNameGenerator(db.women.id, db.medications.womanId),
+    aliasName: 'women__id__medications__woman_id',
   );
 
   $$MedicationsTableProcessedTableManager get medicationsRefs {
@@ -4919,8 +4919,10 @@ class $$WomenTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$WomenTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$WomenTable, Woman>(table),
+                  $$WomenTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback:
@@ -5128,7 +5130,7 @@ final class $$TagsTableReferences
   static MultiTypedResultKey<$WomanTagsTable, List<WomanTag>>
   _womanTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.womanTags,
-    aliasName: $_aliasNameGenerator(db.tags.id, db.womanTags.tagId),
+    aliasName: 'tags__id__woman_tags__tag_id',
   );
 
   $$WomanTagsTableProcessedTableManager get womanTagsRefs {
@@ -5284,8 +5286,10 @@ class $$TagsTableTableManager
                   TagsCompanion.insert(id: id, name: name),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$TagsTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$TagsTable, Tag>(table),
+                  $$TagsTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: ({womanTagsRefs = false}) {
@@ -5345,9 +5349,8 @@ final class $$WomanTagsTableReferences
     extends BaseReferences<_$AppDatabase, $WomanTagsTable, WomanTag> {
   $$WomanTagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $WomenTable _womanIdTable(_$AppDatabase db) => db.women.createAlias(
-    $_aliasNameGenerator(db.womanTags.womanId, db.women.id),
-  );
+  static $WomenTable _womanIdTable(_$AppDatabase db) =>
+      db.women.createAlias('woman_tags__woman_id__women__id');
 
   $$WomenTableProcessedTableManager get womanId {
     final $_column = $_itemColumn<int>('woman_id')!;
@@ -5364,7 +5367,7 @@ final class $$WomanTagsTableReferences
   }
 
   static $TagsTable _tagIdTable(_$AppDatabase db) =>
-      db.tags.createAlias($_aliasNameGenerator(db.womanTags.tagId, db.tags.id));
+      db.tags.createAlias('woman_tags__tag_id__tags__id');
 
   $$TagsTableProcessedTableManager get tagId {
     final $_column = $_itemColumn<int>('tag_id')!;
@@ -5607,7 +5610,7 @@ class $$WomanTagsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$WomanTagsTable, WomanTag>(table),
                   $$WomanTagsTableReferences(db, table, e),
                 ),
               )
@@ -5707,9 +5710,8 @@ final class $$PeriodLogsTableReferences
     extends BaseReferences<_$AppDatabase, $PeriodLogsTable, PeriodLog> {
   $$PeriodLogsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $WomenTable _womanIdTable(_$AppDatabase db) => db.women.createAlias(
-    $_aliasNameGenerator(db.periodLogs.womanId, db.women.id),
-  );
+  static $WomenTable _womanIdTable(_$AppDatabase db) =>
+      db.women.createAlias('period_logs__woman_id__women__id');
 
   $$WomenTableProcessedTableManager get womanId {
     final $_column = $_itemColumn<int>('woman_id')!;
@@ -5951,7 +5953,7 @@ class $$PeriodLogsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$PeriodLogsTable, PeriodLog>(table),
                   $$PeriodLogsTableReferences(db, table, e),
                 ),
               )
@@ -6042,9 +6044,8 @@ final class $$OvulationLogsTableReferences
     super.$_typedResult,
   );
 
-  static $WomenTable _womanIdTable(_$AppDatabase db) => db.women.createAlias(
-    $_aliasNameGenerator(db.ovulationLogs.womanId, db.women.id),
-  );
+  static $WomenTable _womanIdTable(_$AppDatabase db) =>
+      db.women.createAlias('ovulation_logs__woman_id__women__id');
 
   $$WomenTableProcessedTableManager get womanId {
     final $_column = $_itemColumn<int>('woman_id')!;
@@ -6290,7 +6291,7 @@ class $$OvulationLogsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$OvulationLogsTable, OvulationLog>(table),
                   $$OvulationLogsTableReferences(db, table, e),
                 ),
               )
@@ -6377,9 +6378,8 @@ final class $$SymptomsTableReferences
     extends BaseReferences<_$AppDatabase, $SymptomsTable, SymptomLog> {
   $$SymptomsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $WomenTable _womanIdTable(_$AppDatabase db) => db.women.createAlias(
-    $_aliasNameGenerator(db.symptoms.womanId, db.women.id),
-  );
+  static $WomenTable _womanIdTable(_$AppDatabase db) =>
+      db.women.createAlias('symptoms__woman_id__women__id');
 
   $$WomenTableProcessedTableManager get womanId {
     final $_column = $_itemColumn<int>('woman_id')!;
@@ -6621,7 +6621,7 @@ class $$SymptomsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$SymptomsTable, SymptomLog>(table),
                   $$SymptomsTableReferences(db, table, e),
                 ),
               )
@@ -6709,10 +6709,7 @@ final class $$EncountersTableReferences
   static MultiTypedResultKey<$EncounterWomenTable, List<EncounterWoman>>
   _encounterWomenRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.encounterWomen,
-    aliasName: $_aliasNameGenerator(
-      db.encounters.id,
-      db.encounterWomen.encounterId,
-    ),
+    aliasName: 'encounters__id__encounter_women__encounter_id',
   );
 
   $$EncounterWomenTableProcessedTableManager get encounterWomenRefs {
@@ -6934,7 +6931,7 @@ class $$EncountersTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$EncountersTable, Encounter>(table),
                   $$EncountersTableReferences(db, table, e),
                 ),
               )
@@ -7015,10 +7012,8 @@ final class $$EncounterWomenTableReferences
     super.$_typedResult,
   );
 
-  static $EncountersTable _encounterIdTable(_$AppDatabase db) =>
-      db.encounters.createAlias(
-        $_aliasNameGenerator(db.encounterWomen.encounterId, db.encounters.id),
-      );
+  static $EncountersTable _encounterIdTable(_$AppDatabase db) => db.encounters
+      .createAlias('encounter_women__encounter_id__encounters__id');
 
   $$EncountersTableProcessedTableManager get encounterId {
     final $_column = $_itemColumn<int>('encounter_id')!;
@@ -7034,9 +7029,8 @@ final class $$EncounterWomenTableReferences
     );
   }
 
-  static $WomenTable _womanIdTable(_$AppDatabase db) => db.women.createAlias(
-    $_aliasNameGenerator(db.encounterWomen.womanId, db.women.id),
-  );
+  static $WomenTable _womanIdTable(_$AppDatabase db) =>
+      db.women.createAlias('encounter_women__woman_id__women__id');
 
   $$WomenTableProcessedTableManager get womanId {
     final $_column = $_itemColumn<int>('woman_id')!;
@@ -7304,7 +7298,7 @@ class $$EncounterWomenTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$EncounterWomenTable, EncounterWoman>(table),
                   $$EncounterWomenTableReferences(db, table, e),
                 ),
               )
@@ -7406,9 +7400,8 @@ final class $$RemindersTableReferences
     extends BaseReferences<_$AppDatabase, $RemindersTable, Reminder> {
   $$RemindersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $WomenTable _womanIdTable(_$AppDatabase db) => db.women.createAlias(
-    $_aliasNameGenerator(db.reminders.womanId, db.women.id),
-  );
+  static $WomenTable _womanIdTable(_$AppDatabase db) =>
+      db.women.createAlias('reminders__woman_id__women__id');
 
   $$WomenTableProcessedTableManager get womanId {
     final $_column = $_itemColumn<int>('woman_id')!;
@@ -7654,7 +7647,7 @@ class $$RemindersTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$RemindersTable, Reminder>(table),
                   $$RemindersTableReferences(db, table, e),
                 ),
               )
@@ -7917,7 +7910,16 @@ class $$AlertSettingsTableTableManager
                 horizonDays: horizonDays,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$AlertSettingsTable, AlertSetting>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $AlertSettingsTable,
+                    AlertSetting
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -7966,9 +7968,8 @@ final class $$MedicationsTableReferences
     extends BaseReferences<_$AppDatabase, $MedicationsTable, Medication> {
   $$MedicationsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $WomenTable _womanIdTable(_$AppDatabase db) => db.women.createAlias(
-    $_aliasNameGenerator(db.medications.womanId, db.women.id),
-  );
+  static $WomenTable _womanIdTable(_$AppDatabase db) =>
+      db.women.createAlias('medications__woman_id__women__id');
 
   $$WomenTableProcessedTableManager get womanId {
     final $_column = $_itemColumn<int>('woman_id')!;
@@ -8227,7 +8228,7 @@ class $$MedicationsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$MedicationsTable, Medication>(table),
                   $$MedicationsTableReferences(db, table, e),
                 ),
               )

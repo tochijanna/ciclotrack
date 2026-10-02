@@ -24,7 +24,7 @@ class _FakeGateway implements BackupFileGateway {
   bool cancelarGuardado = false;
 
   @override
-  Future<String?> save({
+  Future<Uri?> save({
     required String fileName,
     required Uint8List bytes,
     required List<String> extensions,
@@ -32,7 +32,7 @@ class _FakeGateway implements BackupFileGateway {
     if (cancelarGuardado) return null;
     ultimasExtensiones = extensions;
     guardados.add(BackupFile(name: fileName, bytes: bytes));
-    return '/tmp/$fileName';
+    return Uri.parse('/tmp/$fileName');
   }
 
   @override
