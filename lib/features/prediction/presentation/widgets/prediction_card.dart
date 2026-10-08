@@ -1,7 +1,9 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-import '../../domain/mood_forecast.dart';
 import '../../domain/woman_prediction.dart';
+import '../l10n.dart';
 
 /// Tarjeta de predicción de fertilidad y humor para una mujer.
 class PredictionCard extends StatelessWidget {
@@ -11,8 +13,9 @@ class PredictionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (prediction.estadoRiesgo == EstadoRiesgo.sinDatos) {
-      return _SinDatosCard();
+      return _SinDatosCard(l10n: l10n);
     }
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -25,58 +28,56 @@ class PredictionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Cabecera: estado de riesgo + día del ciclo
-            _buildHeader(context, colorScheme),
+            _buildHeader(context, colorScheme, l10n),
             const Divider(height: 20),
             // Humor de hoy
-            _buildMoodToday(context, colorScheme),
+            _buildMoodToday(context, colorScheme, l10n),
             const Divider(height: 20),
             // Fechas clave
-            _buildKeyDates(context),
+            _buildKeyDates(context, l10n),
             // Pronóstico
             if (prediction.pronostico.isNotEmpty) ...[
               const Divider(height: 20),
-              _buildForecast(context),
+              _buildForecast(context, l10n),
             ],
             // Estadísticas + disclaimer
             const Divider(height: 20),
-            _buildStats(context, colorScheme),
+            _buildStats(context, colorScheme, l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildHeader(
+    BuildContext context,
+    ColorScheme colorScheme,
+    AppLocalizations l10n,
+  ) {
     final estado = prediction.estadoRiesgo;
     final IconData icon;
     final Color color;
-    final String label;
 
     switch (estado) {
       case EstadoRiesgo.periodoEnCurso:
         icon = Icons.water_drop;
         color = colorScheme.error;
-        label = 'Periodo en curso';
         break;
       case EstadoRiesgo.diaDeRiesgo:
         icon = Icons.warning_amber;
         color = colorScheme.error;
-        label = 'Día de riesgo';
         break;
       case EstadoRiesgo.posibleRetraso:
         icon = Icons.schedule;
         color = colorScheme.error;
-        label = 'Posible retraso';
         break;
       case EstadoRiesgo.fueraDeVentana:
         icon = Icons.check_circle_outline;
         color = colorScheme.primary;
-        label = 'Fuera de ventana fértil';
         break;
       case EstadoRiesgo.sinDatos:
         icon = Icons.help_outline;
         color = colorScheme.outline;
-        label = 'Sin datos';
         break;
     }
 
@@ -86,7 +87,7 @@ class PredictionCard extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            label,
+            riskLabel(l10n, estado),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: color,
               fontWeight: FontWeight.bold,
@@ -101,7 +102,7 @@ class PredictionCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              'Día ${prediction.cicloActual}',
+              l10n.cycleDay(prediction.cicloActual!),
               style: TextStyle(
                 color: colorScheme.onPrimaryContainer,
                 fontWeight: FontWeight.bold,
@@ -113,9 +114,12 @@ class PredictionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMoodToday(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildMoodToday(
+    BuildContext context,
+    ColorScheme colorScheme,
+    AppLocalizations l10n,
+  ) {
     final phase = prediction.faseHoy;
-    final mood = moodByPhase[phase]!;
 
     return Row(
       children: [
@@ -125,25 +129,25 @@ class PredictionCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Fase: ${nombreFase(phase)}',
+                l10n.phaseLabel(phaseLabel(l10n, phase)),
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 2),
               Text(
-                'Humor: ${mood.humor}',
+                l10n.moodLabel(moodHumor(l10n, phase)),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               Text(
-                'Libido: ${mood.libido}',
+                l10n.libidoLabel(moodLibido(l10n, phase)),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              if (mood.consejo != null)
+              if (moodTip(l10n, phase) != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
-                    mood.consejo!,
+                    moodTip(l10n, phase)!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontStyle: FontStyle.italic,
                       color: colorScheme.outline,
@@ -157,44 +161,44 @@ class PredictionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildKeyDates(BuildContext context) {
+  Widget _buildKeyDates(BuildContext context, AppLocalizations l10n) {
     return Column(
       children: [
         if (prediction.ovulacionEstimada != null)
           _DateRow(
             icon: '🥚',
-            label: 'Ovulación estimada',
-            value: _formatDate(prediction.ovulacionEstimada!),
+            label: l10n.estimatedOvulation,
+            value: _formatDate(l10n, prediction.ovulacionEstimada!),
             extra:
                 prediction.rangoOvulacionInicio != null &&
                     prediction.rangoOvulacionFin != null
-                ? '(${_formatShortDate(prediction.rangoOvulacionInicio!)} – ${_formatShortDate(prediction.rangoOvulacionFin!)})'
+                ? '(${_formatShortDate(l10n, prediction.rangoOvulacionInicio!)} – ${_formatShortDate(l10n, prediction.rangoOvulacionFin!)})'
                 : null,
           ),
         if (prediction.ventanaFertilInicio != null &&
             prediction.ventanaFertilFin != null)
           _DateRow(
             icon: '🔥',
-            label: 'Ventana fértil (riesgo)',
+            label: l10n.fertileWindowRisk,
             value:
-                '${_formatShortDate(prediction.ventanaFertilInicio!)} – ${_formatShortDate(prediction.ventanaFertilFin!)}',
+                '${_formatShortDate(l10n, prediction.ventanaFertilInicio!)} – ${_formatShortDate(l10n, prediction.ventanaFertilFin!)}',
           ),
         if (prediction.periodoPrevisto != null)
           _DateRow(
             icon: '🩸',
-            label: 'Periodo previsto',
-            value: _formatDate(prediction.periodoPrevisto!),
+            label: l10n.expectedPeriod,
+            value: _formatDate(l10n, prediction.periodoPrevisto!),
           ),
       ],
     );
   }
 
-  Widget _buildForecast(BuildContext context) {
+  Widget _buildForecast(BuildContext context, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Próximos días',
+          l10n.upcomingDays,
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
@@ -208,13 +212,13 @@ class PredictionCard extends StatelessWidget {
                 SizedBox(
                   width: 100,
                   child: Text(
-                    '${_formatShortDate(r.inicio)} – ${_formatShortDate(r.fin)}',
+                    '${_formatShortDate(l10n, r.inicio)} – ${_formatShortDate(l10n, r.fin)}',
                     style: const TextStyle(fontSize: 11),
                   ),
                 ),
                 Expanded(
                   child: Text(
-                    '${nombreFase(r.fase)} · ${r.humor}',
+                    '${phaseLabel(l10n, r.fase)} · ${moodHumor(l10n, r.fase)}',
                     style: const TextStyle(fontSize: 11),
                   ),
                 ),
@@ -226,21 +230,28 @@ class PredictionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStats(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildStats(
+    BuildContext context,
+    ColorScheme colorScheme,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Ciclos: ${prediction.ciclosReales} · '
-          'Min ${prediction.minCiclo} / Max ${prediction.maxCiclo} / '
-          'Media ${prediction.mediaCiclo.toStringAsFixed(1)} días',
+          l10n.cycleStats(
+            prediction.ciclosReales,
+            prediction.minCiclo,
+            prediction.maxCiclo,
+            prediction.mediaCiclo.toStringAsFixed(1),
+          ),
           style: Theme.of(context).textTheme.bodySmall,
         ),
         if (prediction.usaEstimacionPorDefecto)
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              '⚠ Estimación por defecto (registra más periodos para mayor precisión)',
+              l10n.defaultEstimationWarning,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.error,
                 fontSize: 10,
@@ -250,7 +261,7 @@ class PredictionCard extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
-            'Estimación orientativa según la fase del ciclo',
+            l10n.orientationDisclaimer,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colorScheme.outline,
               fontSize: 10,
@@ -262,11 +273,11 @@ class PredictionCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _formatDate(AppLocalizations l10n, DateTime d) =>
+      DateFormat('dd/MM/yyyy', l10n.localeName).format(d);
 
-  String _formatShortDate(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+  String _formatShortDate(AppLocalizations l10n, DateTime d) =>
+      DateFormat('dd/MM', l10n.localeName).format(d);
 }
 
 class _DateRow extends StatelessWidget {
@@ -312,6 +323,10 @@ class _DateRow extends StatelessWidget {
 }
 
 class _SinDatosCard extends StatelessWidget {
+  const _SinDatosCard({required this.l10n});
+
+  final AppLocalizations l10n;
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -327,7 +342,7 @@ class _SinDatosCard extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Registra al menos un periodo para ver la predicción',
+                l10n.noDataCardBody,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),

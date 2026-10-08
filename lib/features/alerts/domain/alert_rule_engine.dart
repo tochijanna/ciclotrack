@@ -1,6 +1,7 @@
 import '../../encounters/domain/encounter_event.dart';
 import '../../prediction/domain/woman_prediction.dart';
 import 'alert_item.dart';
+import 'alert_message.dart';
 import 'alert_settings.dart';
 import 'alert_types.dart';
 import 'medication_alert_input.dart';
@@ -22,6 +23,9 @@ class WomanAlertContext {
 
 /// Motor puro de reglas de alerta.
 /// Todas las dependencias se inyectan; «hoy» es un parámetro testeable.
+///
+/// Produce mensajes estructurados ([AlertMessage]); el texto visible se
+/// localiza en la capa de datos.
 class AlertRuleEngine {
   const AlertRuleEngine();
 
@@ -61,9 +65,7 @@ class AlertRuleEngine {
           AlertItem(
             type: AlertType.fertilidadInminente,
             fireDate: _fireTodayOrSoon(today, todayDate, settings),
-            title: 'Fertilidad inminente',
-            body:
-                'Mañana es día de ovulación de ${w.initials}. Ventana de fertilidad: $dias días',
+            message: FertilityImminentMessage(initials: w.initials, days: dias),
             womanIds: [w.womanId],
           ),
         );
@@ -73,18 +75,17 @@ class AlertRuleEngine {
       if (settings.isEnabled(AlertType.diaDeRiesgo) &&
           p.estadoRiesgo == EstadoRiesgo.diaDeRiesgo &&
           ventFin != null) {
-        final finTexto = _sameDay(ventFin, tomorrow)
-            ? 'termina mañana'
-            : 'termina el ${_formatShort(ventFin)}';
         final fire = _atTime(todayDate, settings);
         if (fire.isAfter(today)) {
           alerts.add(
             AlertItem(
               type: AlertType.diaDeRiesgo,
               fireDate: fire,
-              title: 'Día de riesgo',
-              body:
-                  'Hoy es día de riesgo con ${w.initials}. Su ventana de fertilidad $finTexto',
+              message: RiskDayMessage(
+                initials: w.initials,
+                endsTomorrow: _sameDay(ventFin, tomorrow),
+                endsOn: ventFin,
+              ),
               womanIds: [w.womanId],
             ),
           );
@@ -98,8 +99,7 @@ class AlertRuleEngine {
           AlertItem(
             type: AlertType.periodoInminente,
             fireDate: _fireTodayOrSoon(today, todayDate, settings),
-            title: 'Periodo inminente',
-            body: 'El periodo de ${w.initials} empieza mañana',
+            message: PeriodImminentMessage(initials: w.initials),
             womanIds: [w.womanId],
           ),
         );
@@ -119,15 +119,15 @@ class AlertRuleEngine {
           )
           .toList();
       if (fertiles.length >= 2) {
-        final nombres = fertiles.map((w) => w.initials).join(' y ');
         final fire = _atTime(todayDate, settings);
         if (fire.isAfter(today)) {
           alerts.add(
             AlertItem(
               type: AlertType.fertilidadCombinada,
               fireDate: fire,
-              title: 'Fertilidad combinada',
-              body: 'Esta semana hay fertilidad con $nombres',
+              message: CombinedFertilityMessage(
+                initials: fertiles.map((w) => w.initials).toList(),
+              ),
               womanIds: fertiles.map((w) => w.womanId).toList(),
             ),
           );
@@ -146,7 +146,6 @@ class AlertRuleEngine {
             ),
           )
           .inDays;
-      final diaSemana = _weekdayName(e.encounterTime);
 
       for (final part in e.participants) {
         final ctx = women.where((w) => w.womanId == part.womanId);
@@ -162,16 +161,17 @@ class AlertRuleEngine {
           final diasRestantes = p.ventanaFertilFin
               ?.difference(todayDate)
               .inDays;
-          final extra = diasRestantes != null ? ' + $diasRestantes días' : '';
           final fire = _atTime(todayDate, settings);
           if (fire.isAfter(today)) {
             alerts.add(
               AlertItem(
                 type: AlertType.encuentroFertilidad,
                 fireDate: fire,
-                title: 'Encuentro + fertilidad',
-                body:
-                    'Encuentro con ${w.initials} el $diaSemana y su ventana de fertilidad es hoy$extra',
+                message: EncounterFertilityMessage(
+                  initials: w.initials,
+                  encounterOn: e.encounterTime,
+                  extraDays: diasRestantes,
+                ),
                 womanIds: [w.womanId],
               ),
             );
@@ -192,9 +192,11 @@ class AlertRuleEngine {
                 AlertItem(
                   type: AlertType.advertenciaPostEncuentro,
                   fireDate: fire,
-                  title: 'Advertencia post-encuentro',
-                  body:
-                      'Encuentro con ${w.initials} el $diaSemana. Su periodo debería empezar el ${_formatShort(p.periodoPrevisto!)}. Si no hay embarazo, es probable que tenga sangrado a esa fecha.',
+                  message: PostEncounterWarningMessage(
+                    initials: w.initials,
+                    encounterOn: e.encounterTime,
+                    periodOn: p.periodoPrevisto!,
+                  ),
                   womanIds: [w.womanId],
                 ),
               );
@@ -214,12 +216,10 @@ class AlertRuleEngine {
           return ctx.first.prediction.estadoRiesgo == EstadoRiesgo.diaDeRiesgo;
         }).toList();
         if (fertilesEnEncuentro.length >= 2) {
-          final nombres = fertilesEnEncuentro
-              .map((p) {
-                final ctx = women.where((w) => w.womanId == p.womanId);
-                return ctx.isNotEmpty ? ctx.first.initials : '?';
-              })
-              .join(' y ');
+          final nombres = fertilesEnEncuentro.map((p) {
+            final ctx = women.where((w) => w.womanId == p.womanId);
+            return ctx.isNotEmpty ? ctx.first.initials : '?';
+          }).toList();
           final fire = _atTime(
             DateTime(
               e.encounterTime.year,
@@ -233,9 +233,10 @@ class AlertRuleEngine {
               AlertItem(
                 type: AlertType.multiplesMujeresFertilidad,
                 fireDate: fire,
-                title: 'Múltiples mujeres + fertilidad',
-                body:
-                    'Encuentro con $nombres el ${_weekdayName(e.encounterTime)}. Ambas tienen ventana de fertilidad activa. Alto riesgo.',
+                message: MultiWomenFertilityMessage(
+                  initials: nombres,
+                  encounterOn: e.encounterTime,
+                ),
                 womanIds: fertilesEnEncuentro.map((p) => p.womanId).toList(),
               ),
             );
@@ -246,12 +247,16 @@ class AlertRuleEngine {
 
     // 8. Ventana combinada: resumen semanal
     if (settings.isEnabled(AlertType.ventanaCombinada)) {
-      final resumen = <String>[];
+      final resumen = <FertileRangeEntry>[];
       for (final w in women) {
         final p = w.prediction;
         if (p.ventanaFertilInicio != null && p.ventanaFertilFin != null) {
           resumen.add(
-            '${w.initials} es fértil del ${_formatShort(p.ventanaFertilInicio!)} al ${_formatShort(p.ventanaFertilFin!)}',
+            FertileRangeEntry(
+              initials: w.initials,
+              from: p.ventanaFertilInicio!,
+              to: p.ventanaFertilFin!,
+            ),
           );
         }
       }
@@ -262,8 +267,7 @@ class AlertRuleEngine {
           AlertItem(
             type: AlertType.ventanaCombinada,
             fireDate: fire,
-            title: 'Ventana combinada',
-            body: '${resumen.join('. ')}.',
+            message: CombinedWindowMessage(entries: resumen),
             womanIds: women.map((w) => w.womanId).toList(),
           ),
         );
@@ -295,9 +299,10 @@ class AlertRuleEngine {
           AlertItem(
             type: AlertType.medicacion,
             fireDate: fire,
-            title: 'Medicación',
-            body:
-                'Es hora de tu medicación (${medication.hour.toString().padLeft(2, '0')}:${medication.minute.toString().padLeft(2, '0')})',
+            message: MedicationMessage(
+              hour: medication.hour,
+              minute: medication.minute,
+            ),
             womanIds: [medication.womanId],
             medicationId: medication.id,
             recurringDaily: true,
@@ -331,21 +336,5 @@ class AlertRuleEngine {
     return configured.isAfter(now)
         ? configured
         : now.add(const Duration(minutes: 1));
-  }
-
-  String _formatShort(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
-
-  String _weekdayName(DateTime d) {
-    const days = [
-      'lunes',
-      'martes',
-      'miércoles',
-      'jueves',
-      'viernes',
-      'sábado',
-      'domingo',
-    ];
-    return days[d.weekday - 1];
   }
 }

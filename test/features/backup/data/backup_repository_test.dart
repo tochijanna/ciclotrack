@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/features/backup/data/backup_repository.dart';
+import 'package:ciclotrack/features/backup/data/pdf_report.dart';
 import 'package:ciclotrack/features/backup/domain/backup_document.dart';
-import 'package:ciclotrack/features/backup/domain/pdf_report.dart';
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:ciclotrack/features/calendar/domain/calendar_board.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_repository.dart';
@@ -23,6 +24,7 @@ import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -34,7 +36,7 @@ void main() {
 
   setUp(() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
-    repo = BackupRepository(db);
+    repo = BackupRepository(db, lookupAppLocalizations(const Locale('es')));
   });
 
   tearDown(() async {
@@ -153,7 +155,11 @@ void main() {
   test('exportPdf devuelve un informe A4', () async {
     await seedAll(db);
 
-    final blocks = buildPdfBlocks(await repo.dump(now: now), tablero());
+    final blocks = buildPdfBlocks(
+      await repo.dump(now: now),
+      tablero(),
+      l10n: lookupAppLocalizations(const Locale('es')),
+    );
     final medications = blocks.singleWhere((b) => b.titulo == 'Medicación');
     expect(medications.tabla, [
       ['Ana', 'Hierro', '20 mg', '23:59', 'Activo'],
@@ -170,7 +176,10 @@ void main() {
     final doc = await repo.dump(now: now);
 
     final destino = AppDatabase.forTesting(NativeDatabase.memory());
-    final destinoRepo = BackupRepository(destino);
+    final destinoRepo = BackupRepository(
+      destino,
+      lookupAppLocalizations(const Locale('es')),
+    );
     await WomenRepository(
       WomenDao(destino),
     ).create(WomanDraft(name: 'Zoe', initials: 'ZO'));
@@ -203,7 +212,10 @@ void main() {
     ).create(WomanDraft(name: 'Zoe', initials: 'ZO'));
 
     await expectLater(
-      BackupRepository(destino).importJson(doc),
+      BackupRepository(
+        destino,
+        lookupAppLocalizations(const Locale('es')),
+      ).importJson(doc),
       throwsA(isA<Exception>()),
     );
 
@@ -217,7 +229,10 @@ void main() {
   test('importJson de una copia vacía deja la base limpia', () async {
     await seedAll(db);
     final vacia = AppDatabase.forTesting(NativeDatabase.memory());
-    final doc = await BackupRepository(vacia).dump(now: now);
+    final doc = await BackupRepository(
+      vacia,
+      lookupAppLocalizations(const Locale('es')),
+    ).dump(now: now);
 
     await repo.importJson(doc);
 

@@ -1,0 +1,723 @@
+{
+  "@@locale": "es",
+
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "delete": "Eliminar",
+  "errorLabel": "Error",
+
+  "daysCount": "{count, plural, one{1 día} other{{count} días}}",
+  "@daysCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "encountersCount": "{count, plural, one{1 encuentro} other{{count} encuentros}}",
+  "@encountersCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+
+  "menuSettings": "Ajustes",
+  "menuMoreOptions": "Más opciones",
+  "menuViews": "Vistas",
+  "menuReports": "Reportes",
+  "menuBackup": "Copia de seguridad",
+  "menuAlerts": "Alertas",
+  "menuRefresh": "Actualizar",
+  "filterAll": "Todas",
+  "newProfile": "Nuevo perfil",
+  "newEncounter": "Nuevo encuentro",
+  "viewEncounters": "Ver encuentros",
+  "addNew": "Nuevo",
+  "editProfile": "Editar perfil",
+  "saveChanges": "Guardar cambios",
+  "createProfile": "Crear perfil",
+  "changeEmoji": "Cambiar emoji",
+  "colorLabel": "Color",
+  "nameLabel": "Nombre *",
+  "initialsLabel": "Iniciales *",
+  "initialsHelper": "Se generan automáticamente si las dejas vacías",
+  "privateNotes": "Notas privadas",
+  "tagsLabel": "Etiquetas",
+  "addCustomTag": "+ Personalizada",
+  "chooseEmoji": "Elige un emoji",
+  "profileSaveError": "No se pudo guardar el perfil",
+  "emptyProfilesTitle": "No hay perfiles",
+  "emptyProfilesSubtitle": "Añade tu primer perfil para empezar",
+  "addProfile": "Añadir perfil",
+  "deleteProfileTitle": "Eliminar perfil",
+  "deleteProfileBody": "¿Eliminar a {name}? Se borrarán todos sus datos.",
+  "@deleteProfileBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+
+  "womanNameRequired": "El nombre es obligatorio",
+  "womanNameTooShort": "El nombre debe tener al menos 2 caracteres",
+  "womanInitialsRequired": "Las iniciales son obligatorias",
+  "womanInitialsTooLong": "Las iniciales no pueden tener más de 4 caracteres",
+
+  "trackingPeriod": "Periodo",
+  "trackingOvulation": "Ovulación",
+  "trackingSymptom": "Síntoma",
+  "trackingEmptyTitle": "Sin registros",
+  "trackingEmptySubtitle": "Añade tu primer registro de tracking",
+  "deleteRecordTitle": "Eliminar registro",
+  "deleteRecordBody": "¿Eliminar \"{title}\"?",
+  "@deleteRecordBody": {
+    "placeholders": {"title": {"type": "String"}}
+  },
+  "flowLevel": "Flujo: {level}/5",
+  "@flowLevel": {
+    "placeholders": {"level": {"type": "int"}}
+  },
+  "intensityLevel": "Intensidad: {level}/5",
+  "@intensityLevel": {
+    "placeholders": {"level": {"type": "int"}}
+  },
+
+  "notesLabel": "Notas",
+  "dateLabel": "Fecha",
+  "cervicalMucusLabel": "Moco cervical",
+  "lhTestLabel": "Test LH",
+  "symptomTypeLabel": "Tipo de síntoma",
+  "periodFormTitle": "Registrar periodo",
+  "editPeriodTitle": "Editar periodo",
+  "ovulationFormTitle": "Registrar ovulación",
+  "editOvulationTitle": "Editar ovulación",
+  "symptomFormTitle": "Registrar síntoma",
+  "editSymptomTitle": "Editar síntoma",
+  "periodSaveError": "No se pudo guardar el periodo",
+  "ovulationSaveError": "No se pudo guardar la ovulación",
+  "symptomSaveError": "No se pudo guardar el síntoma",
+
+  "symptomAcne": "Acné",
+  "symptomBreastPain": "Dolor de pecho",
+  "symptomFatigue": "Cansancio",
+  "symptomMood": "Humor",
+  "symptomCravings": "Antojos",
+  "symptomAbdominalPain": "Dolor abdominal",
+  "mucusDry": "Seco",
+  "mucusSticky": "Pegajoso",
+  "mucusCreamy": "Cremoso",
+  "mucusWatery": "Acuoso",
+  "mucusStretchy": "Elástico",
+  "mucusEggWhite": "Clara de huevo",
+  "lhNegative": "Negativo",
+  "lhPositive": "Positivo",
+  "lhNotDone": "No realizado",
+
+  "protectionCondom": "Condón",
+  "protectionPill": "Pastilla",
+  "protectionNatural": "Natural",
+  "protectionNone": "Ninguno",
+  "relationshipVaginal": "Vaginal",
+  "relationshipOral": "Oral",
+  "relationshipAnal": "Anal",
+  "relationshipOther": "Otro",
+  "outcomeNothing": "Nada",
+  "outcomePregnancy": "Embarazo",
+  "outcomeAbortion": "Aborto",
+  "outcomeUnknown": "Desconocido",
+
+  "encountersTitle": "Encuentros",
+  "deleteEncounterTitle": "Eliminar encuentro",
+  "deleteEncounterBody": "¿Eliminar este encuentro?",
+  "emptyEncountersTitle": "Sin encuentros",
+  "emptyEncountersSubtitle": "Registra tu primer encuentro",
+  "encounterFormTitle": "Nuevo encuentro",
+  "editEncounterTitle": "Editar encuentro",
+  "dateTimeLabel": "Fecha y hora",
+  "protectionLabel": "Protección",
+  "participantsLabel": "Participantes",
+  "outcomeLabel": "Resultado",
+  "applyToAll": "Aplicar a todas:",
+  "encounterSaveError": "No se pudo guardar el encuentro",
+  "encounterTimeFuture": "La fecha no puede ser futura",
+  "encounterProtectionInvalid": "Protección no válida",
+  "encounterParticipantsRequired": "Debe haber al menos una participante",
+  "encounterParticipantsDuplicate": "No se pueden repetir participantes",
+  "encounterRelationshipInvalid": "Tipo de relación no válido",
+  "encounterOutcomeInvalid": "Resultado no válido",
+
+  "riskPeriodInProgress": "Periodo en curso",
+  "riskRiskDay": "Día de riesgo",
+  "riskPossibleDelay": "Posible retraso",
+  "riskOutsideWindow": "Fuera de ventana fértil",
+  "riskNoData": "Sin datos",
+
+  "phaseMenstruation": "Menstruación",
+  "phaseFollicular": "Folicular",
+  "phaseFertileWindow": "Ventana fértil",
+  "phaseOvulation": "Ovulación",
+  "phaseLuteal": "Lútea",
+  "phaseLateLuteal": "Lútea tardía (PMS)",
+  "phaseDelayed": "Retraso",
+
+  "moodMenstruationHumor": "Bajo / cansancio",
+  "moodMenstruationLibido": "Baja",
+  "moodMenstruationTip": "Déjala tranquila",
+  "moodFollicularHumor": "Buen humor",
+  "moodFollicularLibido": "En aumento",
+  "moodFollicularTip": "Buen momento para planes",
+  "moodFertileHumor": "Bueno",
+  "moodFertileLibido": "Alta",
+  "moodFertileTip": "Días de riesgo",
+  "moodOvulationHumor": "Muy bueno",
+  "moodOvulationLibido": "Cachonda (pico)",
+  "moodOvulationTip": "Riesgo máximo",
+  "moodLutealHumor": "Variable",
+  "moodLutealLibido": "En descenso",
+  "moodLateLutealHumor": "Irritable / mal humor",
+  "moodLateLutealLibido": "Variable",
+  "moodLateLutealTip": "Paciencia, mejor no discutir",
+  "moodDelayedHumor": "Imprevisible",
+  "moodDelayedLibido": "—",
+  "moodDelayedTip": "Posible retraso, comprueba registro",
+
+  "phaseLabel": "Fase: {phase}",
+  "@phaseLabel": {
+    "placeholders": {"phase": {"type": "String"}}
+  },
+  "moodLabel": "Humor: {mood}",
+  "@moodLabel": {
+    "placeholders": {"mood": {"type": "String"}}
+  },
+  "libidoLabel": "Libido: {libido}",
+  "@libidoLabel": {
+    "placeholders": {"libido": {"type": "String"}}
+  },
+  "estimatedOvulation": "Ovulación estimada",
+  "fertileWindowRisk": "Ventana fértil (riesgo)",
+  "expectedPeriod": "Periodo previsto",
+  "upcomingDays": "Próximos días",
+  "cycleDay": "Día {day}",
+  "@cycleDay": {
+    "placeholders": {"day": {"type": "int"}}
+  },
+  "cycleStats": "Ciclos: {cycles} · Min {min} / Max {max} / Media {avg} días",
+  "@cycleStats": {
+    "placeholders": {
+      "cycles": {"type": "int"},
+      "min": {"type": "int"},
+      "max": {"type": "int"},
+      "avg": {"type": "String"}
+    }
+  },
+  "defaultEstimationWarning": "⚠ Estimación por defecto (registra más periodos para mayor precisión)",
+  "orientationDisclaimer": "Estimación orientativa según la fase del ciclo",
+  "noDataCardBody": "Registra un periodo para ver la predicción",
+
+  "alertTypeFertilityImminent": "Fertilidad inminente",
+  "alertTypeRiskDay": "Día de riesgo",
+  "alertTypePeriodImminent": "Periodo inminente",
+  "alertTypeCombinedFertility": "Fertilidad combinada",
+  "alertTypeEncounterFertility": "Encuentro + fertilidad",
+  "alertTypePostEncounter": "Advertencia post-encuentro",
+  "alertTypeMultiFertility": "Múltiples mujeres + fertilidad",
+  "alertTypeCombinedWindow": "Ventana combinada",
+  "alertTypeMedication": "Medicación",
+
+  "alertDescFertilityImminent": "Notifica cuando la ovulación es al día siguiente",
+  "alertDescRiskDay": "Notifica si hoy estás en ventana fértil",
+  "alertDescPeriodImminent": "Notifica cuando el periodo empieza al día siguiente",
+  "alertDescCombinedFertility": "Resumen semanal de mujeres fértiles",
+  "alertDescEncounterFertility": "Avisa si tuviste un encuentro y ella está fértil",
+  "alertDescPostEncounter": "Avisa si pasaron ~14 días desde un encuentro",
+  "alertDescMultiFertility": "Avisa si un encuentro múltiple coincide con fertilidad",
+  "alertDescCombinedWindow": "Resumen semanal de ventanas de todas las mujeres",
+  "alertDescMedication": "Recuerda la toma de los medicamentos de cada mujer",
+
+  "notificationChannelName": "Alertas de CicloTrack",
+  "notificationChannelDescription": "Notificaciones de fertilidad y ciclo",
+
+  "alertBodyFertilityImminent": "Mañana es día de ovulación de {initials}. Ventana de fertilidad: {days} días",
+  "@alertBodyFertilityImminent": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "days": {"type": "int"}
+    }
+  },
+  "alertBodyRiskDayEndsTomorrow": "Hoy es día de riesgo con {initials}. Su ventana de fertilidad termina mañana",
+  "@alertBodyRiskDayEndsTomorrow": {
+    "placeholders": {"initials": {"type": "String"}}
+  },
+  "alertBodyRiskDayEndsOn": "Hoy es día de riesgo con {initials}. Su ventana de fertilidad termina el {date}",
+  "@alertBodyRiskDayEndsOn": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "alertBodyPeriodImminent": "El periodo de {initials} empieza mañana",
+  "@alertBodyPeriodImminent": {
+    "placeholders": {"initials": {"type": "String"}}
+  },
+  "alertBodyCombinedFertility": "Esta semana hay fertilidad con {names}",
+  "@alertBodyCombinedFertility": {
+    "placeholders": {"names": {"type": "String"}}
+  },
+  "alertBodyEncounterFertilityToday": "Encuentro con {initials} el {weekday} y su ventana de fertilidad es hoy",
+  "@alertBodyEncounterFertilityToday": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "weekday": {"type": "String"}
+    }
+  },
+  "alertBodyEncounterFertilityPlus": "Encuentro con {initials} el {weekday} y su ventana de fertilidad es hoy + {days} días",
+  "@alertBodyEncounterFertilityPlus": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "weekday": {"type": "String"},
+      "days": {"type": "int"}
+    }
+  },
+  "alertBodyPostEncounter": "Encuentro con {initials} el {weekday}. Su periodo debería empezar el {date}. Si no hay embarazo, es probable que tenga sangrado a esa fecha.",
+  "@alertBodyPostEncounter": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "weekday": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "alertBodyMultiFertility": "Encuentro con {names} el {weekday}. Ambas tienen ventana de fertilidad activa. Alto riesgo.",
+  "@alertBodyMultiFertility": {
+    "placeholders": {
+      "names": {"type": "String"},
+      "weekday": {"type": "String"}
+    }
+  },
+  "alertBodyCombinedWindow": "{entries}.",
+  "@alertBodyCombinedWindow": {
+    "placeholders": {"entries": {"type": "String"}}
+  },
+  "alertEntryFertileRange": "{initials} es fértil del {from} al {to}",
+  "@alertEntryFertileRange": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "alertBodyMedication": "Es hora de tu medicación ({time})",
+  "@alertBodyMedication": {
+    "placeholders": {"time": {"type": "String"}}
+  },
+
+  "alertsTitle": "Alertas",
+  "alertsMedicationTooltip": "Medicación",
+  "alertsEnabled": "Alertas activadas",
+  "alertsEnabledSubtitle": "Activa o desactiva todas las notificaciones",
+  "alertsPermissionDenied": "Permiso de notificaciones no concedido",
+  "alertsNotifyTime": "Hora de notificación",
+  "alertsTypesTitle": "Tipos de alerta",
+  "alertsUpcomingTitle": "Próximas alertas",
+  "alertsUpcomingEmpty": "No hay alertas programadas para los próximos 7 días",
+  "alertsRecalculate": "Recalcular ahora",
+  "alertsRecalculated": "Alertas recalculadas",
+
+  "calendarViewsTitle": "Vistas",
+  "calendarWeekTab": "Semana",
+  "calendarMonthTab": "Mes",
+  "calendarFertilityTab": "Fertilidad",
+  "calendarEncountersTab": "Encuentros",
+  "calendarLoadError": "No se pudieron cargar las vistas.",
+  "calendarEmpty": "Sin perfiles. Crea uno para ver el calendario.",
+  "legendMenstruation": "Menstruación",
+  "legendFertileWindow": "Ventana fértil",
+  "legendOvulation": "Ovulación",
+  "legendRegisteredOvulation": "Ovulación registrada",
+  "legendSymptom": "Síntoma",
+  "legendEncounter": "Encuentro",
+  "legendProjectionNote": "Las marcas atenuadas son proyecciones a partir de la media de ciclos.",
+  "dayNoCycleData": "Sin datos de ciclo",
+  "dayFertileSuffix": "· ventana fértil",
+  "fertilityWeekEmpty": "Ninguna mujer en ventana fértil esta semana.",
+  "fertilityEstimated": "estimado",
+
+  "reportsTitle": "Reportes",
+  "reportsLoadError": "No se pudieron cargar los reportes.",
+  "reportsEmpty": "Sin perfiles. Crea uno para ver los reportes.",
+  "reportsAll": "Todas",
+  "reportsGlobal": "Global",
+  "kpiProfiles": "Perfiles",
+  "kpiCycles": "Ciclos registrados",
+  "kpiAvgCycle": "Duración media del ciclo",
+  "kpiAvgMenstruation": "Duración media de la menstruación",
+  "kpiEncounters": "Encuentros",
+  "kpiUnprotected": "Sin protección",
+  "kpiFertileDays": "Días fértiles",
+  "kpiMostEncounters": "Más encuentros",
+  "kpiNextPeriod": "Próximo periodo",
+  "hintHistory": "histórico",
+  "hintClosedPeriods": "periodos cerrados",
+  "hintMonths12": "12 meses",
+  "hintFertile12": "12 meses, con proyecciones",
+  "hintProjected": "proyectado",
+  "hintUnprotected": "«Ninguno»: {unprotected} de {total}",
+  "@hintUnprotected": {
+    "placeholders": {
+      "unprotected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "reportsPerMonth": "Por mes",
+  "reportsEncountersByWoman": "Encuentros por mujer",
+  "reportsProtection": "Protección",
+  "reportsCycleEvolution": "Evolución del ciclo",
+  "reportsRecurringSymptoms": "Síntomas recurrentes",
+  "reportsMonthDetail": "{month} · {encounters} encuentros · {unprotected} sin protección · {fertile} días fértiles · {periods} periodos",
+  "@reportsMonthDetail": {
+    "placeholders": {
+      "month": {"type": "String"},
+      "encounters": {"type": "int"},
+      "unprotected": {"type": "int"},
+      "fertile": {"type": "int"},
+      "periods": {"type": "int"}
+    }
+  },
+  "chartNeedTwoCycles": "Hacen falta al menos dos ciclos cerrados para dibujar la evolución.",
+  "chartNoSymptoms": "Sin síntomas registrados en los últimos 12 meses.",
+  "chartNoEncounters": "Sin encuentros registrados en los últimos 12 meses.",
+  "chartLegendEncounters": "Encuentros",
+  "chartLegendUnprotected": "Sin protección",
+
+  "backupTitle": "Copia de seguridad",
+  "backupSaved": "Copia guardada",
+  "backupRestoreTitle": "Restaurar copia",
+  "backupRestoreConfirm": "¿Reemplazar todos los datos actuales? Se borrarán los {count} perfiles y todos sus registros.",
+  "@backupRestoreConfirm": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfDocumentTitle": "CicloTrack — copia de seguridad",
+  "pdfFooterPage": "Página {page} de {total}",
+  "@pdfFooterPage": {
+    "placeholders": {
+      "page": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "pdfGeneratedOn": "Informe generado el {date}",
+  "@pdfGeneratedOn": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "pdfSummary": "Resumen",
+  "pdfRegisteredPeriods": "Periodos registrados",
+  "pdfSymptoms12": "Síntomas (12 meses)",
+  "pdfMedication": "Medicación",
+  "pdfEncounters": "Encuentros",
+  "pdfColStart": "Inicio",
+  "pdfColEnd": "Fin",
+  "pdfColFlow": "Flujo",
+  "pdfColNotes": "Notas",
+  "pdfColType": "Tipo",
+  "pdfColFrequency": "Frecuencia",
+  "pdfColWoman": "Mujer",
+  "pdfColMedication": "Medicamento",
+  "pdfColDose": "Dosis",
+  "pdfColTime": "Hora",
+  "pdfColState": "Estado",
+  "pdfColDate": "Fecha",
+  "pdfColWomen": "Mujeres",
+  "pdfColProtection": "Protección",
+  "pdfColOutcome": "Resultado",
+  "pdfShowsLast": "Se muestran los últimos {shown} de {total} encuentros.",
+  "@pdfShowsLast": {
+    "placeholders": {
+      "shown": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "pdfProfiles": "Perfiles: {count}",
+  "@pdfProfiles": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfCycles": "Ciclos registrados: {count}",
+  "@pdfCycles": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfAvgCycle": "Duración media del ciclo: {value}",
+  "@pdfAvgCycle": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "pdfAvgMenstruation": "Duración media de la menstruación: {value}",
+  "@pdfAvgMenstruation": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "pdfEncounters12": "Encuentros (12 meses): {count}",
+  "@pdfEncounters12": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfUnprotected": "Sin protección: {percent} % ({unprotected} de {total})",
+  "@pdfUnprotected": {
+    "placeholders": {
+      "percent": {"type": "int"},
+      "unprotected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "pdfFertileDays12": "Días fértiles (12 meses, con proyecciones): {count}",
+  "@pdfFertileDays12": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfMostEncounters": "Más encuentros: {name} ({count})",
+  "@pdfMostEncounters": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "pdfNextPeriod": "Próximo periodo: {date}",
+  "@pdfNextPeriod": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+
+  "medicationTitle": "Medicación",
+  "medicationAdd": "Añadir medicamento",
+  "medicationProfilesError": "No se pudieron cargar los perfiles",
+  "medicationLoadError": "No se pudo cargar la medicación",
+  "medicationEdit": "Editar medicamento",
+  "medicationNameLabel": "Medicamento",
+  "medicationWomanLabel": "Mujer",
+  "medicationEnabledLabel": "Activo",
+  "medicationEmpty": "No hay medicamentos registrados",
+  "medicationDeleteTitle": "Eliminar medicamento",
+  "medicationDeleteBody": "¿Eliminar {name}?",
+  "@medicationDeleteBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "medicationSaveError": "No se pudo guardar el medicamento",
+  "medicationNameRequired": "Introduce el nombre del medicamento",
+  "medicationNameTooLong": "El nombre admite hasta 80 caracteres",
+  "medicationDoseTooLong": "La dosis admite hasta 60 caracteres",
+  "medicationHourRange": "La hora debe estar entre 0 y 23",
+  "medicationMinuteRange": "El minuto debe estar entre 0 y 59",
+
+  "settingsTitle": "Ajustes",
+  "settingsSectionGeneral": "General",
+  "settingsAlerts": "Alertas",
+  "settingsBackup": "Copia de seguridad",
+  "settingsViews": "Vistas",
+  "settingsReports": "Informes",
+  "settingsMedication": "Medicación",
+  "settingsAbout": "Acerca de",
+  "settingsVersion": "Versión {version}",
+  "@settingsVersion": {
+    "placeholders": {"version": {"type": "String"}}
+  },
+  "appLockedTitle": "Acceso bloqueado",
+  "appLockedSubtitle": "Desbloquea con tu PIN o huella para continuar.",
+  "appUnlock": "Desbloquear",
+  "appLockAuthReason": "Desbloquea CicloTrack para continuar",
+
+  "remindersOf": "Recordatorios de {name}",
+  "@remindersOf": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "remindersLoadError": "No se pudieron cargar los recordatorios",
+  "remindersNew": "Nuevo recordatorio",
+  "remindersEmpty": "Sin recordatorios",
+  "remindersDeleteTitle": "Eliminar recordatorio",
+  "remindersDeleteBody": "¿Eliminar \"{message}\"?",
+  "@remindersDeleteBody": {
+    "placeholders": {"message": {"type": "String"}}
+  },
+  "reminderNotificationTitle": "Recordatorio",
+  "reminderChannelName": "Recordatorios",
+  "reminderChannelDescription": "Recordatorios personalizados por día del ciclo",
+  "reminderFormTitle": "Nuevo recordatorio",
+  "reminderEditTitle": "Editar recordatorio",
+  "reminderMessageLabel": "Mensaje",
+  "reminderStartLabel": "Día inicial del ciclo",
+  "reminderEndLabel": "Día final del ciclo (opcional)",
+  "reminderEnabledLabel": "Activo",
+  "reminderPermissionDenied": "Recordatorio guardado, pero sin permiso de notificaciones no recibirás el aviso",
+  "reminderSaveError": "No se pudo guardar el recordatorio",
+  "reminderMessageRequired": "Escribe un mensaje",
+  "reminderMessageTooLong": "Máximo {max} caracteres",
+  "@reminderMessageTooLong": {
+    "placeholders": {"max": {"type": "int"}}
+  },
+  "reminderStartRequired": "Introduce un día del ciclo",
+  "reminderStartTooSmall": "El día inicial debe ser 1 o mayor",
+  "reminderStartTooLarge": "El día inicial no puede superar {max}",
+  "@reminderStartTooLarge": {
+    "placeholders": {"max": {"type": "int"}}
+  },
+  "reminderEndRequired": "Introduce un día del ciclo",
+  "reminderEndBeforeStart": "El día final no puede ser anterior al inicial",
+  "reminderEndTooLarge": "El día final no puede superar {max}",
+  "@reminderEndTooLarge": {
+    "placeholders": {"max": {"type": "int"}}
+  },
+  "reminderDayLabel": "Día {day} del ciclo",
+  "@reminderDayLabel": {
+    "placeholders": {"day": {"type": "int"}}
+  },
+  "reminderDaysLabel": "Días {start}-{end} del ciclo",
+  "@reminderDaysLabel": {
+    "placeholders": {
+      "start": {"type": "int"},
+      "end": {"type": "int"}
+    }
+  },
+  "reminderBodyRange": "{message} (días {start}-{end} del ciclo)",
+  "@reminderBodyRange": {
+    "placeholders": {
+      "message": {"type": "String"},
+      "start": {"type": "int"},
+      "end": {"type": "int"}
+    }
+  },
+
+  "dayNoProfiles": "Sin perfiles.",
+  "saving": "Guardando…",
+  "add": "Añadir",
+  "register": "Registrar",
+  "remindersTooltip": "Recordatorios",
+
+  "tagRelated": "Relacionada",
+  "tagFriend": "Amiga",
+  "tagEx": "Ex",
+  "tagCoworker": "Compañera",
+  "tagCasual": "Casual",
+  "tagOther": "Otro",
+  "newTagTitle": "Nueva etiqueta",
+  "tagNameHint": "Nombre de la etiqueta",
+
+  "medicationNoProfiles": "Crea un perfil para añadir medicación",
+  "medicationWomanRequired": "Selecciona una mujer",
+  "medicationDoseOptional": "Dosis (opcional)",
+  "medicationTakeTime": "Hora de la toma",
+
+  "reminderMessageHint": "Mejor evitar sexo estos días",
+  "reminderCycleNote": "El día 1 es el inicio del último periodo registrado. Recibirás un aviso por ciclo, el día inicial.",
+  "reminderCreate": "Crear recordatorio",
+  "reminderDisabled": "Desactivado",
+  "remindersEmptySubtitle": "Crea un aviso para unos días concretos del ciclo",
+
+  "encounterNoProfiles": "No hay perfiles disponibles",
+  "relationshipTypeLabel": "Tipo de relación",
+  "outcomeNoneOption": "Ninguno",
+  "registerEncounter": "Registrar encuentro",
+  "registerPeriod": "Registrar periodo",
+  "registerOvulation": "Registrar ovulación",
+  "registerSymptom": "Registrar síntoma",
+  "dateStartLabel": "Fecha de inicio",
+  "dateEndOptionalLabel": "Fecha de fin (opcional)",
+  "undefinedDate": "Sin definir",
+  "durationLabel": "Duración",
+  "flowLevelLabel": "Nivel de flujo",
+  "temperatureBasalLabel": "Temperatura basal (°C)",
+  "periodStartFuture": "La fecha de inicio no puede ser futura",
+  "periodEndBeforeStart": "La fecha de fin no puede ser anterior al inicio",
+  "periodFlowRange": "Flujo debe estar entre 1 y 5",
+  "dateFuture": "La fecha no puede ser futura",
+  "temperatureInvalid": "Introduce una temperatura válida entre 34 y 40 °C",
+  "symptomTypeInvalid": "Tipo de síntoma no válido",
+  "severityRange": "Intensidad debe estar entre 1 y 5",
+  "calendarWeekRange": "Semana del {from} al {to}",
+  "@calendarWeekRange": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "fertilityWindowLabel": "Ventana: {from} – {to}",
+  "@fertilityWindowLabel": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "ovulationDateLabel": "Ovulación: {date}",
+  "@ovulationDateLabel": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "fertilityEstimatedF": "estimada",
+  "fertilityStartsTomorrow": "Empieza mañana",
+  "fertilityStartsIn": "Empieza en {count, plural, one{1 día} other{{count} días}}",
+  "@fertilityStartsIn": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "fertilityLastDay": "Último día de ventana",
+  "fertilityInProgress": "En curso, termina en {count, plural, one{1 día} other{{count} días}}",
+  "@fertilityInProgress": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "encountersFilterAllCount": "Todas ({count})",
+  "@encountersFilterAllCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "encountersNone": "Sin encuentros registrados.",
+  "encountersNoneFor": "Sin encuentros con {name}.",
+  "@encountersNoneFor": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "active": "Activo",
+  "inactive": "Inactivo",
+  "medicationSaveChangeError": "No se pudo guardar el cambio",
+  "settingsSectionSecurity": "Seguridad",
+  "settingsAppLockTitle": "Bloqueo de acceso (PIN/huella)",
+  "settingsAppLockSupported": "Requiere PIN o huella al abrir la app",
+  "settingsAppLockUnavailable": "No disponible en este dispositivo",
+  "settingsLocalTitle": "100 % local y sin nube",
+  "settingsLocalSubtitle": "Todos los datos se guardan solo en este dispositivo: no hay cuentas, sincronización ni servidores.",
+  "settingsMedicationSubtitle": "Pastillas y horas de aviso, por mujer",
+  "settingsAlertsSubtitle": "Avisos locales y hora de notificación",
+  "settingsBackupSubtitle": "Exportar y restaurar los datos",
+  "settingsReportsSubtitle": "Estadísticas y gráficos",
+  "settingsViewsSubtitle": "Calendario, fertilidad y encuentros",
+  "backupSectionExport": "Exportar",
+  "backupSectionImport": "Importar",
+  "backupExportJsonTitle": "Copia completa (JSON)",
+  "backupExportJsonSubtitle": "Todos los datos en un archivo JSON",
+  "backupExportCsvTitle": "Tablas (CSV)",
+  "backupExportCsvSubtitle": "Un CSV por tabla, comprimidos en un ZIP",
+  "backupExportPdfTitle": "Informe (PDF)",
+  "backupExportPdfSubtitle": "Resumen imprimible de perfiles, ciclos y encuentros",
+  "backupImportJsonTitle": "Restaurar desde JSON",
+  "backupImportJsonSubtitle": "Reemplaza todos los datos actuales",
+  "backupNotReady": "No se pudo guardar: los datos aún se están cargando",
+  "backupCancelled": "Exportación cancelada",
+  "backupImportCancelled": "Importación cancelada",
+  "backupRestoreAction": "Restaurar",
+  "backupSaveFailed": "No se pudo guardar: {reason}",
+  "@backupSaveFailed": {
+    "placeholders": {"reason": {"type": "String"}}
+  },
+  "backupImportFailed": "No se pudo importar: {reason}",
+  "@backupImportFailed": {
+    "placeholders": {"reason": {"type": "String"}}
+  },
+  "backupRestoredSummary": "Copia restaurada: {profiles} perfiles, {periods} periodos, {encounters} encuentros",
+  "@backupRestoredSummary": {
+    "placeholders": {
+      "profiles": {"type": "int"},
+      "periods": {"type": "int"},
+      "encounters": {"type": "int"}
+    }
+  },
+
+  "pdfProfileFallback": "Perfil {id}",
+  "@pdfProfileFallback": {
+    "placeholders": {"id": {"type": "int"}}
+  },
+  "backupInvalidJson": "El archivo no es un JSON válido",
+  "backupNotCicloTrack": "El archivo no es una copia de CicloTrack",
+  "backupUnsupportedVersion": "Versión de copia no soportada (v{version})",
+  "@backupUnsupportedVersion": {
+    "placeholders": {"version": {"type": "String"}}
+  },
+  "backupInvalidExportDate": "Fecha de exportación inválida",
+  "backupNoTables": "El archivo no contiene tablas",
+  "backupMissingTable": "Falta la tabla {table}",
+  "@backupMissingTable": {
+    "placeholders": {"table": {"type": "String"}}
+  },
+  "backupInvalidRow": "Fila inválida en {table}",
+  "@backupInvalidRow": {
+    "placeholders": {"table": {"type": "String"}}
+  },
+  "backupInvalidValue": "Valor inválido en {column}",
+  "@backupInvalidValue": {
+    "placeholders": {"column": {"type": "String"}}
+  }
+}

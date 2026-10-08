@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,11 +11,12 @@ class EncountersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final encountersAsync = ref.watch(allEncountersProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Encuentros'),
+        title: Text(l10n.encountersTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -51,7 +53,7 @@ class EncountersScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('${l10n.errorLabel}: $e')),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToForm(context),
@@ -69,19 +71,20 @@ class EncountersScreen extends ConsumerWidget {
   }
 
   void _confirmDelete(BuildContext context, WidgetRef ref, int encounterId) {
+    final l10n = AppLocalizations.of(context);
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar encuentro'),
-        content: const Text('¿Eliminar este encuentro?'),
+        title: Text(l10n.deleteEncounterTitle),
+        content: Text(l10n.deleteEncounterBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),

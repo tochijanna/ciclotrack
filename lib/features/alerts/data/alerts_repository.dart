@@ -1,3 +1,5 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
+
 import '../../encounters/data/encounter_repository.dart';
 import '../../medications/data/medication_dao.dart';
 import '../../prediction/data/prediction_repository.dart';
@@ -8,6 +10,7 @@ import '../domain/alert_settings.dart' as domain;
 import '../domain/alert_types.dart';
 import '../domain/medication_alert_input.dart';
 import 'alert_settings_dao.dart';
+import 'alert_text.dart';
 import 'notification_scheduler.dart';
 
 /// Repositorio que orquesta la evaluación y programación de alertas.
@@ -19,6 +22,7 @@ class AlertsRepository {
     required this.encounterRepo,
     required this.womenRepo,
     required this.medicationDao,
+    required this.l10n,
     this.engine = const AlertRuleEngine(),
   });
 
@@ -28,6 +32,7 @@ class AlertsRepository {
   final EncounterRepository encounterRepo;
   final WomenRepository womenRepo;
   final MedicationDao medicationDao;
+  final AppLocalizations l10n;
   final AlertRuleEngine engine;
 
   /// Recalcula y reprograma todas las alertas.
@@ -83,7 +88,11 @@ class AlertsRepository {
         .toSet();
     final newIds = items.map((item) => item.id).toSet();
     for (final item in items) {
-      await scheduler.schedule(item);
+      await scheduler.schedule(
+        item,
+        alertTypeLabel(l10n, item.type),
+        alertBody(l10n, item.message),
+      );
     }
     await scheduler.cancel(oldIds.difference(newIds).toList());
   }

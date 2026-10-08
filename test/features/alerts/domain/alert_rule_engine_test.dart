@@ -1,4 +1,5 @@
 import 'package:ciclotrack/features/alerts/domain/alert_item.dart';
+import 'package:ciclotrack/features/alerts/domain/alert_message.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_rule_engine.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_settings.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_types.dart';
@@ -30,7 +31,6 @@ void main() {
       prediction: WomanPrediction(
         estadoRiesgo: estado,
         faseHoy: CyclePhase.follicular,
-        humorHoy: 'Buen humor',
         pronostico: const [],
         ovulacionEstimada: ovulacion,
         rangoOvulacionInicio: ovulacion?.subtract(const Duration(days: 3)),
@@ -93,7 +93,9 @@ void main() {
       final item = evaluate().single;
       expect(item.type, AlertType.medicacion);
       expect(item.fireDate, DateTime(2026, 9, 10, 12, 30));
-      expect(item.body, 'Es hora de tu medicación (12:30)');
+      expect(item.message, isA<MedicationMessage>());
+      expect((item.message as MedicationMessage).hour, 12);
+      expect((item.message as MedicationMessage).minute, 30);
       expect(item.womanIds, [1]);
     });
     test('hora pasada se programa mañana', () {
@@ -131,7 +133,7 @@ void main() {
   });
 
   group('privacidad de los cuerpos (SEC-01-04)', () {
-    test('los cuerpos no exponen nombres reales ni nombres de medicación', () {
+    test('los mensajes solo llevan iniciales, nunca nombres ni medicación', () {
       final today = DateTime(2026, 9, 10);
       final alerts = engine.evaluate(
         today: today,
@@ -175,11 +177,31 @@ void main() {
         ],
         settings: settings(),
       );
-      final bodies = alerts.map((a) => a.body).join('\n');
-      expect(bodies, isNot(contains('María')));
-      expect(bodies, isNot(contains('Hierro')));
-      expect(bodies, isNot(contains('Te acostaste')));
-      expect(bodies, contains('MR'));
+      expect(alerts, isNotEmpty);
+      final expuestos = <String>[];
+      for (final a in alerts) {
+        final msg = a.message;
+        if (msg is FertilityImminentMessage) {
+          expuestos.add(msg.initials);
+        } else if (msg is RiskDayMessage) {
+          expuestos.add(msg.initials);
+        } else if (msg is PeriodImminentMessage) {
+          expuestos.add(msg.initials);
+        } else if (msg is CombinedFertilityMessage) {
+          expuestos.addAll(msg.initials);
+        } else if (msg is EncounterFertilityMessage) {
+          expuestos.add(msg.initials);
+        } else if (msg is PostEncounterWarningMessage) {
+          expuestos.add(msg.initials);
+        } else if (msg is MultiWomenFertilityMessage) {
+          expuestos.addAll(msg.initials);
+        } else if (msg is CombinedWindowMessage) {
+          expuestos.addAll(msg.entries.map((e) => e.initials));
+        }
+        // MedicationMessage no expone el nombre del medicamento.
+      }
+      expect(expuestos, contains('MR'));
+      expect(expuestos, everyElement(isNot('María')));
       expect(
         alerts
             .where((a) => a.type != AlertType.medicacion)
@@ -474,15 +496,13 @@ void main() {
       final a = AlertItem(
         type: AlertType.diaDeRiesgo,
         fireDate: DateTime(2026, 9, 10, 9),
-        title: 't',
-        body: 'b',
+        message: const RiskDayMessage(initials: 'A', endsTomorrow: false),
         womanIds: [1],
       );
       final b = AlertItem(
         type: AlertType.diaDeRiesgo,
         fireDate: DateTime(2026, 9, 10, 9),
-        title: 't',
-        body: 'b',
+        message: const RiskDayMessage(initials: 'A', endsTomorrow: false),
         womanIds: [1],
       );
       expect(a.id, equals(b.id));
@@ -492,15 +512,13 @@ void main() {
       final a = AlertItem(
         type: AlertType.diaDeRiesgo,
         fireDate: DateTime(2026, 9, 10, 9),
-        title: 't',
-        body: 'b',
+        message: const RiskDayMessage(initials: 'A', endsTomorrow: false),
         womanIds: [1],
       );
       final b = AlertItem(
         type: AlertType.diaDeRiesgo,
         fireDate: DateTime(2026, 9, 11, 9),
-        title: 't',
-        body: 'b',
+        message: const RiskDayMessage(initials: 'A', endsTomorrow: false),
         womanIds: [1],
       );
       expect(a.id, isNot(equals(b.id)));

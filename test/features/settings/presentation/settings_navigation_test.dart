@@ -29,7 +29,7 @@ void main() {
     expect(find.text('No hay medicamentos registrados'), findsOneWidget);
     expect(find.byTooltip('Añadir medicamento'), findsOneWidget);
 
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(SettingsScreen), findsOneWidget);

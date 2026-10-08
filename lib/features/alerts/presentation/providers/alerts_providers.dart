@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/db/app_database.dart';
 import '../../../../core/db/app_database_provider.dart';
+import '../../../../core/l10n/app_locale.dart';
 import '../../../encounters/data/encounter_dao.dart';
 import '../../../encounters/data/encounter_repository.dart';
 import '../../../medications/data/medication_dao.dart';
@@ -28,7 +29,10 @@ import '../../domain/alert_rule_engine.dart';
 
 final notificationSchedulerProvider = Provider<NotificationScheduler>((ref) {
   final plugin = FlutterLocalNotificationsPlugin();
-  return LocalNotificationScheduler(plugin);
+  return LocalNotificationScheduler(
+    plugin,
+    ref.watch(appLocalizationsProvider),
+  );
 });
 
 final alertSettingsDaoProvider = Provider<AlertSettingsDao>((ref) {
@@ -61,6 +65,7 @@ final alertsRepositoryProvider = Provider<AlertsRepository>((ref) {
     encounterRepo: encounterRepo,
     womenRepo: womenRepo,
     medicationDao: MedicationDao(db),
+    l10n: ref.watch(appLocalizationsProvider),
     engine: ref.watch(alertRuleEngineProvider),
   );
 });

@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,6 +6,7 @@ import '../../data/women_repository.dart';
 import '../../domain/woman_draft.dart';
 import '../../domain/woman_options.dart';
 import '../../domain/woman_validator.dart';
+import '../l10n.dart';
 import '../providers/women_providers.dart';
 
 class WomanFormScreen extends ConsumerStatefulWidget {
@@ -57,6 +59,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
 
   Future<void> _save() async {
     if (_saving) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       _autoInitials();
@@ -82,9 +85,9 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo guardar el perfil')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.profileSaveError)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -93,14 +96,12 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar perfil' : 'Nuevo perfil'),
+        title: Text(isEditing ? l10n.editProfile : l10n.newProfile),
         actions: [
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Guardar'),
-          ),
+          TextButton(onPressed: _saving ? null : _save, child: Text(l10n.save)),
         ],
       ),
       body: SingleChildScrollView(
@@ -125,12 +126,15 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
               Center(
                 child: TextButton(
                   onPressed: _showEmojiPicker,
-                  child: const Text('Cambiar emoji'),
+                  child: Text(l10n.changeEmoji),
                 ),
               ),
               const SizedBox(height: 16),
               // Color picker
-              Text('Color', style: Theme.of(context).textTheme.labelLarge),
+              Text(
+                l10n.colorLabel,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -168,8 +172,10 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
               TextFormField(
                 controller: _nameCtrl,
                 decoration: InputDecoration(
-                  labelText: 'Nombre *',
-                  errorText: _errors.name,
+                  labelText: l10n.nameLabel,
+                  errorText: _errors.name == null
+                      ? null
+                      : womanFieldErrorText(l10n, _errors.name!),
                   border: const OutlineInputBorder(),
                 ),
                 textCapitalization: TextCapitalization.words,
@@ -188,10 +194,12 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
               TextFormField(
                 controller: _initialsCtrl,
                 decoration: InputDecoration(
-                  labelText: 'Iniciales *',
-                  errorText: _errors.initials,
+                  labelText: l10n.initialsLabel,
+                  errorText: _errors.initials == null
+                      ? null
+                      : womanFieldErrorText(l10n, _errors.initials!),
                   border: const OutlineInputBorder(),
-                  helperText: 'Se generan automáticamente si las dejas vacías',
+                  helperText: l10n.initialsHelper,
                 ),
                 textCapitalization: TextCapitalization.characters,
                 maxLength: 4,
@@ -200,15 +208,18 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
               // Notas
               TextFormField(
                 controller: _notesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Notas privadas',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.privateNotes,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
               // Etiquetas
-              Text('Etiquetas', style: Theme.of(context).textTheme.labelLarge),
+              Text(
+                l10n.tagsLabel,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -217,7 +228,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
                   ...suggestedTags.map((tag) {
                     final selected = _tags.contains(tag);
                     return FilterChip(
-                      label: Text(tag),
+                      label: Text(suggestedTagLabel(l10n, tag)),
                       selected: selected,
                       onSelected: (sel) {
                         setState(() {
@@ -231,7 +242,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
                     );
                   }),
                   ActionChip(
-                    label: const Text('+ Personalizada'),
+                    label: Text(l10n.addCustomTag),
                     onPressed: _addCustomTag,
                   ),
                 ],
@@ -243,7 +254,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
                   children: _tags
                       .map(
                         (t) => Chip(
-                          label: Text(t),
+                          label: Text(suggestedTagLabel(l10n, t)),
                           onDeleted: () => setState(() => _tags.remove(t)),
                         ),
                       )
@@ -255,7 +266,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
               FilledButton.icon(
                 onPressed: _saving ? null : _save,
                 icon: Icon(isEditing ? Icons.save : Icons.person_add),
-                label: Text(isEditing ? 'Guardar cambios' : 'Crear perfil'),
+                label: Text(isEditing ? l10n.saveChanges : l10n.createProfile),
               ),
             ],
           ),
@@ -265,6 +276,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
   }
 
   void _showEmojiPicker() {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SizedBox(
@@ -274,7 +286,7 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
             Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
-                'Elige un emoji',
+                l10n.chooseEmoji,
                 style: Theme.of(ctx).textTheme.titleMedium,
               ),
             ),
@@ -311,24 +323,25 @@ class _WomanFormScreenState extends ConsumerState<WomanFormScreen> {
   }
 
   void _addCustomTag() {
+    final l10n = AppLocalizations.of(context);
     final ctrl = TextEditingController();
     showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Nueva etiqueta'),
+        title: Text(l10n.newTagTitle),
         content: TextField(
           controller: ctrl,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Nombre de la etiqueta'),
+          decoration: InputDecoration(hintText: l10n.tagNameHint),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text),
-            child: const Text('Añadir'),
+            child: Text(l10n.add),
           ),
         ],
       ),

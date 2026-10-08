@@ -1,19 +1,21 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import 'reminder_notifier.dart';
 
 /// Implementación de [ReminderNotifier] con flutter_local_notifications.
 class LocalReminderNotifier implements ReminderNotifier {
-  LocalReminderNotifier(this._plugin);
+  LocalReminderNotifier(this._plugin, this._l10n);
 
   /// Marca las notificaciones propias para distinguirlas de las alertas, que
   /// comparten plugin.
   static const String payload = 'ciclotrack_reminder';
 
   final FlutterLocalNotificationsPlugin _plugin;
+  final AppLocalizations _l10n;
   Future<void>? _initialization;
   bool _available = true;
 
@@ -66,15 +68,15 @@ class LocalReminderNotifier implements ReminderNotifier {
     // Si la fecha ya pasó, no programar.
     if (tzDateTime.isBefore(tz.TZDateTime.now(tz.local))) return;
 
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       'recordatorios',
-      'Recordatorios',
-      channelDescription: 'Recordatorios personalizados por día del ciclo',
+      _l10n.reminderChannelName,
+      channelDescription: _l10n.reminderChannelDescription,
       importance: Importance.high,
       priority: Priority.high,
       visibility: NotificationVisibility.secret,
     );
-    const details = NotificationDetails(android: androidDetails);
+    final details = NotificationDetails(android: androidDetails);
 
     // Intentar programar con alarma exacta; fallback a inexacta.
     AndroidScheduleMode mode;

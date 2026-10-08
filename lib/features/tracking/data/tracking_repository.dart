@@ -142,9 +142,7 @@ class TrackingRepository {
       return !end.isBefore(existingStart) && !start.isAfter(existingEnd);
     });
     if (conflict) {
-      throw const PeriodConflictException(
-        'El periodo se solapa con otro registro existente',
-      );
+      throw const PeriodConflictException();
     }
   }
 

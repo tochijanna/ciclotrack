@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/calendar_board.dart';
@@ -10,18 +11,27 @@ class CalendarLegend extends StatelessWidget {
 
   final List<CalendarWoman> women;
 
-  static const _significados = <DayMarkKind, String>{
-    DayMarkKind.menstruacion: 'Menstruación',
-    DayMarkKind.ventanaFertil: 'Ventana fértil',
-    DayMarkKind.ovulacion: 'Ovulación',
-    DayMarkKind.ovulacionRegistrada: 'Ovulación registrada',
-    DayMarkKind.sintoma: 'Síntoma',
-    DayMarkKind.encuentro: 'Encuentro',
-  };
+  String _significado(AppLocalizations l10n, DayMarkKind kind) {
+    switch (kind) {
+      case DayMarkKind.menstruacion:
+        return l10n.legendMenstruation;
+      case DayMarkKind.ventanaFertil:
+        return l10n.legendFertileWindow;
+      case DayMarkKind.ovulacion:
+        return l10n.legendOvulation;
+      case DayMarkKind.ovulacionRegistrada:
+        return l10n.legendRegisteredOvulation;
+      case DayMarkKind.sintoma:
+        return l10n.legendSymptom;
+      case DayMarkKind.encuentro:
+        return l10n.legendEncounter;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final color = theme.colorScheme.onSurfaceVariant;
 
     return Column(
@@ -54,7 +64,7 @@ class CalendarLegend extends StatelessWidget {
           spacing: 12,
           runSpacing: 4,
           children: [
-            for (final entry in _significados.entries)
+            for (final kind in DayMarkKind.values)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -62,19 +72,22 @@ class CalendarLegend extends StatelessWidget {
                     mark: DayMark(
                       womanId: 0,
                       color: color.toARGB32(),
-                      kind: entry.key,
+                      kind: kind,
                     ),
                     size: 8,
                   ),
                   const SizedBox(width: 6),
-                  Text(entry.value, style: theme.textTheme.bodySmall),
+                  Text(
+                    _significado(l10n, kind),
+                    style: theme.textTheme.bodySmall,
+                  ),
                 ],
               ),
           ],
         ),
         const SizedBox(height: 6),
         Text(
-          'Las marcas atenuadas son proyecciones a partir de la media de ciclos.',
+          l10n.legendProjectionNote,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

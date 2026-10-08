@@ -1,8 +1,11 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../encounters/presentation/l10n.dart' as encounters_l10n;
 import '../../../prediction/domain/cycle_phase.dart';
-import '../../../prediction/domain/mood_forecast.dart';
+import '../../../prediction/presentation/l10n.dart' as prediction_l10n;
+import '../../../tracking/presentation/l10n.dart' as tracking_l10n;
 import '../../domain/calendar_board.dart';
 
 /// Detalle del día seleccionado: estado de cada mujer, registros y encuentros.
@@ -15,17 +18,18 @@ class DayDetailPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          DateFormat.yMMMMEEEEd('es_ES').format(day),
+          DateFormat.yMMMMEEEEd(l10n.localeName).format(day),
           style: theme.textTheme.titleMedium,
         ),
         const SizedBox(height: 4),
         if (details.isEmpty)
-          Text('Sin perfiles.', style: theme.textTheme.bodyMedium)
+          Text(l10n.dayNoProfiles, style: theme.textTheme.bodyMedium)
         else
           for (final detail in details) _WomanDayTile(detail: detail),
       ],
@@ -41,6 +45,7 @@ class _WomanDayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final color = Color(detail.woman.color);
 
     return Padding(
@@ -67,7 +72,7 @@ class _WomanDayTile extends StatelessWidget {
                     if (detail.esEstimado) ...[
                       const SizedBox(width: 6),
                       Text(
-                        'estimado',
+                        l10n.fertilityEstimated,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -75,16 +80,18 @@ class _WomanDayTile extends StatelessWidget {
                     ],
                   ],
                 ),
-                Text(_estado(detail), style: theme.textTheme.bodySmall),
+                Text(_estado(l10n, detail), style: theme.textTheme.bodySmall),
                 for (final evento in detail.eventos)
                   Text(
-                    '${evento.icon ?? ''} ${evento.title}'.trim(),
+                    '${tracking_l10n.trackingEventIcon(evento)} '
+                    '${tracking_l10n.trackingEventTitle(l10n, evento)}',
                     style: theme.textTheme.bodySmall,
                   ),
                 for (final encuentro in detail.encuentros)
                   Text(
-                    '⚡ Encuentro · ${encuentro.participantNames} · '
-                    '${encuentro.protection}',
+                    '⚡ ${l10n.legendEncounter} · '
+                    '${encuentro.participantNames} · '
+                    '${encounters_l10n.localizedProtection(l10n, encuentro.protection)}',
                     style: theme.textTheme.bodySmall,
                   ),
               ],
@@ -95,11 +102,11 @@ class _WomanDayTile extends StatelessWidget {
     );
   }
 
-  String _estado(DayDetail detail) {
+  String _estado(AppLocalizations l10n, DayDetail detail) {
     final fase = detail.fase;
-    if (fase == null) return 'Sin datos de ciclo';
-    final nombre = nombreFase(fase);
+    if (fase == null) return l10n.dayNoCycleData;
+    final nombre = prediction_l10n.phaseLabel(l10n, fase);
     if (!detail.fertil || fase == CyclePhase.ventanaFertil) return nombre;
-    return '$nombre · ventana fértil';
+    return '$nombre ${l10n.dayFertileSuffix}';
   }
 }

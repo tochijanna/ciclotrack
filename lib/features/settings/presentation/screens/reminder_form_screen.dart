@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,16 +11,12 @@ import '../providers/reminder_providers.dart';
 Future<void> ensureReminderPermission(
   WidgetRef ref,
   ScaffoldMessengerState messenger,
+  AppLocalizations l10n,
 ) async {
   final granted = await ref.read(reminderNotifierProvider).requestPermission();
   if (granted) return;
   messenger.showSnackBar(
-    const SnackBar(
-      content: Text(
-        'Recordatorio guardado, pero sin permiso de notificaciones '
-        'no recibirás el aviso',
-      ),
-    ),
+    SnackBar(content: Text(l10n.reminderPermissionDenied)),
   );
 }
 
@@ -69,9 +66,33 @@ class _ReminderFormScreenState extends ConsumerState<ReminderFormScreen> {
     super.dispose();
   }
 
+  String? _errorText(AppLocalizations l10n, ReminderFieldError? error) {
+    switch (error) {
+      case ReminderFieldError.messageRequired:
+        return l10n.reminderMessageRequired;
+      case ReminderFieldError.messageTooLong:
+        return l10n.reminderMessageTooLong(reminderMessageMaxLength);
+      case ReminderFieldError.startRequired:
+        return l10n.reminderStartRequired;
+      case ReminderFieldError.startTooSmall:
+        return l10n.reminderStartTooSmall;
+      case ReminderFieldError.startTooLarge:
+        return l10n.reminderStartTooLarge(reminderMaxCycleDay);
+      case ReminderFieldError.endRequired:
+        return l10n.reminderEndRequired;
+      case ReminderFieldError.endBeforeStart:
+        return l10n.reminderEndBeforeStart;
+      case ReminderFieldError.endTooLarge:
+        return l10n.reminderEndTooLarge(reminderMaxCycleDay);
+      case null:
+        return null;
+    }
+  }
+
   Future<void> _save() async {
     if (_saving) return;
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _saving = true);
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -88,13 +109,11 @@ class _ReminderFormScreenState extends ConsumerState<ReminderFormScreen> {
       } else {
         await repo.create(widget.womanId, draft);
       }
-      if (_enabled) await ensureReminderPermission(ref, messenger);
+      if (_enabled) await ensureReminderPermission(ref, messenger, l10n);
 
       if (mounted) Navigator.pop(context);
     } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('No se pudo guardar el recordatorio')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l10n.reminderSaveError)));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -102,14 +121,14 @@ class _ReminderFormScreenState extends ConsumerState<ReminderFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar recordatorio' : 'Nuevo recordatorio'),
+        title: Text(
+          isEditing ? l10n.reminderEditTitle : l10n.reminderFormTitle,
+        ),
         actions: [
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Guardar'),
-          ),
+          TextButton(onPressed: _saving ? null : _save, child: Text(l10n.save)),
         ],
       ),
       body: SingleChildScrollView(
@@ -123,14 +142,15 @@ class _ReminderFormScreenState extends ConsumerState<ReminderFormScreen> {
               TextFormField(
                 key: const Key('reminder_message'),
                 controller: _messageCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Mensaje',
-                  hintText: 'Mejor evitar sexo estos días',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.reminderMessageLabel,
+                  hintText: l10n.reminderMessageHint,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLength: reminderMessageMaxLength,
                 maxLines: 2,
-                validator: validateReminderMessage,
+                validator: (value) =>
+                    _errorText(l10n, validateReminderMessage(value)),
               ),
               const SizedBox(height: 16),
               Row(
@@ -140,14 +160,15 @@ class _ReminderFormScreenState extends ConsumerState<ReminderFormScreen> {
                     child: TextFormField(
                       key: const Key('reminder_day_start'),
                       controller: _startCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Día inicial del ciclo',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.reminderStartLabel,
+                        border: const OutlineInputBorder(),
                         errorMaxLines: 3,
                       ),
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (_) => validateCycleDayStart(_start),
+                      validator: (_) =>
+                          _errorText(l10n, validateCycleDayStart(_start)),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -155,30 +176,29 @@ class _ReminderFormScreenState extends ConsumerState<ReminderFormScreen> {
                     child: TextFormField(
                       key: const Key('reminder_day_end'),
                       controller: _endCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Día final (opcional)',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l10n.reminderEndLabel,
+                        border: const OutlineInputBorder(),
                         errorMaxLines: 3,
                       ),
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       validator: (_) => _start == null
                           ? null
-                          : validateCycleDayEnd(_start, _end),
+                          : _errorText(l10n, validateCycleDayEnd(_start, _end)),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                'El día 1 es el inicio del último periodo registrado. '
-                'Recibirás un aviso por ciclo, el día inicial.',
+                l10n.reminderCycleNote,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Activo'),
+                title: Text(l10n.reminderEnabledLabel),
                 value: _enabled,
                 onChanged: (value) => setState(() => _enabled = value),
               ),
@@ -186,9 +206,7 @@ class _ReminderFormScreenState extends ConsumerState<ReminderFormScreen> {
               FilledButton.icon(
                 onPressed: _saving ? null : _save,
                 icon: Icon(isEditing ? Icons.save : Icons.add),
-                label: Text(
-                  isEditing ? 'Guardar cambios' : 'Crear recordatorio',
-                ),
+                label: Text(isEditing ? l10n.saveChanges : l10n.reminderCreate),
               ),
             ],
           ),

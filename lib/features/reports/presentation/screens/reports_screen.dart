@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -13,21 +14,22 @@ class ReportsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final boardAsync = ref.watch(reportsBoardProvider);
     final selectedId = ref.watch(selectedWomanProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reportes')),
+      appBar: AppBar(title: Text(l10n.reportsTitle)),
       body: boardAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) =>
-            const Center(child: Text('No se pudieron cargar los reportes.')),
+            Center(child: Text(l10n.reportsLoadError)),
         data: (board) {
           if (board.mujeres.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Sin perfiles. Crea uno para ver los reportes.'),
+                padding: const EdgeInsets.all(24),
+                child: Text(l10n.reportsEmpty),
               ),
             );
           }
@@ -60,6 +62,7 @@ class _WomanSelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     void select(int? womanId) =>
         ref.read(selectedWomanProvider.notifier).select(womanId);
 
@@ -71,7 +74,7 @@ class _WomanSelector extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: ChoiceChip(
-              label: const Text('Todas'),
+              label: Text(l10n.reportsAll),
               selected: selectedId == null,
               onSelected: (_) => select(null),
             ),
@@ -98,67 +101,68 @@ class _GlobalSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final globales = board.globales;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _Titulo('Global'),
+        _Titulo(l10n.reportsGlobal),
         const SizedBox(height: 8),
         KpiGrid(
           cards: [
-            KpiCard(label: 'Perfiles', value: '${globales.perfiles}'),
+            KpiCard(label: l10n.kpiProfiles, value: '${globales.perfiles}'),
             KpiCard(
-              label: 'Ciclos registrados',
+              label: l10n.kpiCycles,
               value: '${globales.ciclos}',
-              hint: 'histórico',
+              hint: l10n.hintHistory,
             ),
             KpiCard(
-              label: 'Duración media del ciclo',
-              value: _dias(globales.mediaCiclo),
-              hint: 'histórico',
+              label: l10n.kpiAvgCycle,
+              value: _dias(l10n, globales.mediaCiclo),
+              hint: l10n.hintHistory,
             ),
             KpiCard(
-              label: 'Duración media de la menstruación',
-              value: _dias(globales.mediaMenstruacion),
-              hint: 'periodos cerrados',
+              label: l10n.kpiAvgMenstruation,
+              value: _dias(l10n, globales.mediaMenstruacion),
+              hint: l10n.hintClosedPeriods,
             ),
             KpiCard(
-              label: 'Encuentros',
+              label: l10n.kpiEncounters,
               value: '${globales.encuentros}',
-              hint: '12 meses',
+              hint: l10n.hintMonths12,
             ),
             KpiCard(
-              label: 'Sin protección',
+              label: l10n.kpiUnprotected,
               value: '${globales.porcentajeSinProteccion.round()} %',
-              hint:
-                  '«Ninguno»: '
-                  '${globales.encuentrosSinProteccion} de '
-                  '${globales.encuentros}',
+              hint: l10n.hintUnprotected(
+                globales.encuentrosSinProteccion,
+                globales.encuentros,
+              ),
             ),
             KpiCard(
-              label: 'Días fértiles',
+              label: l10n.kpiFertileDays,
               value: '${globales.diasFertiles}',
-              hint: '12 meses, con proyecciones',
+              hint: l10n.hintFertile12,
             ),
             if (globales.mujerConMasEncuentros != null)
               KpiCard(
-                label: 'Más encuentros',
+                label: l10n.kpiMostEncounters,
                 value: globales.mujerConMasEncuentros!,
-                hint: '${globales.maxEncuentros} encuentros',
+                hint: l10n.encountersCount(globales.maxEncuentros),
               ),
           ],
         ),
         const SizedBox(height: 24),
-        const _Titulo('Por mes'),
+        _Titulo(l10n.reportsPerMonth),
         MesesChart(meses: board.meses),
         const SizedBox(height: 8),
         _MesesDetalle(meses: board.meses),
         const SizedBox(height: 24),
-        const _Titulo('Encuentros por mujer'),
+        _Titulo(l10n.reportsEncountersByWoman),
         EncuentrosPorMujerChart(barras: board.encuentrosPorMujer),
         const SizedBox(height: 24),
-        const _Titulo('Protección'),
+        _Titulo(l10n.reportsProtection),
         ProteccionChart(barras: board.proteccion),
       ],
     );
@@ -173,6 +177,7 @@ class _WomanSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final kpis = report.kpis;
     final color = Color(report.woman.color);
     final proximo = report.proximoPeriodo;
@@ -197,54 +202,55 @@ class _WomanSection extends StatelessWidget {
         KpiGrid(
           cards: [
             KpiCard(
-              label: 'Ciclos registrados',
+              label: l10n.kpiCycles,
               value: '${kpis.ciclos}',
-              hint: 'histórico',
+              hint: l10n.hintHistory,
             ),
             KpiCard(
-              label: 'Duración media del ciclo',
-              value: _dias(kpis.mediaCiclo),
-              hint: 'histórico',
+              label: l10n.kpiAvgCycle,
+              value: _dias(l10n, kpis.mediaCiclo),
+              hint: l10n.hintHistory,
             ),
             KpiCard(
-              label: 'Duración media de la menstruación',
-              value: _dias(kpis.mediaMenstruacion),
-              hint: 'periodos cerrados',
+              label: l10n.kpiAvgMenstruation,
+              value: _dias(l10n, kpis.mediaMenstruacion),
+              hint: l10n.hintClosedPeriods,
             ),
             KpiCard(
-              label: 'Encuentros',
+              label: l10n.kpiEncounters,
               value: '${kpis.encuentros}',
-              hint: '12 meses',
+              hint: l10n.hintMonths12,
             ),
             KpiCard(
-              label: 'Sin protección',
+              label: l10n.kpiUnprotected,
               value: '${kpis.porcentajeSinProteccion.round()} %',
-              hint:
-                  '«Ninguno»: '
-                  '${kpis.encuentrosSinProteccion} de ${kpis.encuentros}',
+              hint: l10n.hintUnprotected(
+                kpis.encuentrosSinProteccion,
+                kpis.encuentros,
+              ),
             ),
             KpiCard(
-              label: 'Días fértiles',
+              label: l10n.kpiFertileDays,
               value: '${kpis.diasFertiles}',
-              hint: '12 meses, con proyecciones',
+              hint: l10n.hintFertile12,
             ),
             KpiCard(
-              label: 'Próximo periodo',
+              label: l10n.kpiNextPeriod,
               value: proximo == null
                   ? '—'
-                  : DateFormat('d MMM', 'es_ES').format(proximo),
-              hint: 'proyectado',
+                  : DateFormat('d MMM', l10n.localeName).format(proximo),
+              hint: l10n.hintProjected,
             ),
           ],
         ),
         const SizedBox(height: 24),
-        const _Titulo('Evolución del ciclo'),
+        _Titulo(l10n.reportsCycleEvolution),
         CiclosChart(puntos: report.ciclos),
         const SizedBox(height: 24),
-        const _Titulo('Síntomas recurrentes'),
+        _Titulo(l10n.reportsRecurringSymptoms),
         SintomasChart(barras: report.sintomas),
         const SizedBox(height: 24),
-        const _Titulo('Protección'),
+        _Titulo(l10n.reportsProtection),
         ProteccionChart(barras: report.proteccion),
       ],
     );
@@ -259,7 +265,8 @@ class _MesesDetalle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final formato = DateFormat('MMM yyyy', 'es_ES');
+    final l10n = AppLocalizations.of(context);
+    final formato = DateFormat('MMM yyyy', l10n.localeName);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,9 +275,13 @@ class _MesesDetalle extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: Text(
-              '${formato.format(mes.mes)} · ${mes.encuentros} encuentros · '
-              '${mes.sinProteccion} sin protección · '
-              '${mes.diasFertiles} días fértiles · ${mes.periodos} periodos',
+              l10n.reportsMonthDetail(
+                formato.format(mes.mes),
+                mes.encuentros,
+                mes.sinProteccion,
+                mes.diasFertiles,
+                mes.periodos,
+              ),
               style: theme.textTheme.bodySmall,
             ),
           ),
@@ -289,4 +300,5 @@ class _Titulo extends StatelessWidget {
       Text(texto, style: Theme.of(context).textTheme.titleMedium);
 }
 
-String _dias(double valor) => valor == 0 ? '—' : '${valor.round()} días';
+String _dias(AppLocalizations l10n, double valor) =>
+    valor == 0 ? '—' : l10n.daysCount(valor.round());

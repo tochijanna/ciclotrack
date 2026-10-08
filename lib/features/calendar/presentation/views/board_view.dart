@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -36,13 +37,13 @@ class _BoardViewState extends ConsumerState<BoardView> {
     return boardAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) =>
-          const Center(child: Text('No se pudieron cargar las vistas.')),
+          Center(child: Text(AppLocalizations.of(context).calendarLoadError)),
       data: (board) {
         if (board.women.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(24),
-              child: Text('Sin perfiles. Crea uno para ver el calendario.'),
+              padding: const EdgeInsets.all(24),
+              child: Text(AppLocalizations.of(context).calendarEmpty),
             ),
           );
         }

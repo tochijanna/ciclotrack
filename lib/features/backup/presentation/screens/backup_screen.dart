@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,12 +23,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // El informe necesita los datos ya cargados; el resto de acciones no.
     final board = ref.watch(reportsBoardProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Copia de seguridad'),
+        title: Text(l10n.backupTitle),
         bottom: _working
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),
@@ -37,36 +39,34 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       ),
       body: ListView(
         children: [
-          const _Seccion('Exportar'),
+          _Seccion(l10n.backupSectionExport),
           ListTile(
             leading: const Icon(Icons.data_object),
-            title: const Text('Copia completa (JSON)'),
-            subtitle: const Text('Todos los datos en un archivo JSON'),
+            title: Text(l10n.backupExportJsonTitle),
+            subtitle: Text(l10n.backupExportJsonSubtitle),
             enabled: !_working,
             onTap: _exportarJson,
           ),
           ListTile(
             leading: const Icon(Icons.table_chart_outlined),
-            title: const Text('Tablas (CSV)'),
-            subtitle: const Text('Un CSV por tabla, comprimidos en un ZIP'),
+            title: Text(l10n.backupExportCsvTitle),
+            subtitle: Text(l10n.backupExportCsvSubtitle),
             enabled: !_working,
             onTap: _exportarCsv,
           ),
           ListTile(
             leading: const Icon(Icons.picture_as_pdf_outlined),
-            title: const Text('Informe (PDF)'),
-            subtitle: const Text(
-              'Resumen imprimible de perfiles, ciclos y encuentros',
-            ),
+            title: Text(l10n.backupExportPdfTitle),
+            subtitle: Text(l10n.backupExportPdfSubtitle),
             enabled: !_working && board.value != null,
             onTap: _exportarPdf,
           ),
           const Divider(),
-          const _Seccion('Importar'),
+          _Seccion(l10n.backupSectionImport),
           ListTile(
             leading: const Icon(Icons.restore),
-            title: const Text('Restaurar desde JSON'),
-            subtitle: const Text('Reemplaza todos los datos actuales'),
+            title: Text(l10n.backupImportJsonTitle),
+            subtitle: Text(l10n.backupImportJsonSubtitle),
             enabled: !_working,
             onTap: _importar,
           ),
@@ -92,9 +92,10 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   }
 
   Future<void> _exportarPdf() {
+    final l10n = AppLocalizations.of(context);
     final board = ref.read(reportsBoardProvider).value;
     if (board == null) {
-      _aviso('No se pudo guardar: los datos aún se están cargando');
+      _aviso(l10n.backupNotReady);
       return Future<void>.value();
     }
 
@@ -109,6 +110,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     required List<String> extensions,
     required Future<BackupFile> Function(DateTime now) build,
   }) async {
+    final l10n = AppLocalizations.of(context);
     final gateway = ref.read(backupFileGatewayProvider);
     final now = ref.read(clockProvider).now();
     setState(() => _working = true);
@@ -121,23 +123,24 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         extensions: extensions,
       );
       if (!mounted) return;
-      _aviso(destino == null ? 'Exportación cancelada' : 'Copia guardada');
+      _aviso(destino == null ? l10n.backupCancelled : l10n.backupSaved);
     } catch (error) {
       if (!mounted) return;
-      _aviso('No se pudo guardar: ${_motivo(error)}');
+      _aviso(l10n.backupSaveFailed(_motivo(error)));
     } finally {
       if (mounted) setState(() => _working = false);
     }
   }
 
   Future<void> _importar() async {
+    final l10n = AppLocalizations.of(context);
     final gateway = ref.read(backupFileGatewayProvider);
     setState(() => _working = true);
 
     try {
       final bytes = await gateway.pick(extensions: const ['json']);
       if (bytes == null) {
-        if (mounted) _aviso('Importación cancelada');
+        if (mounted) _aviso(l10n.backupImportCancelled);
         return;
       }
 
@@ -154,42 +157,48 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       ref.invalidate(availableTagsProvider);
       if (!mounted) return;
       _aviso(
-        'Copia restaurada: ${resumen.counts['women']} perfiles, '
-        '${resumen.counts['period_logs']} periodos, '
-        '${resumen.counts['encounters']} encuentros',
+        l10n.backupRestoredSummary(
+          resumen.counts['women'] ?? 0,
+          resumen.counts['period_logs'] ?? 0,
+          resumen.counts['encounters'] ?? 0,
+        ),
       );
     } catch (error) {
       if (!mounted) return;
-      _aviso('No se pudo importar: ${_motivo(error)}');
+      _aviso(l10n.backupImportFailed(_motivo(error)));
     } finally {
       if (mounted) setState(() => _working = false);
     }
   }
 
-  Future<bool?> _confirmar(int perfiles) => showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Restaurar copia'),
-      content: Text(
-        '¿Reemplazar todos los datos actuales? Se borrarán los $perfiles '
-        'perfiles y todos sus registros.',
+  Future<bool?> _confirmar(int perfiles) {
+    final l10n = AppLocalizations.of(context);
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.backupRestoreTitle),
+        content: Text(l10n.backupRestoreConfirm(perfiles)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.backupRestoreAction),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancelar'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Restaurar'),
-        ),
-      ],
-    ),
-  );
+    );
+  }
 
   /// Mensaje sin datos sensibles: nunca incluye nombres ni notas.
-  String _motivo(Object error) =>
-      error is BackupFormatException ? error.message : '$error';
+  String _motivo(Object error) {
+    if (error is BackupFormatException) {
+      return backupFormatErrorText(AppLocalizations.of(context), error);
+    }
+    return '$error';
+  }
 
   void _aviso(String mensaje) {
     ScaffoldMessenger.of(context)
@@ -208,4 +217,27 @@ class _Seccion extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
     child: Text(titulo, style: Theme.of(context).textTheme.titleSmall),
   );
+}
+
+/// Mensaje localizado de un error de formato de copia. Los identificadores de
+/// tabla/columna son nombres técnicos y no se traducen.
+String backupFormatErrorText(AppLocalizations l10n, BackupFormatException e) {
+  switch (e.error) {
+    case BackupFormatError.invalidJson:
+      return l10n.backupInvalidJson;
+    case BackupFormatError.notCicloTrack:
+      return l10n.backupNotCicloTrack;
+    case BackupFormatError.unsupportedVersion:
+      return l10n.backupUnsupportedVersion(e.detail ?? '');
+    case BackupFormatError.invalidExportDate:
+      return l10n.backupInvalidExportDate;
+    case BackupFormatError.noTables:
+      return l10n.backupNoTables;
+    case BackupFormatError.missingTable:
+      return l10n.backupMissingTable(e.detail ?? '');
+    case BackupFormatError.invalidRow:
+      return l10n.backupInvalidRow(e.detail ?? '');
+    case BackupFormatError.invalidValue:
+      return l10n.backupInvalidValue(e.detail ?? '');
+  }
 }

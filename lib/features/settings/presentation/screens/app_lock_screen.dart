@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +12,7 @@ class AppLockScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: Center(
         child: Padding(
@@ -20,21 +22,21 @@ class AppLockScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.lock_outline, size: 64),
               const SizedBox(height: 16),
-              const Text(
-                'Acceso bloqueado',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              Text(
+                l10n.appLockedTitle,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Desbloquea con tu PIN o huella para continuar.',
-                textAlign: TextAlign.center,
-              ),
+              Text(l10n.appLockedSubtitle, textAlign: TextAlign.center),
               const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: () =>
                     ref.read(appLockProvider.notifier).authenticate(),
                 icon: const Icon(Icons.lock_open),
-                label: const Text('Desbloquear'),
+                label: Text(l10n.appUnlock),
               ),
             ],
           ),

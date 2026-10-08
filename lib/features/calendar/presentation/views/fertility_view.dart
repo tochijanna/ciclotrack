@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -12,30 +13,33 @@ class FertilityView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final boardAsync = ref.watch(calendarBoardProvider);
     final today = ref.watch(predictionDayProvider);
     final weekStart = startOfWeek(today);
 
     return boardAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) =>
-          const Center(child: Text('No se pudieron cargar las vistas.')),
+      error: (error, stackTrace) => Center(child: Text(l10n.calendarLoadError)),
       data: (board) {
         final entradas = fertileInWeek(board, weekStart);
+        final formato = DateFormat('d MMM', l10n.localeName);
 
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Text(
-              'Semana del ${_formato.format(weekStart)} al '
-              '${_formato.format(_addDays(weekStart, 6))}',
+              l10n.calendarWeekRange(
+                formato.format(weekStart),
+                formato.format(_addDays(weekStart, 6)),
+              ),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
             if (board.women.isEmpty)
-              const Text('Sin perfiles. Crea uno para ver el calendario.')
+              Text(l10n.calendarEmpty)
             else if (entradas.isEmpty)
-              const Text('Ninguna mujer en ventana fértil esta semana.')
+              Text(l10n.fertilityWeekEmpty)
             else
               for (final entrada in entradas)
                 _FertileTile(entry: entrada, today: today),
@@ -55,7 +59,9 @@ class _FertileTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final color = Color(entry.woman.color);
+    final formato = DateFormat('d MMM', l10n.localeName);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -84,7 +90,7 @@ class _FertileTile extends StatelessWidget {
                       if (entry.esEstimado) ...[
                         const SizedBox(width: 6),
                         Text(
-                          'estimada',
+                          l10n.fertilityEstimatedF,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -93,15 +99,17 @@ class _FertileTile extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    'Ventana: ${_formato.format(entry.ventanaInicio)} – '
-                    '${_formato.format(entry.ventanaFin)}',
+                    l10n.fertilityWindowLabel(
+                      formato.format(entry.ventanaInicio),
+                      formato.format(entry.ventanaFin),
+                    ),
                     style: theme.textTheme.bodySmall,
                   ),
                   Text(
-                    'Ovulación: ${_formato.format(entry.ovulacion)}',
+                    l10n.ovulationDateLabel(formato.format(entry.ovulacion)),
                     style: theme.textTheme.bodySmall,
                   ),
-                  Text(_cuentaAtras(), style: theme.textTheme.bodySmall),
+                  Text(_cuentaAtras(l10n), style: theme.textTheme.bodySmall),
                 ],
               ),
             ),
@@ -111,19 +119,19 @@ class _FertileTile extends StatelessWidget {
     );
   }
 
-  String _cuentaAtras() {
+  String _cuentaAtras(AppLocalizations l10n) {
     final hoy = DateTime(today.year, today.month, today.day);
     if (hoy.isBefore(entry.ventanaInicio)) {
       final dias = entry.ventanaInicio.difference(hoy).inDays;
-      return dias == 1 ? 'Empieza mañana' : 'Empieza en $dias días';
+      return dias == 1
+          ? l10n.fertilityStartsTomorrow
+          : l10n.fertilityStartsIn(dias);
     }
     final restantes = entry.ventanaFin.difference(hoy).inDays;
-    if (restantes <= 0) return 'Último día de ventana';
-    return 'En curso, termina en $restantes ${restantes == 1 ? 'día' : 'días'}';
+    if (restantes <= 0) return l10n.fertilityLastDay;
+    return l10n.fertilityInProgress(restantes);
   }
 }
 
 DateTime _addDays(DateTime base, int days) =>
     DateTime(base.year, base.month, base.day + days);
-
-final _formato = DateFormat('d MMM', 'es_ES');
