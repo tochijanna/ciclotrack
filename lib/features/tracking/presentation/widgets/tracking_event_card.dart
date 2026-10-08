@@ -1,6 +1,9 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/tracking_event.dart';
+import '../l10n.dart';
 
 /// Tarjeta para un evento de la timeline.
 class TrackingEventCard extends StatelessWidget {
@@ -19,6 +22,9 @@ class TrackingEventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final color = _colorForType(event.type, colorScheme);
+    final l10n = AppLocalizations.of(context);
+    final title = trackingEventTitle(l10n, event);
+    final subtitle = trackingEventSubtitle(l10n, event);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -34,7 +40,7 @@ class TrackingEventCard extends StatelessWidget {
                 radius: 20,
                 backgroundColor: color.withValues(alpha: 0.15),
                 child: Text(
-                  event.icon ?? '📋',
+                  trackingEventIcon(event),
                   style: const TextStyle(fontSize: 20),
                 ),
               ),
@@ -47,21 +53,21 @@ class TrackingEventCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            event.title,
+                            title,
                             style: Theme.of(context).textTheme.titleSmall,
                           ),
                         ),
                         Text(
-                          _formatDate(event.date),
+                          _formatDate(l10n, event.date),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
                     ),
-                    if (event.subtitle.isNotEmpty)
+                    if (subtitle.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
-                          event.subtitle,
+                          subtitle,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
@@ -97,9 +103,6 @@ class TrackingEventCard extends StatelessWidget {
     }
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.year}';
-  }
+  String _formatDate(AppLocalizations l10n, DateTime date) =>
+      DateFormat('dd/MM/yyyy', l10n.localeName).format(date);
 }

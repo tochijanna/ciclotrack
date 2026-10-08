@@ -1,10 +1,11 @@
 import 'dart:typed_data';
 
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../reports/domain/report_models.dart';
-import 'backup_document.dart';
+import '../domain/backup_document.dart';
 
 /// Bloque del informe: título, párrafos y tabla opcional.
 class PdfBlock {
@@ -36,7 +37,11 @@ const pdfMaxNota = 60;
 ///
 /// El informe es de solo lectura humana: para restaurar datos solo sirve el
 /// JSON.
-List<PdfBlock> buildPdfBlocks(BackupDocument doc, ReportsBoard board) {
+List<PdfBlock> buildPdfBlocks(
+  BackupDocument doc,
+  ReportsBoard board, {
+  required AppLocalizations l10n,
+}) {
   final nombres = <int, String>{
     for (final row in doc.rows('women'))
       row['id']! as int: row['name']! as String,
@@ -55,20 +60,25 @@ List<PdfBlock> buildPdfBlocks(BackupDocument doc, ReportsBoard board) {
       : encuentros;
 
   return [
-    PdfBlock(titulo: 'Resumen', parrafos: _resumen(board.globales)),
+    PdfBlock(titulo: l10n.pdfSummary, parrafos: _resumen(l10n, board.globales)),
     for (final report in board.mujeres) ...[
       PdfBlock(
         titulo: '${report.woman.name} (${report.woman.initials})',
-        parrafos: _kpisDe(report),
+        parrafos: _kpisDe(l10n, report),
       ),
       PdfBlock(
-        titulo: 'Periodos registrados',
-        cabeceras: const ['Inicio', 'Fin', 'Flujo', 'Notas'],
-        tabla: _periodosDe(doc, report.woman.id),
+        titulo: l10n.pdfRegisteredPeriods,
+        cabeceras: [
+          l10n.pdfColStart,
+          l10n.pdfColEnd,
+          l10n.pdfColFlow,
+          l10n.pdfColNotes,
+        ],
+        tabla: _periodosDe(l10n, doc, report.woman.id),
       ),
       PdfBlock(
-        titulo: 'Síntomas (12 meses)',
-        cabeceras: const ['Tipo', 'Frecuencia'],
+        titulo: l10n.pdfSymptoms12,
+        cabeceras: [l10n.pdfColType, l10n.pdfColFrequency],
         tabla: [
           for (final sintoma in report.sintomas)
             [_safe(sintoma.etiqueta), '${sintoma.valor.toInt()}'],
@@ -76,8 +86,14 @@ List<PdfBlock> buildPdfBlocks(BackupDocument doc, ReportsBoard board) {
       ),
     ],
     PdfBlock(
-      titulo: 'Medicación',
-      cabeceras: const ['Mujer', 'Medicamento', 'Dosis', 'Hora', 'Estado'],
+      titulo: l10n.pdfMedication,
+      cabeceras: [
+        l10n.pdfColWoman,
+        l10n.pdfColMedication,
+        l10n.pdfColDose,
+        l10n.pdfColTime,
+        l10n.pdfColState,
+      ],
       tabla: [
         for (final row in doc.rows('medications'))
           [
@@ -85,20 +101,22 @@ List<PdfBlock> buildPdfBlocks(BackupDocument doc, ReportsBoard board) {
             _safe(row['name']! as String),
             _safe(row['dose']! as String),
             '${(row['hour']! as int).toString().padLeft(2, '0')}:${(row['minute']! as int).toString().padLeft(2, '0')}',
-            row['enabled'] == true ? 'Activo' : 'Inactivo',
+            row['enabled'] == true ? l10n.active : l10n.inactive,
           ],
       ],
     ),
     PdfBlock(
-      titulo: 'Encuentros',
+      titulo: l10n.pdfEncounters,
       parrafos: encuentros.length > pdfMaxEncuentros
-          ? [
-              'Se muestran los últimos $pdfMaxEncuentros de '
-                  '${encuentros.length} encuentros.',
-            ]
+          ? [l10n.pdfShowsLast(pdfMaxEncuentros, encuentros.length)]
           : const [],
-      cabeceras: const ['Fecha', 'Mujeres', 'Protección', 'Resultado'],
-      tabla: _encuentrosDe(doc, visibles, nombres),
+      cabeceras: [
+        l10n.pdfColDate,
+        l10n.pdfColWomen,
+        l10n.pdfColProtection,
+        l10n.pdfColOutcome,
+      ],
+      tabla: _encuentrosDe(l10n, doc, visibles, nombres),
     ),
   ];
 }
@@ -107,9 +125,10 @@ List<PdfBlock> buildPdfBlocks(BackupDocument doc, ReportsBoard board) {
 Future<Uint8List> renderPdf(
   List<PdfBlock> blocks, {
   required DateTime generadoEn,
+  required AppLocalizations l10n,
 }) async {
   final document = pw.Document(
-    title: 'CicloTrack — copia de seguridad',
+    title: l10n.pdfDocumentTitle,
     author: 'CicloTrack',
   );
 
@@ -123,12 +142,12 @@ Future<Uint8List> renderPdf(
       footer: (context) => pw.Align(
         alignment: pw.Alignment.centerRight,
         child: pw.Text(
-          'Página ${context.pageNumber} de ${context.pagesCount}',
+          l10n.pdfFooterPage(context.pageNumber, context.pagesCount),
           style: const pw.TextStyle(fontSize: 9),
         ),
       ),
       build: (context) => [
-        pw.Text('Informe generado el ${_fechaHora(generadoEn)}'),
+        pw.Text(l10n.pdfGeneratedOn(_fechaHora(generadoEn))),
         pw.SizedBox(height: 8),
         for (final block in blocks) ...[
           pw.Header(level: 1, text: _safe(block.titulo)),
@@ -147,36 +166,45 @@ Future<Uint8List> renderPdf(
   return document.save();
 }
 
-List<String> _resumen(ReportKpis kpis) => [
-  'Perfiles: ${kpis.perfiles}',
-  'Ciclos registrados: ${kpis.ciclos}',
-  'Duración media del ciclo: ${_dias(kpis.mediaCiclo)}',
-  'Duración media de la menstruación: ${_dias(kpis.mediaMenstruacion)}',
-  'Encuentros (12 meses): ${kpis.encuentros}',
-  'Sin protección: ${kpis.porcentajeSinProteccion.round()} % '
-      '(${kpis.encuentrosSinProteccion} de ${kpis.encuentros})',
-  'Días fértiles (12 meses, con proyecciones): ${kpis.diasFertiles}',
+List<String> _resumen(AppLocalizations l10n, ReportKpis kpis) => [
+  l10n.pdfProfiles(kpis.perfiles),
+  l10n.pdfCycles(kpis.ciclos),
+  l10n.pdfAvgCycle(_dias(l10n, kpis.mediaCiclo)),
+  l10n.pdfAvgMenstruation(_dias(l10n, kpis.mediaMenstruacion)),
+  l10n.pdfEncounters12(kpis.encuentros),
+  l10n.pdfUnprotected(
+    kpis.porcentajeSinProteccion.round(),
+    kpis.encuentrosSinProteccion,
+    kpis.encuentros,
+  ),
+  l10n.pdfFertileDays12(kpis.diasFertiles),
   if (kpis.mujerConMasEncuentros != null)
-    'Más encuentros: ${_safe(kpis.mujerConMasEncuentros!)} '
-        '(${kpis.maxEncuentros})',
+    l10n.pdfMostEncounters(kpis.mujerConMasEncuentros!, kpis.maxEncuentros),
 ];
 
-List<String> _kpisDe(WomanReport report) {
+List<String> _kpisDe(AppLocalizations l10n, WomanReport report) {
   final kpis = report.kpis;
   final proximo = report.proximoPeriodo;
   return [
-    'Ciclos registrados: ${kpis.ciclos}',
-    'Duración media del ciclo: ${_dias(kpis.mediaCiclo)}',
-    'Duración media de la menstruación: ${_dias(kpis.mediaMenstruacion)}',
-    'Encuentros (12 meses): ${kpis.encuentros}',
-    'Sin protección: ${kpis.porcentajeSinProteccion.round()} % '
-        '(${kpis.encuentrosSinProteccion} de ${kpis.encuentros})',
-    'Días fértiles (12 meses, con proyecciones): ${kpis.diasFertiles}',
-    'Próximo periodo: ${proximo == null ? '-' : _fecha(proximo)}',
+    l10n.pdfCycles(kpis.ciclos),
+    l10n.pdfAvgCycle(_dias(l10n, kpis.mediaCiclo)),
+    l10n.pdfAvgMenstruation(_dias(l10n, kpis.mediaMenstruacion)),
+    l10n.pdfEncounters12(kpis.encuentros),
+    l10n.pdfUnprotected(
+      kpis.porcentajeSinProteccion.round(),
+      kpis.encuentrosSinProteccion,
+      kpis.encuentros,
+    ),
+    l10n.pdfFertileDays12(kpis.diasFertiles),
+    l10n.pdfNextPeriod(proximo == null ? '-' : _fecha(proximo)),
   ];
 }
 
-List<List<dynamic>> _periodosDe(BackupDocument doc, int womanId) {
+List<List<dynamic>> _periodosDe(
+  AppLocalizations l10n,
+  BackupDocument doc,
+  int womanId,
+) {
   final filas =
       [
         for (final row in doc.rows('period_logs'))
@@ -199,6 +227,7 @@ List<List<dynamic>> _periodosDe(BackupDocument doc, int womanId) {
 }
 
 List<List<dynamic>> _encuentrosDe(
+  AppLocalizations l10n,
   BackupDocument doc,
   List<Map<String, Object?>> encuentros,
   Map<int, String> nombres,
@@ -208,7 +237,7 @@ List<List<dynamic>> _encuentrosDe(
     final id = row['encounter_id']! as int;
     final womanId = row['woman_id']! as int;
     (participantes[id] ??= <String>[]).add(
-      nombres[womanId] ?? 'Perfil $womanId',
+      nombres[womanId] ?? l10n.pdfProfileFallback(womanId),
     );
   }
 
@@ -217,10 +246,42 @@ List<List<dynamic>> _encuentrosDe(
       [
         _fechaHora(row['date_time']! as DateTime),
         _safe((participantes[row['id']! as int] ?? const []).join(', ')),
-        _safe(row['protection']! as String),
-        row['outcome'] == null ? '' : _safe(row['outcome']! as String),
+        _safe(_protectionLabel(l10n, row['protection']! as String)),
+        row['outcome'] == null
+            ? ''
+            : _safe(_outcomeLabel(l10n, row['outcome']! as String)),
       ],
   ];
+}
+
+String _protectionLabel(AppLocalizations l10n, String value) {
+  switch (value) {
+    case 'Condón':
+      return l10n.protectionCondom;
+    case 'Pastilla':
+      return l10n.protectionPill;
+    case 'Natural':
+      return l10n.protectionNatural;
+    case 'Ninguno':
+      return l10n.protectionNone;
+    default:
+      return value;
+  }
+}
+
+String _outcomeLabel(AppLocalizations l10n, String value) {
+  switch (value) {
+    case 'Nada':
+      return l10n.outcomeNothing;
+    case 'Embarazo':
+      return l10n.outcomePregnancy;
+    case 'Aborto':
+      return l10n.outcomeAbortion;
+    case 'Desconocido':
+      return l10n.outcomeUnknown;
+    default:
+      return value;
+  }
 }
 
 /// Las fuentes Helvetica del paquete `pdf` usan WinAnsi: todo lo que quede por
@@ -237,7 +298,8 @@ String _recorta(String value) => value.length <= pdfMaxNota
     ? value
     : '${value.substring(0, pdfMaxNota - 3)}...';
 
-String _dias(double valor) => valor == 0 ? '-' : '${valor.round()} días';
+String _dias(AppLocalizations l10n, double valor) =>
+    valor == 0 ? '-' : l10n.daysCount(valor.round());
 
 String _fecha(DateTime value) =>
     '${_dos(value.day)}/${_dos(value.month)}/${value.year.toString().padLeft(4, '0')}';

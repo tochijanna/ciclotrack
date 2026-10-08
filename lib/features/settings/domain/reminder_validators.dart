@@ -4,6 +4,18 @@ const int reminderMessageMaxLength = 120;
 /// Último día del ciclo que admite un recordatorio.
 const int reminderMaxCycleDay = 60;
 
+/// Errores de validación de un recordatorio, independientes del idioma.
+enum ReminderFieldError {
+  messageRequired,
+  messageTooLong,
+  startRequired,
+  startTooSmall,
+  startTooLarge,
+  endRequired,
+  endBeforeStart,
+  endTooLarge,
+}
+
 /// Recordatorio personalizado de una mujer (modelo de dominio, sin Drift).
 class CycleReminder {
   const CycleReminder({
@@ -21,16 +33,6 @@ class CycleReminder {
   final int cycleDayEnd;
   final String message;
   final bool enabled;
-
-  /// Rango legible, p. ej. «Día 5 del ciclo» o «Días 5-7 del ciclo».
-  String get rangeLabel => cycleDayEnd > cycleDayStart
-      ? 'Días $cycleDayStart-$cycleDayEnd del ciclo'
-      : 'Día $cycleDayStart del ciclo';
-
-  /// Cuerpo de la notificación: el mensaje y, si abarca varios días, el rango.
-  String get notificationBody => cycleDayEnd > cycleDayStart
-      ? '$message (días $cycleDayStart-$cycleDayEnd del ciclo)'
-      : message;
 
   CycleReminder copyWith({
     int? cycleDayStart,
@@ -65,39 +67,35 @@ class ReminderDraft {
 }
 
 /// Devuelve el error del mensaje, o null si es válido.
-String? validateReminderMessage(String? value) {
+ReminderFieldError? validateReminderMessage(String? value) {
   final message = value?.trim() ?? '';
-  if (message.isEmpty) return 'Escribe un mensaje';
+  if (message.isEmpty) return ReminderFieldError.messageRequired;
   if (message.length > reminderMessageMaxLength) {
-    return 'Máximo $reminderMessageMaxLength caracteres';
+    return ReminderFieldError.messageTooLong;
   }
   return null;
 }
 
 /// Devuelve el error del día inicial del ciclo, o null si es válido.
-String? validateCycleDayStart(int? start) {
-  if (start == null) return 'Introduce un día del ciclo';
-  if (start < 1) return 'El día inicial debe ser 1 o mayor';
-  if (start > reminderMaxCycleDay) {
-    return 'El día inicial no puede superar $reminderMaxCycleDay';
-  }
+ReminderFieldError? validateCycleDayStart(int? start) {
+  if (start == null) return ReminderFieldError.startRequired;
+  if (start < 1) return ReminderFieldError.startTooSmall;
+  if (start > reminderMaxCycleDay) return ReminderFieldError.startTooLarge;
   return null;
 }
 
 /// Devuelve el error del día final del ciclo, o null si es válido.
-String? validateCycleDayEnd(int? start, int? end) {
-  if (end == null) return 'Introduce un día del ciclo';
+ReminderFieldError? validateCycleDayEnd(int? start, int? end) {
+  if (end == null) return ReminderFieldError.endRequired;
   if (start != null && end < start) {
-    return 'El día final no puede ser anterior al inicial';
+    return ReminderFieldError.endBeforeStart;
   }
-  if (end > reminderMaxCycleDay) {
-    return 'El día final no puede superar $reminderMaxCycleDay';
-  }
+  if (end > reminderMaxCycleDay) return ReminderFieldError.endTooLarge;
   return null;
 }
 
 /// Primer error del borrador, o null si se puede guardar.
-String? validateReminderDraft(ReminderDraft draft) {
+ReminderFieldError? validateReminderDraft(ReminderDraft draft) {
   return validateReminderMessage(draft.message) ??
       validateCycleDayStart(draft.cycleDayStart) ??
       validateCycleDayEnd(draft.cycleDayStart, draft.cycleDayEnd);

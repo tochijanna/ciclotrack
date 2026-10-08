@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,25 +16,27 @@ class MedicationsScreen extends ConsumerWidget {
     BuildContext context,
     Future<void> Function() action,
   ) async {
+    final l10n = AppLocalizations.of(context);
     try {
       await action();
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo guardar el cambio')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.medicationSaveChangeError)));
       }
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final medications = ref.watch(medicationsProvider);
     final women = ref.watch(medicationWomenProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Medicación')),
+      appBar: AppBar(title: Text(l10n.medicationTitle)),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Añadir medicamento',
+        tooltip: l10n.medicationAdd,
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const MedicationFormScreen()),
         ),
@@ -41,22 +44,16 @@ class MedicationsScreen extends ConsumerWidget {
       ),
       body: women.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) =>
-            const Center(child: Text('No se pudieron cargar los perfiles')),
+        error: (_, _) => Center(child: Text(l10n.medicationProfilesError)),
         data: (profiles) => medications.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) =>
-              const Center(child: Text('No se pudo cargar la medicación')),
+          error: (_, _) => Center(child: Text(l10n.medicationLoadError)),
           data: (items) {
             if (profiles.isEmpty) {
-              return const Center(
-                child: Text('Crea un perfil para añadir medicación'),
-              );
+              return Center(child: Text(l10n.medicationNoProfiles));
             }
             if (items.isEmpty) {
-              return const Center(
-                child: Text('No hay medicamentos registrados'),
-              );
+              return Center(child: Text(l10n.medicationEmpty));
             }
             return ListView(
               padding: const EdgeInsets.only(bottom: 88),
@@ -80,7 +77,7 @@ class MedicationsScreen extends ConsumerWidget {
                           [
                             if (medication.dose.isNotEmpty) medication.dose,
                             medicationTime(medication),
-                            medication.enabled ? 'Activo' : 'Inactivo',
+                            medication.enabled ? l10n.active : l10n.inactive,
                           ].join(' · '),
                         ),
                         onTap: () => Navigator.of(context).push(
@@ -103,26 +100,28 @@ class MedicationsScreen extends ConsumerWidget {
                               ),
                             ),
                             IconButton(
-                              tooltip: 'Eliminar medicamento',
+                              tooltip: l10n.medicationDeleteTitle,
                               icon: const Icon(Icons.delete_outline),
                               onPressed: () async {
                                 final confirmed = await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: const Text('Eliminar medicamento'),
+                                    title: Text(l10n.medicationDeleteTitle),
                                     content: Text(
-                                      '¿Eliminar ${medication.name}?',
+                                      l10n.medicationDeleteBody(
+                                        medication.name,
+                                      ),
                                     ),
                                     actions: [
                                       TextButton(
                                         onPressed: () =>
                                             Navigator.pop(context, false),
-                                        child: const Text('Cancelar'),
+                                        child: Text(l10n.cancel),
                                       ),
                                       TextButton(
                                         onPressed: () =>
                                             Navigator.pop(context, true),
-                                        child: const Text('Eliminar'),
+                                        child: Text(l10n.delete),
                                       ),
                                     ],
                                   ),

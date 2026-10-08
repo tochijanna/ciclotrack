@@ -2,6 +2,9 @@
 enum TrackingEventType { period, ovulation, symptom }
 
 /// Representa un evento combinado para la timeline.
+///
+/// Solo lleva datos crudos; los textos de presentación (título, subtítulo e
+/// icono) se generan en la capa de presentación, localizados.
 class TrackingEvent {
   const TrackingEvent({
     required this.type,
@@ -9,14 +12,12 @@ class TrackingEvent {
     required this.womanId,
     required this.date,
     this.endDate,
-    this.title = '',
-    this.subtitle = '',
-    this.icon,
     this.flowLevel,
     this.temperature,
     this.cervicalMucus,
     this.lhTest,
     this.severity,
+    this.symptomType,
     this.notes = '',
   });
 
@@ -25,14 +26,14 @@ class TrackingEvent {
   final int womanId;
   final DateTime date;
   final DateTime? endDate;
-  final String title;
-  final String subtitle;
-  final String? icon;
   final int? flowLevel;
   final double? temperature;
   final String? cervicalMucus;
   final bool? lhTest;
   final int? severity;
+
+  /// Tipo de síntoma tal y como está persistido (valor estable, sin traducir).
+  final String? symptomType;
   final String notes;
 
   /// Crea un evento de periodo.
@@ -50,9 +51,6 @@ class TrackingEvent {
       womanId: womanId,
       date: startDate,
       endDate: endDate,
-      title: 'Periodo',
-      subtitle: _formatPeriodSubtitle(startDate, endDate, flowLevel),
-      icon: '🩸',
       flowLevel: flowLevel,
       notes: notes,
     );
@@ -72,9 +70,6 @@ class TrackingEvent {
       id: id,
       womanId: womanId,
       date: date,
-      title: 'Ovulación',
-      subtitle: _formatOvulationSubtitle(temperature, cervicalMucus, lhTest),
-      icon: '🥚',
       temperature: temperature,
       cervicalMucus: cervicalMucus,
       lhTest: lhTest,
@@ -95,48 +90,9 @@ class TrackingEvent {
       id: id,
       womanId: womanId,
       date: date,
-      title: type,
-      subtitle: 'Intensidad: $severity/5',
-      icon: _symptomIcon(type),
       severity: severity,
+      symptomType: type,
       notes: notes,
     );
-  }
-}
-
-String _formatPeriodSubtitle(DateTime start, DateTime? end, int? flow) {
-  final parts = <String>[];
-  if (end != null) {
-    final days = end.difference(start).inDays + 1;
-    parts.add('$days días');
-  }
-  if (flow != null) parts.add('Flujo: $flow/5');
-  return parts.isEmpty ? '' : parts.join(' · ');
-}
-
-String _formatOvulationSubtitle(double? temp, String? mucus, bool? lh) {
-  final parts = <String>[];
-  if (temp != null) parts.add('${temp.toStringAsFixed(1)}°C');
-  if (mucus != null && mucus.isNotEmpty) parts.add(mucus);
-  if (lh == true) parts.add('LH +');
-  return parts.isEmpty ? '' : parts.join(' · ');
-}
-
-String _symptomIcon(String type) {
-  switch (type) {
-    case 'Acné':
-      return '🔴';
-    case 'Dolor de pecho':
-      return '💔';
-    case 'Cansancio':
-      return '😴';
-    case 'Humor':
-      return '😤';
-    case 'Antojos':
-      return '🍫';
-    case 'Dolor abdominal':
-      return '🤕';
-    default:
-      return '📋';
   }
 }

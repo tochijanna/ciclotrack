@@ -1,8 +1,10 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:ciclotrack/features/backup/data/pdf_report.dart';
 import 'package:ciclotrack/features/backup/domain/backup_document.dart';
-import 'package:ciclotrack/features/backup/domain/pdf_report.dart';
 import 'package:ciclotrack/features/calendar/domain/calendar_board.dart';
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:ciclotrack/features/prediction/domain/cycle_timeline.dart';
 import 'package:ciclotrack/features/prediction/domain/prediction_calculator.dart';
 import 'package:ciclotrack/features/reports/domain/report_builder.dart';
@@ -10,6 +12,7 @@ import 'package:ciclotrack/features/reports/domain/report_builder.dart';
 void main() {
   final hoy = DateTime(2026, 9, 30);
   final generadoEn = DateTime(2026, 9, 30, 21, 15);
+  final l10n = lookupAppLocalizations(const Locale('es'));
 
   CalendarWoman mujer(int id, String name) => CalendarWoman(
     id: id,
@@ -177,6 +180,7 @@ void main() {
       final blocks = buildPdfBlocks(
         documento(),
         buildReports(tablero(), today: hoy),
+        l10n: l10n,
       );
 
       expect(blocks.first.titulo, 'Resumen');
@@ -211,6 +215,7 @@ void main() {
       final blocks = buildPdfBlocks(
         documento(),
         buildReports(tablero(), today: hoy),
+        l10n: l10n,
       );
 
       final sospechosos = textosDe(blocks).where(tieneEmoji).toList();
@@ -223,6 +228,7 @@ void main() {
       final blocks = buildPdfBlocks(
         documento(),
         buildReports(tablero(), today: hoy),
+        l10n: l10n,
       );
 
       final tablas = [
@@ -248,7 +254,7 @@ void main() {
         today: hoy,
       );
 
-      final blocks = buildPdfBlocks(vacio, sinDatos);
+      final blocks = buildPdfBlocks(vacio, sinDatos, l10n: l10n);
 
       expect(blocks.first.parrafos, contains('Perfiles: 0'));
       expect(blocks.first.parrafos, contains('Duración media del ciclo: -'));
@@ -279,6 +285,7 @@ void main() {
           const CalendarBoard(women: [], encuentros: []),
           today: hoy,
         ),
+        l10n: l10n,
       );
 
       expect(blocks.last.tabla, hasLength(pdfMaxEncuentros));
@@ -292,8 +299,13 @@ void main() {
   group('PDF', () {
     test('sale con el encabezado %PDF- y contenido suficiente', () async {
       final bytes = await renderPdf(
-        buildPdfBlocks(documento(), buildReports(tablero(), today: hoy)),
+        buildPdfBlocks(
+          documento(),
+          buildReports(tablero(), today: hoy),
+          l10n: l10n,
+        ),
         generadoEn: generadoEn,
+        l10n: l10n,
       );
 
       expect(String.fromCharCodes(bytes.take(5)), '%PDF-');
@@ -309,8 +321,10 @@ void main() {
             const CalendarBoard(women: [], encuentros: []),
             today: hoy,
           ),
+          l10n: l10n,
         ),
         generadoEn: generadoEn,
+        l10n: l10n,
       );
 
       expect(String.fromCharCodes(bytes.take(5)), '%PDF-');

@@ -112,7 +112,7 @@ void main() {
     });
   });
 
-  group('PredictionCalculator - faseHoy and humorHoy', () {
+  group('PredictionCalculator - faseHoy', () {
     test('menstruacion on day 2', () {
       final pred = calc.calculate(
         periodLogs: [
@@ -122,7 +122,6 @@ void main() {
         today: DateTime(2026, 8, 30), // day 2
       );
       expect(pred.faseHoy, CyclePhase.menstruacion);
-      expect(pred.humorHoy, 'Bajo / cansancio');
     });
 
     test('ovulacion on estimated ovulation day', () {
@@ -134,7 +133,6 @@ void main() {
         today: DateTime(2026, 9, 11), // day 14 → ovulation
       );
       expect(pred.faseHoy, CyclePhase.ovulacion);
-      expect(pred.humorHoy, 'Muy bueno');
     });
 
     test('luteaTardia in PMS window', () {
@@ -146,7 +144,6 @@ void main() {
         today: DateTime(2026, 9, 23), // day 26 → PMS (25-28)
       );
       expect(pred.faseHoy, CyclePhase.luteaTardia);
-      expect(pred.humorHoy, 'Irritable / mal humor');
     });
 
     test('retraso after expected period', () {
@@ -158,7 +155,6 @@ void main() {
         today: DateTime(2026, 9, 27), // day 30 > 28
       );
       expect(pred.faseHoy, CyclePhase.retraso);
-      expect(pred.humorHoy, 'Imprevisible');
     });
   });
 
@@ -202,7 +198,7 @@ void main() {
       }
     });
 
-    test('forecast includes ovulacion with cachonda label', () {
+    test('forecast includes ovulacion', () {
       final pred = calc.calculate(
         periodLogs: [
           PeriodLogInput(startDate: DateTime(2026, 8, 1)),
@@ -212,10 +208,10 @@ void main() {
       );
       final ovul = pred.pronostico.where((r) => r.fase == CyclePhase.ovulacion);
       expect(ovul, isNotEmpty);
-      expect(ovul.first.libido, 'Cachonda (pico)');
+      expect(ovul.first.fase, CyclePhase.ovulacion);
     });
 
-    test('forecast includes luteaTardia with irritable label', () {
+    test('forecast includes luteaTardia', () {
       final pred = calc.calculate(
         periodLogs: [
           PeriodLogInput(startDate: DateTime(2026, 8, 1)),
@@ -227,7 +223,7 @@ void main() {
         (r) => r.fase == CyclePhase.luteaTardia,
       );
       expect(pms, isNotEmpty);
-      expect(pms.first.humor, 'Irritable / mal humor');
+      expect(pms.first.fase, CyclePhase.luteaTardia);
     });
 
     test('empty forecast when sinDatos', () {

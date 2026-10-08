@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/db/app_database_provider.dart';
+import 'core/l10n/app_locale.dart';
 import 'features/alerts/presentation/providers/alerts_providers.dart';
 import 'features/profiles/presentation/screens/women_list_screen.dart';
 import 'features/settings/presentation/providers/app_lock_provider.dart';
 import 'features/settings/presentation/providers/reminder_providers.dart';
 import 'features/settings/presentation/screens/app_lock_screen.dart';
+import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('es_ES');
+  await initializeDateFormatting();
   runApp(const ProviderScope(child: CicloTrackApp()));
 }
 
@@ -37,9 +38,8 @@ class CicloTrackApp extends ConsumerWidget {
     }
     return MaterialApp(
       title: 'CicloTrack',
-      locale: const Locale('es', 'ES'),
-      supportedLocales: const [Locale('es', 'ES')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      supportedLocales: supportedAppLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),

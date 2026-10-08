@@ -1,16 +1,18 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../domain/alert_item.dart';
 import 'notification_scheduler.dart';
 
 /// Implementación de [NotificationScheduler] con flutter_local_notifications.
 class LocalNotificationScheduler implements NotificationScheduler {
-  LocalNotificationScheduler(this._plugin);
+  LocalNotificationScheduler(this._plugin, this._l10n);
 
   final FlutterLocalNotificationsPlugin _plugin;
+  final AppLocalizations _l10n;
   Future<void>? _initialization;
   bool _available = true;
 
@@ -62,7 +64,7 @@ class LocalNotificationScheduler implements NotificationScheduler {
   }
 
   @override
-  Future<void> schedule(AlertItem item) async {
+  Future<void> schedule(AlertItem item, String title, String body) async {
     await initialize();
     if (!_available) return;
     final tzDateTime = tz.TZDateTime.from(item.fireDate, tz.local);
@@ -72,8 +74,8 @@ class LocalNotificationScheduler implements NotificationScheduler {
 
     final androidDetails = AndroidNotificationDetails(
       'ciclotrack_alerts',
-      'Alertas de CicloTrack',
-      channelDescription: 'Notificaciones de fertilidad y ciclo',
+      _l10n.notificationChannelName,
+      channelDescription: _l10n.notificationChannelDescription,
       importance: Importance.high,
       priority: Priority.high,
       visibility: NotificationVisibility.secret,
@@ -99,8 +101,8 @@ class LocalNotificationScheduler implements NotificationScheduler {
 
     await _plugin.zonedSchedule(
       id: item.id,
-      title: item.title,
-      body: item.body,
+      title: title,
+      body: body,
       scheduledDate: tzDateTime,
       notificationDetails: details,
       androidScheduleMode: mode,

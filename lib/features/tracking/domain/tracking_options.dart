@@ -20,6 +20,3 @@ const cervicalMucusOptions = [
   'Elástico',
   'Clara de huevo',
 ];
-
-/// Estado de test LH.
-const lhTestOptions = ['Negativo', 'Positivo', 'No realizado'];

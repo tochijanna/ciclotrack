@@ -212,7 +212,8 @@ List<BarraValor> _sintomas(WomanCalendar wc, Set<DateTime> mesesVentana) {
   for (final evento in wc.eventos) {
     if (evento.type != TrackingEventType.symptom) continue;
     if (!mesesVentana.contains(_firstOfMonth(evento.date))) continue;
-    conteo[evento.title] = (conteo[evento.title] ?? 0) + 1;
+    final tipo = evento.symptomType ?? '';
+    conteo[tipo] = (conteo[tipo] ?? 0) + 1;
   }
 
   final barras = [

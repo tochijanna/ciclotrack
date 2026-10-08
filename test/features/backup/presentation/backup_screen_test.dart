@@ -7,12 +7,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/core/db/app_database_provider.dart';
+import 'package:ciclotrack/core/l10n/app_locale.dart';
 import 'package:ciclotrack/features/backup/data/backup_file_gateway.dart';
 import 'package:ciclotrack/features/backup/data/backup_serializer.dart';
 import 'package:ciclotrack/features/backup/domain/backup_document.dart';
 import 'package:ciclotrack/features/backup/presentation/providers/backup_providers.dart';
 import 'package:ciclotrack/features/backup/presentation/screens/backup_screen.dart';
 import 'package:ciclotrack/features/profiles/presentation/providers/women_providers.dart';
+import 'package:ciclotrack/l10n/app_localizations.dart';
 
 import '../../../support/widget_harness.dart';
 
@@ -78,14 +80,18 @@ void main() {
       ProviderScope(
         overrides: [
           appDatabaseProvider.overrideWithValue(db),
+          appLocaleProvider.overrideWithValue(const Locale('es')),
           fixedClock(now),
           backupFileGatewayProvider.overrideWithValue(gateway),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: supportedAppLocales,
           home: Scaffold(
             body: Column(
               children: [
-                Expanded(child: BackupScreen()),
+                Expanded(child: const BackupScreen()),
                 _Perfiles(),
               ],
             ),

@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,15 +21,15 @@ class _EncountersBoardViewState extends ConsumerState<EncountersBoardView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final boardAsync = ref.watch(calendarBoardProvider);
 
     return boardAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) =>
-          const Center(child: Text('No se pudieron cargar las vistas.')),
+      error: (error, stackTrace) => Center(child: Text(l10n.calendarLoadError)),
       data: (board) {
         if (board.women.isEmpty) {
-          return const Center(child: Text('Sin perfiles.'));
+          return Center(child: Text(l10n.dayNoProfiles));
         }
 
         final encuentros = _filtered(board);
@@ -41,7 +42,7 @@ class _EncountersBoardViewState extends ConsumerState<EncountersBoardView> {
             ),
             Expanded(
               child: encuentros.isEmpty
-                  ? Center(child: Text(_emptyMessage(board)))
+                  ? Center(child: Text(_emptyMessage(l10n, board)))
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -67,14 +68,14 @@ class _EncountersBoardViewState extends ConsumerState<EncountersBoardView> {
     ];
   }
 
-  String _emptyMessage(CalendarBoard board) {
+  String _emptyMessage(AppLocalizations l10n, CalendarBoard board) {
     final womanId = _womanFilter;
-    if (womanId == null) return 'Sin encuentros registrados.';
+    if (womanId == null) return l10n.encountersNone;
     final name = board.women
         .firstWhere((woman) => woman.woman.id == womanId)
         .woman
         .name;
-    return 'Sin encuentros con $name.';
+    return l10n.encountersNoneFor(name);
   }
 }
 
@@ -91,6 +92,7 @@ class _FilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return SizedBox(
       height: 56,
       child: ListView(
@@ -100,7 +102,9 @@ class _FilterRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: ChoiceChip(
-              label: Text('Todas (${board.encuentros.length})'),
+              label: Text(
+                l10n.encountersFilterAllCount(board.encuentros.length),
+              ),
               selected: selected == null,
               onSelected: (_) => onSelected(null),
             ),

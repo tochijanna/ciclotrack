@@ -9,23 +9,17 @@ enum EstadoRiesgo {
   posibleRetraso,
 }
 
-/// Rango de fechas con fase, humor y libido para el pronóstico.
+/// Rango de fechas con su fase para el pronóstico.
 class RangoFase {
   const RangoFase({
     required this.inicio,
     required this.fin,
     required this.fase,
-    required this.humor,
-    required this.libido,
-    this.consejo,
   });
 
   final DateTime inicio;
   final DateTime fin;
   final CyclePhase fase;
-  final String humor;
-  final String libido;
-  final String? consejo;
 }
 
 /// Resultado completo de la predicción para una mujer.
@@ -33,7 +27,6 @@ class WomanPrediction {
   const WomanPrediction({
     required this.estadoRiesgo,
     required this.faseHoy,
-    required this.humorHoy,
     required this.pronostico,
     required this.ovulacionEstimada,
     required this.rangoOvulacionInicio,
@@ -52,7 +45,6 @@ class WomanPrediction {
 
   final EstadoRiesgo estadoRiesgo;
   final CyclePhase faseHoy;
-  final String humorHoy;
   final List<RangoFase> pronostico;
 
   final DateTime? ovulacionEstimada;

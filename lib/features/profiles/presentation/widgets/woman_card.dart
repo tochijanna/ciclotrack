@@ -1,6 +1,8 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/women_repository.dart';
+import '../l10n.dart';
 
 /// Tarjeta de perfil para la lista principal.
 class WomanCard extends StatelessWidget {
@@ -19,6 +21,7 @@ class WomanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final woman = profile.woman;
     final color = Color(woman.color);
 
@@ -56,7 +59,7 @@ class WomanCard extends StatelessWidget {
                               .map(
                                 (tag) => Chip(
                                   label: Text(
-                                    tag,
+                                    suggestedTagLabel(l10n, tag),
                                     style: const TextStyle(fontSize: 11),
                                   ),
                                   visualDensity: VisualDensity.compact,
@@ -104,6 +107,7 @@ class EmptyWomenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -115,19 +119,19 @@ class EmptyWomenView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No hay perfiles',
+            l10n.emptyProfilesTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           Text(
-            'Añade tu primer perfil para empezar',
+            l10n.emptyProfilesSubtitle,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add),
-            label: const Text('Añadir perfil'),
+            label: Text(l10n.addProfile),
           ),
         ],
       ),

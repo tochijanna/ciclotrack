@@ -1,7 +1,9 @@
 import 'package:drift/native.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ciclotrack/core/db/app_database.dart';
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/alerts/data/alerts_change_dao.dart';
 import 'package:ciclotrack/features/prediction/data/prediction_dao.dart';
@@ -51,6 +53,7 @@ void main() {
       repository: repo,
       predictionDao: PredictionDao(db),
       settingsDao: AlertSettingsDao(db),
+      l10n: lookupAppLocalizations(const Locale('es')),
     );
     tracking = TrackingRepository(TrackingDao(db));
     womanId = await WomenRepository(

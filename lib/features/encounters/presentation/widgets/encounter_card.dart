@@ -1,6 +1,9 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/encounter_event.dart';
+import '../l10n.dart';
 
 /// Tarjeta para un encuentro en la lista.
 class EncounterCard extends StatelessWidget {
@@ -18,6 +21,7 @@ class EncounterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -41,7 +45,7 @@ class EncounterCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    _formatDateTime(encounter.encounterTime),
+                    _formatDateTime(l10n, encounter.encounterTime),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -53,19 +57,20 @@ class EncounterCard extends StatelessWidget {
                 children: [
                   _InfoChip(
                     icon: '🛡️',
-                    label: encounter.protection,
+                    label: localizedProtection(l10n, encounter.protection),
                     color: colorScheme.primaryContainer,
                   ),
                   for (final p in encounter.participants)
                     _InfoChip(
                       icon: p.womanEmoji,
-                      label: '${p.womanName}: ${p.relationshipType}',
+                      label:
+                          '${p.womanName}: ${localizedRelationship(l10n, p.relationshipType)}',
                       color: Color(p.womanColor).withValues(alpha: 0.12),
                     ),
                   if (encounter.outcome != null && encounter.outcome != 'Nada')
                     _InfoChip(
                       icon: '📌',
-                      label: encounter.outcome!,
+                      label: localizedOutcome(l10n, encounter.outcome),
                       color: colorScheme.errorContainer,
                     ),
                 ],
@@ -89,12 +94,8 @@ class EncounterCard extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(DateTime dt) {
-    return '${dt.day.toString().padLeft(2, '0')}/'
-        '${dt.month.toString().padLeft(2, '0')}/'
-        '${dt.year} ${dt.hour.toString().padLeft(2, '0')}:'
-        '${dt.minute.toString().padLeft(2, '0')}';
-  }
+  String _formatDateTime(AppLocalizations l10n, DateTime dt) =>
+      DateFormat('dd/MM/yyyy HH:mm', l10n.localeName).format(dt);
 }
 
 class _InfoChip extends StatelessWidget {
@@ -136,6 +137,7 @@ class EmptyEncountersView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -147,19 +149,19 @@ class EmptyEncountersView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Sin encuentros',
+            l10n.emptyEncountersTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           Text(
-            'Registra tu primer encuentro',
+            l10n.emptyEncountersSubtitle,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add),
-            label: const Text('Registrar encuentro'),
+            label: Text(l10n.registerEncounter),
           ),
         ],
       ),

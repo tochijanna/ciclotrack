@@ -33,7 +33,7 @@ class _FakeScheduler implements NotificationScheduler {
   Future<bool> canScheduleExact() async => true;
 
   @override
-  Future<void> schedule(AlertItem item) async {}
+  Future<void> schedule(AlertItem item, String title, String body) async {}
 
   @override
   Future<void> cancel(List<int> ids) async {}
@@ -107,7 +107,9 @@ void main() {
       await tester.tap(find.byTooltip('Medicación'));
       await settleProviders(tester);
       expect(find.byType(MedicationsScreen), findsOneWidget);
-      await tester.pageBack();
+      await tester.tap(find.byType(BackButton));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
       await settleProviders(tester);
       final medicationType = find.widgetWithText(
         CheckboxListTile,

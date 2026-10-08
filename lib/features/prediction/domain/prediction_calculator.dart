@@ -1,5 +1,4 @@
 import 'cycle_phase.dart';
-import 'mood_forecast.dart';
 import 'prediction_engine.dart';
 import 'woman_prediction.dart';
 
@@ -26,7 +25,6 @@ class PredictionCalculator {
       return WomanPrediction(
         estadoRiesgo: EstadoRiesgo.sinDatos,
         faseHoy: CyclePhase.follicular,
-        humorHoy: '—',
         pronostico: const [],
         ovulacionEstimada: null,
         rangoOvulacionInicio: null,
@@ -86,7 +84,6 @@ class PredictionCalculator {
       periodDurationToday,
       avgCycle,
     );
-    final mood = moodByPhase[phase]!;
 
     // Estado de riesgo.
     final estado = _estadoRiesgo(
@@ -125,7 +122,6 @@ class PredictionCalculator {
     return WomanPrediction(
       estadoRiesgo: estado,
       faseHoy: phase,
-      humorHoy: mood.humor,
       pronostico: pronostico,
       ovulacionEstimada: ovulEstimada,
       rangoOvulacionInicio: rangoOvIni,
@@ -199,7 +195,6 @@ class PredictionCalculator {
         periodDuration,
         averageCycle,
       );
-      final mood = moodByPhase[phase]!;
 
       // Encontrar dónde cambia la fase.
       var dayEnd = dayStart;
@@ -217,16 +212,7 @@ class PredictionCalculator {
         dayEnd = nextDay;
       }
 
-      ranges.add(
-        RangoFase(
-          inicio: dayStart,
-          fin: dayEnd,
-          fase: phase,
-          humor: mood.humor,
-          libido: mood.libido,
-          consejo: mood.consejo,
-        ),
-      );
+      ranges.add(RangoFase(inicio: dayStart, fin: dayEnd, fase: phase));
 
       dayStart = DateTime(dayEnd.year, dayEnd.month, dayEnd.day + 1);
     }

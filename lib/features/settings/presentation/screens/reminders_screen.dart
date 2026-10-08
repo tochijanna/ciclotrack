@@ -1,6 +1,8 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/reminder_text.dart';
 import '../../domain/reminder_validators.dart';
 import '../providers/reminder_providers.dart';
 import 'reminder_form_screen.dart';
@@ -18,10 +20,11 @@ class RemindersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final remindersAsync = ref.watch(remindersByWomanProvider(womanId));
 
     return Scaffold(
-      appBar: AppBar(title: Text('Recordatorios de $womanName')),
+      appBar: AppBar(title: Text(l10n.remindersOf(womanName))),
       body: remindersAsync.when(
         data: (reminders) {
           if (reminders.isEmpty) return const _EmptyRemindersView();
@@ -30,13 +33,14 @@ class RemindersScreen extends ConsumerWidget {
             itemCount: reminders.length,
             itemBuilder: (context, index) {
               final reminder = reminders[index];
+              final range = reminderRangeLabel(l10n, reminder);
               return ListTile(
                 key: ValueKey('reminder_${reminder.id}'),
                 title: Text(reminder.message),
                 subtitle: Text(
                   reminder.enabled
-                      ? reminder.rangeLabel
-                      : '${reminder.rangeLabel} · Desactivado',
+                      ? range
+                      : '$range · ${l10n.reminderDisabled}',
                 ),
                 onTap: () => _openForm(context, reminder: reminder),
                 trailing: Row(
@@ -48,7 +52,7 @@ class RemindersScreen extends ConsumerWidget {
                           _toggle(context, ref, reminder, value),
                     ),
                     IconButton(
-                      tooltip: 'Eliminar',
+                      tooltip: l10n.delete,
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () => _confirmDelete(context, ref, reminder),
                     ),
@@ -59,14 +63,12 @@ class RemindersScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => const Center(
-          child: Text('No se pudieron cargar los recordatorios'),
-        ),
+        error: (_, _) => Center(child: Text(l10n.remindersLoadError)),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(context),
         icon: const Icon(Icons.add),
-        label: const Text('Nuevo recordatorio'),
+        label: Text(l10n.remindersNew),
       ),
     );
   }
@@ -86,9 +88,10 @@ class RemindersScreen extends ConsumerWidget {
     CycleReminder reminder,
     bool enabled,
   ) async {
+    final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     await ref.read(reminderRepositoryProvider).setEnabled(reminder, enabled);
-    if (enabled) await ensureReminderPermission(ref, messenger);
+    if (enabled) await ensureReminderPermission(ref, messenger, l10n);
   }
 
   Future<void> _confirmDelete(
@@ -96,19 +99,20 @@ class RemindersScreen extends ConsumerWidget {
     WidgetRef ref,
     CycleReminder reminder,
   ) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar recordatorio'),
-        content: Text('¿Eliminar "${reminder.message}"?'),
+        title: Text(l10n.remindersDeleteTitle),
+        content: Text(l10n.remindersDeleteBody(reminder.message)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -123,6 +127,7 @@ class _EmptyRemindersView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -136,12 +141,12 @@ class _EmptyRemindersView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Sin recordatorios',
+              l10n.remindersEmpty,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Crea un aviso para unos días concretos del ciclo',
+              l10n.remindersEmptySubtitle,
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),

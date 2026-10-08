@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -11,18 +12,19 @@ class CalendarHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return DefaultTabController(
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Vistas'),
-          bottom: const TabBar(
+          title: Text(l10n.calendarViewsTitle),
+          bottom: TabBar(
             isScrollable: true,
             tabs: [
-              Tab(text: 'Semana'),
-              Tab(text: 'Mes'),
-              Tab(text: 'Fertilidad'),
-              Tab(text: 'Encuentros'),
+              Tab(text: l10n.calendarWeekTab),
+              Tab(text: l10n.calendarMonthTab),
+              Tab(text: l10n.calendarFertilityTab),
+              Tab(text: l10n.calendarEncountersTab),
             ],
           ),
         ),

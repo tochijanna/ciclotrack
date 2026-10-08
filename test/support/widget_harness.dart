@@ -5,8 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/core/db/app_database_provider.dart';
+import 'package:ciclotrack/core/l10n/app_locale.dart';
 import 'package:ciclotrack/core/time/clock.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_repository.dart';
 import 'package:ciclotrack/features/encounters/domain/encounter_draft.dart';
@@ -53,8 +55,17 @@ Future<void> pumpScreen(
 }) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [appDatabaseProvider.overrideWithValue(db), ...overrides],
-      child: MaterialApp(home: child),
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        appLocaleProvider.overrideWithValue(const Locale('es')),
+        ...overrides,
+      ],
+      child: MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: supportedAppLocales,
+        home: child,
+      ),
     ),
   );
   await settleProviders(tester);
