@@ -1,18 +1,20 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/women_repository.dart';
-import '../providers/women_providers.dart';
-import '../widgets/woman_card.dart';
-import 'woman_form_screen.dart';
-import '../../../tracking/presentation/screens/tracking_screen.dart';
-import '../../../encounters/presentation/screens/encounter_form_screen.dart';
-import '../../../encounters/presentation/screens/encounters_screen.dart';
 import '../../../alerts/presentation/screens/alerts_screen.dart';
 import '../../../backup/presentation/screens/backup_screen.dart';
 import '../../../calendar/presentation/screens/calendar_home_screen.dart';
+import '../../../encounters/presentation/screens/encounter_form_screen.dart';
+import '../../../encounters/presentation/screens/encounters_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
+import '../../../tracking/presentation/screens/tracking_screen.dart';
+import '../../data/women_repository.dart';
+import '../l10n.dart';
+import '../providers/women_providers.dart';
+import '../widgets/woman_card.dart';
+import 'woman_form_screen.dart';
 
 enum _MenuAction { views, reports, backup, alerts, refresh }
 
@@ -21,6 +23,7 @@ class WomenListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final profilesAsync = ref.watch(womenListProvider);
     final filter = ref.watch(womenFilterProvider);
     final tagsAsync = ref.watch(availableTagsProvider);
@@ -31,28 +34,34 @@ class WomenListScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Ajustes',
+            tooltip: l10n.menuSettings,
             onPressed: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
           PopupMenuButton<_MenuAction>(
-            tooltip: 'Más opciones',
+            tooltip: l10n.menuMoreOptions,
             onSelected: (action) => _onMenuAction(context, ref, action),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: _MenuAction.views, child: Text('Vistas')),
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: _MenuAction.views,
+                child: Text(l10n.menuViews),
+              ),
               PopupMenuItem(
                 value: _MenuAction.reports,
-                child: Text('Reportes'),
+                child: Text(l10n.menuReports),
               ),
               PopupMenuItem(
                 value: _MenuAction.backup,
-                child: Text('Copia de seguridad'),
+                child: Text(l10n.menuBackup),
               ),
-              PopupMenuItem(value: _MenuAction.alerts, child: Text('Alertas')),
+              PopupMenuItem(
+                value: _MenuAction.alerts,
+                child: Text(l10n.menuAlerts),
+              ),
               PopupMenuItem(
                 value: _MenuAction.refresh,
-                child: Text('Actualizar'),
+                child: Text(l10n.menuRefresh),
               ),
             ],
           ),
@@ -73,7 +82,7 @@ class WomenListScreen extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: FilterChip(
-                        label: const Text('Todas'),
+                        label: Text(l10n.filterAll),
                         selected: filter == null,
                         onSelected: (_) =>
                             ref.read(womenFilterProvider.notifier).clear(),
@@ -83,7 +92,7 @@ class WomenListScreen extends ConsumerWidget {
                       (tag) => Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: FilterChip(
-                          label: Text(tag),
+                          label: Text(suggestedTagLabel(l10n, tag)),
                           selected: filter == tag,
                           onSelected: (_) => ref
                               .read(womenFilterProvider.notifier)
@@ -119,7 +128,7 @@ class WomenListScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => Center(child: Text('${l10n.errorLabel}: $e')),
             ),
           ),
         ],
@@ -127,7 +136,7 @@ class WomenListScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddMenu(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Nuevo'),
+        label: Text(l10n.addNew),
       ),
     );
   }
@@ -151,6 +160,7 @@ class WomenListScreen extends ConsumerWidget {
   }
 
   void _showAddMenu(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -159,7 +169,7 @@ class WomenListScreen extends ConsumerWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.person_add),
-              title: const Text('Nuevo perfil'),
+              title: Text(l10n.newProfile),
               onTap: () {
                 Navigator.pop(ctx);
                 _navigateToForm(context, ref);
@@ -167,7 +177,7 @@ class WomenListScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.favorite),
-              title: const Text('Nuevo encuentro'),
+              title: Text(l10n.newEncounter),
               onTap: () {
                 Navigator.pop(ctx);
                 Navigator.of(context).push(
@@ -179,7 +189,7 @@ class WomenListScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.list),
-              title: const Text('Ver encuentros'),
+              title: Text(l10n.viewEncounters),
               onTap: () {
                 Navigator.pop(ctx);
                 Navigator.of(context).push(
@@ -253,21 +263,20 @@ class WomenListScreen extends ConsumerWidget {
     WidgetRef ref,
     WomanProfile profile,
   ) {
+    final l10n = AppLocalizations.of(context);
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar perfil'),
-        content: Text(
-          '¿Eliminar a ${profile.woman.name}? Se borrarán todos sus datos.',
-        ),
+        title: Text(l10n.deleteProfileTitle),
+        content: Text(l10n.deleteProfileBody(profile.woman.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import 'alert_message.dart';
 import 'alert_types.dart';
 
 /// Reserva las alertas en [100000, 999999] para que su cancelación no borre
@@ -9,13 +10,13 @@ bool isAlertNotificationId(int id) =>
     id >= alertNotificationIdBase &&
     id < alertNotificationIdBase + alertNotificationIdCount;
 
-/// Alerta programada individual.
+/// Alerta programada individual. El texto visible se genera a partir de
+/// [message] en la capa de datos, localizado.
 class AlertItem {
   const AlertItem({
     required this.type,
     required this.fireDate,
-    required this.title,
-    required this.body,
+    required this.message,
     required this.womanIds,
     this.medicationId,
     this.recurringDaily = false,
@@ -24,8 +25,7 @@ class AlertItem {
   final int? medicationId;
   final AlertType type;
   final DateTime fireDate;
-  final String title;
-  final String body;
+  final AlertMessage message;
   final List<int> womanIds;
   final bool recurringDaily;
 

@@ -2,6 +2,7 @@ import 'package:ciclotrack/core/db/app_database.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/alerts/data/alerts_repository.dart';
 import 'package:ciclotrack/features/alerts/data/notification_scheduler.dart';
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_item.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_dao.dart';
 import 'package:ciclotrack/features/encounters/data/encounter_repository.dart';
@@ -11,6 +12,7 @@ import 'package:ciclotrack/features/prediction/data/prediction_repository.dart';
 import 'package:ciclotrack/features/profiles/data/women_dao.dart';
 import 'package:ciclotrack/features/profiles/data/women_repository.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _Scheduler implements NotificationScheduler {
@@ -35,11 +37,11 @@ class _Scheduler implements NotificationScheduler {
   @override
   Future<List<PendingNotification>> pending() async => [...notifications];
   @override
-  Future<void> schedule(AlertItem item) async {
+  Future<void> schedule(AlertItem item, String title, String body) async {
     scheduled.add(item);
     notifications.removeWhere((n) => n.id == item.id);
     notifications.add(
-      PendingNotification(id: item.id, title: item.title, body: item.body),
+      PendingNotification(id: item.id, title: title, body: body),
     );
   }
 
@@ -94,6 +96,7 @@ void main() {
           encounterRepo: EncounterRepository(EncounterDao(db)),
           womenRepo: WomenRepository(WomenDao(db)),
           medicationDao: MedicationDao(db),
+          l10n: lookupAppLocalizations(const Locale('es')),
         );
         await repo.refreshAlerts(today: DateTime(2026, 9, 10, 10));
         expect(scheduler.cancelAllCalls, 0);

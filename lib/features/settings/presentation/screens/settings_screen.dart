@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,56 +17,57 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final appLock = ref.watch(appLockProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: ListView(
         children: [
-          const _SectionHeader('General'),
+          _SectionHeader(l10n.settingsSectionGeneral),
           ListTile(
             leading: const Icon(Icons.medication_outlined),
-            title: const Text('Medicación'),
-            subtitle: const Text('Pastillas y horas de aviso, por mujer'),
+            title: Text(l10n.settingsMedication),
+            subtitle: Text(l10n.settingsMedicationSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _open(context, const MedicationsScreen()),
           ),
           ListTile(
             leading: const Icon(Icons.notifications_outlined),
-            title: const Text('Alertas'),
-            subtitle: const Text('Avisos locales y hora de notificación'),
+            title: Text(l10n.settingsAlerts),
+            subtitle: Text(l10n.settingsAlertsSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _open(context, const AlertsScreen()),
           ),
           ListTile(
             leading: const Icon(Icons.backup_outlined),
-            title: const Text('Copia de seguridad'),
-            subtitle: const Text('Exportar y restaurar los datos'),
+            title: Text(l10n.settingsBackup),
+            subtitle: Text(l10n.settingsBackupSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _open(context, const BackupScreen()),
           ),
           ListTile(
             leading: const Icon(Icons.insights_outlined),
-            title: const Text('Informes'),
-            subtitle: const Text('Estadísticas y gráficos'),
+            title: Text(l10n.settingsReports),
+            subtitle: Text(l10n.settingsReportsSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _open(context, const ReportsScreen()),
           ),
           ListTile(
             leading: const Icon(Icons.calendar_month_outlined),
-            title: const Text('Vistas'),
-            subtitle: const Text('Calendario, fertilidad y encuentros'),
+            title: Text(l10n.settingsViews),
+            subtitle: Text(l10n.settingsViewsSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _open(context, const CalendarHomeScreen()),
           ),
           const Divider(),
-          const _SectionHeader('Seguridad'),
+          _SectionHeader(l10n.settingsSectionSecurity),
           SwitchListTile(
             secondary: const Icon(Icons.fingerprint),
-            title: const Text('Bloqueo de acceso (PIN/huella)'),
+            title: Text(l10n.settingsAppLockTitle),
             subtitle: Text(
               appLock.supported
-                  ? 'Requiere PIN o huella al abrir la app'
-                  : 'No disponible en este dispositivo',
+                  ? l10n.settingsAppLockSupported
+                  : l10n.settingsAppLockUnavailable,
             ),
             value: appLock.enabled,
             onChanged: appLock.supported
@@ -74,19 +76,16 @@ class SettingsScreen extends ConsumerWidget {
                 : null,
           ),
           const Divider(),
-          const _SectionHeader('Acerca de'),
-          const ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('CicloTrack'),
-            subtitle: Text('Versión $appVersion'),
+          _SectionHeader(l10n.settingsAbout),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('CicloTrack'),
+            subtitle: Text(l10n.settingsVersion(appVersion)),
           ),
-          const ListTile(
-            leading: Icon(Icons.lock_outline),
-            title: Text('100 % local y sin nube'),
-            subtitle: Text(
-              'Todos los datos se guardan solo en este dispositivo: '
-              'no hay cuentas, sincronización ni servidores.',
-            ),
+          ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: Text(l10n.settingsLocalTitle),
+            subtitle: Text(l10n.settingsLocalSubtitle),
           ),
         ],
       ),

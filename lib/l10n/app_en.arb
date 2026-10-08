@@ -1,0 +1,723 @@
+{
+  "@@locale": "en",
+
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "errorLabel": "Error",
+
+  "daysCount": "{count, plural, one{1 day} other{{count} days}}",
+  "@daysCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "encountersCount": "{count, plural, one{1 encounter} other{{count} encounters}}",
+  "@encountersCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+
+  "menuSettings": "Settings",
+  "menuMoreOptions": "More options",
+  "menuViews": "Views",
+  "menuReports": "Reports",
+  "menuBackup": "Backup",
+  "menuAlerts": "Alerts",
+  "menuRefresh": "Refresh",
+  "filterAll": "All",
+  "newProfile": "New profile",
+  "newEncounter": "New encounter",
+  "viewEncounters": "View encounters",
+  "addNew": "New",
+  "editProfile": "Edit profile",
+  "saveChanges": "Save changes",
+  "createProfile": "Create profile",
+  "changeEmoji": "Change emoji",
+  "colorLabel": "Color",
+  "nameLabel": "Name *",
+  "initialsLabel": "Initials *",
+  "initialsHelper": "Generated automatically if you leave them blank",
+  "privateNotes": "Private notes",
+  "tagsLabel": "Tags",
+  "addCustomTag": "+ Custom",
+  "chooseEmoji": "Choose an emoji",
+  "profileSaveError": "Could not save the profile",
+  "emptyProfilesTitle": "No profiles",
+  "emptyProfilesSubtitle": "Add your first profile to get started",
+  "addProfile": "Add profile",
+  "deleteProfileTitle": "Delete profile",
+  "deleteProfileBody": "Delete {name}? All their data will be deleted.",
+  "@deleteProfileBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+
+  "womanNameRequired": "Name is required",
+  "womanNameTooShort": "Name must be at least 2 characters",
+  "womanInitialsRequired": "Initials are required",
+  "womanInitialsTooLong": "Initials cannot exceed 4 characters",
+
+  "trackingPeriod": "Period",
+  "trackingOvulation": "Ovulation",
+  "trackingSymptom": "Symptom",
+  "trackingEmptyTitle": "No records",
+  "trackingEmptySubtitle": "Add your first tracking record",
+  "deleteRecordTitle": "Delete record",
+  "deleteRecordBody": "Delete \"{title}\"?",
+  "@deleteRecordBody": {
+    "placeholders": {"title": {"type": "String"}}
+  },
+  "flowLevel": "Flow: {level}/5",
+  "@flowLevel": {
+    "placeholders": {"level": {"type": "int"}}
+  },
+  "intensityLevel": "Intensity: {level}/5",
+  "@intensityLevel": {
+    "placeholders": {"level": {"type": "int"}}
+  },
+
+  "notesLabel": "Notes",
+  "dateLabel": "Date",
+  "cervicalMucusLabel": "Cervical mucus",
+  "lhTestLabel": "LH test",
+  "symptomTypeLabel": "Symptom type",
+  "periodFormTitle": "Log period",
+  "editPeriodTitle": "Edit period",
+  "ovulationFormTitle": "Log ovulation",
+  "editOvulationTitle": "Edit ovulation",
+  "symptomFormTitle": "Log symptom",
+  "editSymptomTitle": "Edit symptom",
+  "periodSaveError": "Could not save the period",
+  "ovulationSaveError": "Could not save the ovulation",
+  "symptomSaveError": "Could not save the symptom",
+
+  "symptomAcne": "Acne",
+  "symptomBreastPain": "Breast pain",
+  "symptomFatigue": "Fatigue",
+  "symptomMood": "Mood",
+  "symptomCravings": "Cravings",
+  "symptomAbdominalPain": "Abdominal pain",
+  "mucusDry": "Dry",
+  "mucusSticky": "Sticky",
+  "mucusCreamy": "Creamy",
+  "mucusWatery": "Watery",
+  "mucusStretchy": "Stretchy",
+  "mucusEggWhite": "Egg white",
+  "lhNegative": "Negative",
+  "lhPositive": "Positive",
+  "lhNotDone": "Not done",
+
+  "protectionCondom": "Condom",
+  "protectionPill": "Pill",
+  "protectionNatural": "Natural",
+  "protectionNone": "None",
+  "relationshipVaginal": "Vaginal",
+  "relationshipOral": "Oral",
+  "relationshipAnal": "Anal",
+  "relationshipOther": "Other",
+  "outcomeNothing": "Nothing",
+  "outcomePregnancy": "Pregnancy",
+  "outcomeAbortion": "Abortion",
+  "outcomeUnknown": "Unknown",
+
+  "encountersTitle": "Encounters",
+  "deleteEncounterTitle": "Delete encounter",
+  "deleteEncounterBody": "Delete this encounter?",
+  "emptyEncountersTitle": "No encounters",
+  "emptyEncountersSubtitle": "Log your first encounter",
+  "encounterFormTitle": "New encounter",
+  "editEncounterTitle": "Edit encounter",
+  "dateTimeLabel": "Date and time",
+  "protectionLabel": "Protection",
+  "participantsLabel": "Participants",
+  "outcomeLabel": "Outcome",
+  "applyToAll": "Apply to all:",
+  "encounterSaveError": "Could not save the encounter",
+  "encounterTimeFuture": "Date cannot be in the future",
+  "encounterProtectionInvalid": "Invalid protection",
+  "encounterParticipantsRequired": "There must be at least one participant",
+  "encounterParticipantsDuplicate": "Participants cannot be repeated",
+  "encounterRelationshipInvalid": "Invalid relationship type",
+  "encounterOutcomeInvalid": "Invalid outcome",
+
+  "riskPeriodInProgress": "Period in progress",
+  "riskRiskDay": "Risk day",
+  "riskPossibleDelay": "Possible delay",
+  "riskOutsideWindow": "Outside fertile window",
+  "riskNoData": "No data",
+
+  "phaseMenstruation": "Menstruation",
+  "phaseFollicular": "Follicular",
+  "phaseFertileWindow": "Fertile window",
+  "phaseOvulation": "Ovulation",
+  "phaseLuteal": "Luteal",
+  "phaseLateLuteal": "Late luteal (PMS)",
+  "phaseDelayed": "Delayed",
+
+  "moodMenstruationHumor": "Low / tired",
+  "moodMenstruationLibido": "Low",
+  "moodMenstruationTip": "Leave her alone",
+  "moodFollicularHumor": "Good mood",
+  "moodFollicularLibido": "Rising",
+  "moodFollicularTip": "Good time for plans",
+  "moodFertileHumor": "Good",
+  "moodFertileLibido": "High",
+  "moodFertileTip": "Risk days",
+  "moodOvulationHumor": "Very good",
+  "moodOvulationLibido": "Horny (peak)",
+  "moodOvulationTip": "Maximum risk",
+  "moodLutealHumor": "Variable",
+  "moodLutealLibido": "Declining",
+  "moodLateLutealHumor": "Irritable / bad mood",
+  "moodLateLutealLibido": "Variable",
+  "moodLateLutealTip": "Be patient, better not argue",
+  "moodDelayedHumor": "Unpredictable",
+  "moodDelayedLibido": "—",
+  "moodDelayedTip": "Possible delay, check your records",
+
+  "phaseLabel": "Phase: {phase}",
+  "@phaseLabel": {
+    "placeholders": {"phase": {"type": "String"}}
+  },
+  "moodLabel": "Mood: {mood}",
+  "@moodLabel": {
+    "placeholders": {"mood": {"type": "String"}}
+  },
+  "libidoLabel": "Libido: {libido}",
+  "@libidoLabel": {
+    "placeholders": {"libido": {"type": "String"}}
+  },
+  "estimatedOvulation": "Estimated ovulation",
+  "fertileWindowRisk": "Fertile window (risk)",
+  "expectedPeriod": "Expected period",
+  "upcomingDays": "Upcoming days",
+  "cycleDay": "Day {day}",
+  "@cycleDay": {
+    "placeholders": {"day": {"type": "int"}}
+  },
+  "cycleStats": "Cycles: {cycles} · Min {min} / Max {max} / Avg {avg} days",
+  "@cycleStats": {
+    "placeholders": {
+      "cycles": {"type": "int"},
+      "min": {"type": "int"},
+      "max": {"type": "int"},
+      "avg": {"type": "String"}
+    }
+  },
+  "defaultEstimationWarning": "⚠ Default estimate (log more periods for better accuracy)",
+  "orientationDisclaimer": "Indicative estimate based on the cycle phase",
+  "noDataCardBody": "Log a period to see the prediction",
+
+  "alertTypeFertilityImminent": "Imminent fertility",
+  "alertTypeRiskDay": "Risk day",
+  "alertTypePeriodImminent": "Imminent period",
+  "alertTypeCombinedFertility": "Combined fertility",
+  "alertTypeEncounterFertility": "Encounter + fertility",
+  "alertTypePostEncounter": "Post-encounter warning",
+  "alertTypeMultiFertility": "Multiple women + fertility",
+  "alertTypeCombinedWindow": "Combined window",
+  "alertTypeMedication": "Medication",
+
+  "alertDescFertilityImminent": "Notify when ovulation is the next day",
+  "alertDescRiskDay": "Notify if you are in a fertile window today",
+  "alertDescPeriodImminent": "Notify when the period starts the next day",
+  "alertDescCombinedFertility": "Weekly summary of fertile women",
+  "alertDescEncounterFertility": "Notify if you had an encounter and she is fertile",
+  "alertDescPostEncounter": "Notify if ~14 days have passed since an encounter",
+  "alertDescMultiFertility": "Notify if a multiple encounter coincides with fertility",
+  "alertDescCombinedWindow": "Weekly summary of all women's windows",
+  "alertDescMedication": "Remind to take each woman's medication",
+
+  "notificationChannelName": "CicloTrack alerts",
+  "notificationChannelDescription": "Fertility and cycle notifications",
+
+  "alertBodyFertilityImminent": "Tomorrow is {initials}'s ovulation day. Fertile window: {days} days",
+  "@alertBodyFertilityImminent": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "days": {"type": "int"}
+    }
+  },
+  "alertBodyRiskDayEndsTomorrow": "Today is a risk day with {initials}. Her fertile window ends tomorrow",
+  "@alertBodyRiskDayEndsTomorrow": {
+    "placeholders": {"initials": {"type": "String"}}
+  },
+  "alertBodyRiskDayEndsOn": "Today is a risk day with {initials}. Her fertile window ends on {date}",
+  "@alertBodyRiskDayEndsOn": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "alertBodyPeriodImminent": "{initials}'s period starts tomorrow",
+  "@alertBodyPeriodImminent": {
+    "placeholders": {"initials": {"type": "String"}}
+  },
+  "alertBodyCombinedFertility": "There is fertility this week with {names}",
+  "@alertBodyCombinedFertility": {
+    "placeholders": {"names": {"type": "String"}}
+  },
+  "alertBodyEncounterFertilityToday": "Encounter with {initials} on {weekday} and her fertile window is today",
+  "@alertBodyEncounterFertilityToday": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "weekday": {"type": "String"}
+    }
+  },
+  "alertBodyEncounterFertilityPlus": "Encounter with {initials} on {weekday} and her fertile window is today + {days} days",
+  "@alertBodyEncounterFertilityPlus": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "weekday": {"type": "String"},
+      "days": {"type": "int"}
+    }
+  },
+  "alertBodyPostEncounter": "Encounter with {initials} on {weekday}. Her period should start on {date}. If there is no pregnancy, she is likely to bleed around that date.",
+  "@alertBodyPostEncounter": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "weekday": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "alertBodyMultiFertility": "Encounter with {names} on {weekday}. Both have an active fertile window. High risk.",
+  "@alertBodyMultiFertility": {
+    "placeholders": {
+      "names": {"type": "String"},
+      "weekday": {"type": "String"}
+    }
+  },
+  "alertBodyCombinedWindow": "{entries}.",
+  "@alertBodyCombinedWindow": {
+    "placeholders": {"entries": {"type": "String"}}
+  },
+  "alertEntryFertileRange": "{initials} is fertile from {from} to {to}",
+  "@alertEntryFertileRange": {
+    "placeholders": {
+      "initials": {"type": "String"},
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "alertBodyMedication": "It's time for your medication ({time})",
+  "@alertBodyMedication": {
+    "placeholders": {"time": {"type": "String"}}
+  },
+
+  "alertsTitle": "Alerts",
+  "alertsMedicationTooltip": "Medication",
+  "alertsEnabled": "Alerts enabled",
+  "alertsEnabledSubtitle": "Enable or disable all notifications",
+  "alertsPermissionDenied": "Notification permission not granted",
+  "alertsNotifyTime": "Notification time",
+  "alertsTypesTitle": "Alert types",
+  "alertsUpcomingTitle": "Upcoming alerts",
+  "alertsUpcomingEmpty": "No alerts scheduled for the next 7 days",
+  "alertsRecalculate": "Recalculate now",
+  "alertsRecalculated": "Alerts recalculated",
+
+  "calendarViewsTitle": "Views",
+  "calendarWeekTab": "Week",
+  "calendarMonthTab": "Month",
+  "calendarFertilityTab": "Fertility",
+  "calendarEncountersTab": "Encounters",
+  "calendarLoadError": "Could not load the views.",
+  "calendarEmpty": "No profiles. Create one to see the calendar.",
+  "legendMenstruation": "Menstruation",
+  "legendFertileWindow": "Fertile window",
+  "legendOvulation": "Ovulation",
+  "legendRegisteredOvulation": "Logged ovulation",
+  "legendSymptom": "Symptom",
+  "legendEncounter": "Encounter",
+  "legendProjectionNote": "Dimmed marks are projections based on the average cycle.",
+  "dayNoCycleData": "No cycle data",
+  "dayFertileSuffix": "· fertile window",
+  "fertilityWeekEmpty": "No woman in a fertile window this week.",
+  "fertilityEstimated": "estimated",
+
+  "reportsTitle": "Reports",
+  "reportsLoadError": "Could not load the reports.",
+  "reportsEmpty": "No profiles. Create one to see the reports.",
+  "reportsAll": "All",
+  "reportsGlobal": "Global",
+  "kpiProfiles": "Profiles",
+  "kpiCycles": "Logged cycles",
+  "kpiAvgCycle": "Average cycle length",
+  "kpiAvgMenstruation": "Average menstruation length",
+  "kpiEncounters": "Encounters",
+  "kpiUnprotected": "Unprotected",
+  "kpiFertileDays": "Fertile days",
+  "kpiMostEncounters": "Most encounters",
+  "kpiNextPeriod": "Next period",
+  "hintHistory": "historical",
+  "hintClosedPeriods": "closed periods",
+  "hintMonths12": "12 months",
+  "hintFertile12": "12 months, with projections",
+  "hintProjected": "projected",
+  "hintUnprotected": "\"None\": {unprotected} of {total}",
+  "@hintUnprotected": {
+    "placeholders": {
+      "unprotected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "reportsPerMonth": "Per month",
+  "reportsEncountersByWoman": "Encounters per woman",
+  "reportsProtection": "Protection",
+  "reportsCycleEvolution": "Cycle evolution",
+  "reportsRecurringSymptoms": "Recurring symptoms",
+  "reportsMonthDetail": "{month} · {encounters} encounters · {unprotected} unprotected · {fertile} fertile days · {periods} periods",
+  "@reportsMonthDetail": {
+    "placeholders": {
+      "month": {"type": "String"},
+      "encounters": {"type": "int"},
+      "unprotected": {"type": "int"},
+      "fertile": {"type": "int"},
+      "periods": {"type": "int"}
+    }
+  },
+  "chartNeedTwoCycles": "At least two closed cycles are needed to draw the evolution.",
+  "chartNoSymptoms": "No symptoms logged in the last 12 months.",
+  "chartNoEncounters": "No encounters logged in the last 12 months.",
+  "chartLegendEncounters": "Encounters",
+  "chartLegendUnprotected": "Unprotected",
+
+  "backupTitle": "Backup",
+  "backupSaved": "Backup saved",
+  "backupRestoreTitle": "Restore backup",
+  "backupRestoreConfirm": "Replace all current data? The {count} profiles and all their records will be deleted.",
+  "@backupRestoreConfirm": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfDocumentTitle": "CicloTrack — backup",
+  "pdfFooterPage": "Page {page} of {total}",
+  "@pdfFooterPage": {
+    "placeholders": {
+      "page": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "pdfGeneratedOn": "Report generated on {date}",
+  "@pdfGeneratedOn": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "pdfSummary": "Summary",
+  "pdfRegisteredPeriods": "Logged periods",
+  "pdfSymptoms12": "Symptoms (12 months)",
+  "pdfMedication": "Medication",
+  "pdfEncounters": "Encounters",
+  "pdfColStart": "Start",
+  "pdfColEnd": "End",
+  "pdfColFlow": "Flow",
+  "pdfColNotes": "Notes",
+  "pdfColType": "Type",
+  "pdfColFrequency": "Frequency",
+  "pdfColWoman": "Woman",
+  "pdfColMedication": "Medication",
+  "pdfColDose": "Dose",
+  "pdfColTime": "Time",
+  "pdfColState": "Status",
+  "pdfColDate": "Date",
+  "pdfColWomen": "Women",
+  "pdfColProtection": "Protection",
+  "pdfColOutcome": "Outcome",
+  "pdfShowsLast": "Showing the last {shown} of {total} encounters.",
+  "@pdfShowsLast": {
+    "placeholders": {
+      "shown": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "pdfProfiles": "Profiles: {count}",
+  "@pdfProfiles": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfCycles": "Logged cycles: {count}",
+  "@pdfCycles": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfAvgCycle": "Average cycle length: {value}",
+  "@pdfAvgCycle": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "pdfAvgMenstruation": "Average menstruation length: {value}",
+  "@pdfAvgMenstruation": {
+    "placeholders": {"value": {"type": "String"}}
+  },
+  "pdfEncounters12": "Encounters (12 months): {count}",
+  "@pdfEncounters12": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfUnprotected": "Unprotected: {percent} % ({unprotected} of {total})",
+  "@pdfUnprotected": {
+    "placeholders": {
+      "percent": {"type": "int"},
+      "unprotected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "pdfFertileDays12": "Fertile days (12 months, with projections): {count}",
+  "@pdfFertileDays12": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "pdfMostEncounters": "Most encounters: {name} ({count})",
+  "@pdfMostEncounters": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "pdfNextPeriod": "Next period: {date}",
+  "@pdfNextPeriod": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+
+  "medicationTitle": "Medication",
+  "medicationAdd": "Add medication",
+  "medicationProfilesError": "Could not load the profiles",
+  "medicationLoadError": "Could not load the medication",
+  "medicationEdit": "Edit medication",
+  "medicationNameLabel": "Medication",
+  "medicationWomanLabel": "Woman",
+  "medicationEnabledLabel": "Active",
+  "medicationEmpty": "No medications logged",
+  "medicationDeleteTitle": "Delete medication",
+  "medicationDeleteBody": "Delete {name}?",
+  "@medicationDeleteBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "medicationSaveError": "Could not save the medication",
+  "medicationNameRequired": "Enter the medication name",
+  "medicationNameTooLong": "Name allows up to 80 characters",
+  "medicationDoseTooLong": "Dose allows up to 60 characters",
+  "medicationHourRange": "Hour must be between 0 and 23",
+  "medicationMinuteRange": "Minute must be between 0 and 59",
+
+  "settingsTitle": "Settings",
+  "settingsSectionGeneral": "General",
+  "settingsAlerts": "Alerts",
+  "settingsBackup": "Backup",
+  "settingsViews": "Views",
+  "settingsReports": "Reports",
+  "settingsMedication": "Medication",
+  "settingsAbout": "About",
+  "settingsVersion": "Version {version}",
+  "@settingsVersion": {
+    "placeholders": {"version": {"type": "String"}}
+  },
+  "appLockedTitle": "Access locked",
+  "appLockedSubtitle": "Unlock with your PIN or fingerprint to continue.",
+  "appUnlock": "Unlock",
+  "appLockAuthReason": "Unlock CicloTrack to continue",
+
+  "remindersOf": "Reminders for {name}",
+  "@remindersOf": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "remindersLoadError": "Could not load the reminders",
+  "remindersNew": "New reminder",
+  "remindersEmpty": "No reminders",
+  "remindersDeleteTitle": "Delete reminder",
+  "remindersDeleteBody": "Delete \"{message}\"?",
+  "@remindersDeleteBody": {
+    "placeholders": {"message": {"type": "String"}}
+  },
+  "reminderNotificationTitle": "Reminder",
+  "reminderChannelName": "Reminders",
+  "reminderChannelDescription": "Personalized reminders by cycle day",
+  "reminderFormTitle": "New reminder",
+  "reminderEditTitle": "Edit reminder",
+  "reminderMessageLabel": "Message",
+  "reminderStartLabel": "Cycle start day",
+  "reminderEndLabel": "Cycle end day (optional)",
+  "reminderEnabledLabel": "Active",
+  "reminderPermissionDenied": "Reminder saved, but without notification permission you won't get the alert",
+  "reminderSaveError": "Could not save the reminder",
+  "reminderMessageRequired": "Write a message",
+  "reminderMessageTooLong": "Maximum {max} characters",
+  "@reminderMessageTooLong": {
+    "placeholders": {"max": {"type": "int"}}
+  },
+  "reminderStartRequired": "Enter a cycle day",
+  "reminderStartTooSmall": "Start day must be 1 or greater",
+  "reminderStartTooLarge": "Start day cannot exceed {max}",
+  "@reminderStartTooLarge": {
+    "placeholders": {"max": {"type": "int"}}
+  },
+  "reminderEndRequired": "Enter a cycle day",
+  "reminderEndBeforeStart": "End day cannot be before the start day",
+  "reminderEndTooLarge": "End day cannot exceed {max}",
+  "@reminderEndTooLarge": {
+    "placeholders": {"max": {"type": "int"}}
+  },
+  "reminderDayLabel": "Day {day} of cycle",
+  "@reminderDayLabel": {
+    "placeholders": {"day": {"type": "int"}}
+  },
+  "reminderDaysLabel": "Days {start}-{end} of cycle",
+  "@reminderDaysLabel": {
+    "placeholders": {
+      "start": {"type": "int"},
+      "end": {"type": "int"}
+    }
+  },
+  "reminderBodyRange": "{message} (days {start}-{end} of cycle)",
+  "@reminderBodyRange": {
+    "placeholders": {
+      "message": {"type": "String"},
+      "start": {"type": "int"},
+      "end": {"type": "int"}
+    }
+  },
+
+  "dayNoProfiles": "No profiles.",
+  "saving": "Saving…",
+  "add": "Add",
+  "register": "Log",
+  "remindersTooltip": "Reminders",
+
+  "tagRelated": "Partner",
+  "tagFriend": "Friend",
+  "tagEx": "Ex",
+  "tagCoworker": "Companion",
+  "tagCasual": "Casual",
+  "tagOther": "Other",
+  "newTagTitle": "New tag",
+  "tagNameHint": "Tag name",
+
+  "medicationNoProfiles": "Create a profile to add medication",
+  "medicationWomanRequired": "Select a woman",
+  "medicationDoseOptional": "Dose (optional)",
+  "medicationTakeTime": "Take time",
+
+  "reminderMessageHint": "Better avoid sex these days",
+  "reminderCycleNote": "Day 1 is the start of the last logged period. You'll get one notification per cycle, on the start day.",
+  "reminderCreate": "Create reminder",
+  "reminderDisabled": "Disabled",
+  "remindersEmptySubtitle": "Create a reminder for specific days of the cycle",
+
+  "encounterNoProfiles": "No profiles available",
+  "relationshipTypeLabel": "Relationship type",
+  "outcomeNoneOption": "None",
+  "registerEncounter": "Log encounter",
+  "registerPeriod": "Log period",
+  "registerOvulation": "Log ovulation",
+  "registerSymptom": "Log symptom",
+  "dateStartLabel": "Start date",
+  "dateEndOptionalLabel": "End date (optional)",
+  "undefinedDate": "Not set",
+  "durationLabel": "Duration",
+  "flowLevelLabel": "Flow level",
+  "temperatureBasalLabel": "Basal temperature (°C)",
+  "periodStartFuture": "Start date cannot be in the future",
+  "periodEndBeforeStart": "End date cannot be before the start date",
+  "periodFlowRange": "Flow must be between 1 and 5",
+  "dateFuture": "Date cannot be in the future",
+  "temperatureInvalid": "Enter a valid temperature between 34 and 40 °C",
+  "symptomTypeInvalid": "Invalid symptom type",
+  "severityRange": "Intensity must be between 1 and 5",
+  "calendarWeekRange": "Week from {from} to {to}",
+  "@calendarWeekRange": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "fertilityWindowLabel": "Window: {from} – {to}",
+  "@fertilityWindowLabel": {
+    "placeholders": {
+      "from": {"type": "String"},
+      "to": {"type": "String"}
+    }
+  },
+  "ovulationDateLabel": "Ovulation: {date}",
+  "@ovulationDateLabel": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "fertilityEstimatedF": "estimated",
+  "fertilityStartsTomorrow": "Starts tomorrow",
+  "fertilityStartsIn": "Starts in {count, plural, one{1 day} other{{count} days}}",
+  "@fertilityStartsIn": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "fertilityLastDay": "Last day of window",
+  "fertilityInProgress": "In progress, ends in {count, plural, one{1 day} other{{count} days}}",
+  "@fertilityInProgress": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "encountersFilterAllCount": "All ({count})",
+  "@encountersFilterAllCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "encountersNone": "No encounters logged.",
+  "encountersNoneFor": "No encounters with {name}.",
+  "@encountersNoneFor": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "active": "Active",
+  "inactive": "Inactive",
+  "medicationSaveChangeError": "Could not save the change",
+  "settingsSectionSecurity": "Security",
+  "settingsAppLockTitle": "App lock (PIN/fingerprint)",
+  "settingsAppLockSupported": "Requires PIN or fingerprint when opening the app",
+  "settingsAppLockUnavailable": "Not available on this device",
+  "settingsLocalTitle": "100% local and cloud-free",
+  "settingsLocalSubtitle": "All data is stored only on this device: no accounts, sync or servers.",
+  "settingsMedicationSubtitle": "Pills and alert times, per woman",
+  "settingsAlertsSubtitle": "Local alerts and notification time",
+  "settingsBackupSubtitle": "Export and restore data",
+  "settingsReportsSubtitle": "Statistics and charts",
+  "settingsViewsSubtitle": "Calendar, fertility and encounters",
+  "backupSectionExport": "Export",
+  "backupSectionImport": "Import",
+  "backupExportJsonTitle": "Full backup (JSON)",
+  "backupExportJsonSubtitle": "All data in a JSON file",
+  "backupExportCsvTitle": "Tables (CSV)",
+  "backupExportCsvSubtitle": "One CSV per table, compressed into a ZIP",
+  "backupExportPdfTitle": "Report (PDF)",
+  "backupExportPdfSubtitle": "Printable summary of profiles, cycles and encounters",
+  "backupImportJsonTitle": "Restore from JSON",
+  "backupImportJsonSubtitle": "Replaces all current data",
+  "backupNotReady": "Could not save: data is still loading",
+  "backupCancelled": "Export cancelled",
+  "backupImportCancelled": "Import cancelled",
+  "backupRestoreAction": "Restore",
+  "backupSaveFailed": "Could not save: {reason}",
+  "@backupSaveFailed": {
+    "placeholders": {"reason": {"type": "String"}}
+  },
+  "backupImportFailed": "Could not import: {reason}",
+  "@backupImportFailed": {
+    "placeholders": {"reason": {"type": "String"}}
+  },
+  "backupRestoredSummary": "Backup restored: {profiles} profiles, {periods} periods, {encounters} encounters",
+  "@backupRestoredSummary": {
+    "placeholders": {
+      "profiles": {"type": "int"},
+      "periods": {"type": "int"},
+      "encounters": {"type": "int"}
+    }
+  },
+
+  "pdfProfileFallback": "Profile {id}",
+  "@pdfProfileFallback": {
+    "placeholders": {"id": {"type": "int"}}
+  },
+  "backupInvalidJson": "The file is not valid JSON",
+  "backupNotCicloTrack": "The file is not a CicloTrack backup",
+  "backupUnsupportedVersion": "Unsupported backup version (v{version})",
+  "@backupUnsupportedVersion": {
+    "placeholders": {"version": {"type": "String"}}
+  },
+  "backupInvalidExportDate": "Invalid export date",
+  "backupNoTables": "The file contains no tables",
+  "backupMissingTable": "Table {table} is missing",
+  "@backupMissingTable": {
+    "placeholders": {"table": {"type": "String"}}
+  },
+  "backupInvalidRow": "Invalid row in {table}",
+  "@backupInvalidRow": {
+    "placeholders": {"table": {"type": "String"}}
+  },
+  "backupInvalidValue": "Invalid value in {column}",
+  "@backupInvalidValue": {
+    "placeholders": {"column": {"type": "String"}}
+  }
+}

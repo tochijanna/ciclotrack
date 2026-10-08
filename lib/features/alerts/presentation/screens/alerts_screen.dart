@@ -1,7 +1,9 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../medications/presentation/screens/medications_screen.dart';
+import '../../data/alert_text.dart';
 import '../../domain/alert_settings.dart';
 import '../../domain/alert_types.dart';
 import '../providers/alerts_providers.dart';
@@ -11,15 +13,16 @@ class AlertsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final settingsAsync = ref.watch(alertSettingsStreamProvider);
     final upcomingAsync = ref.watch(upcomingAlertsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alertas'),
+        title: Text(l10n.alertsTitle),
         actions: [
           IconButton(
-            tooltip: 'Medicación',
+            tooltip: l10n.alertsMedicationTooltip,
             icon: const Icon(Icons.medication_outlined),
             onPressed: () async {
               await Navigator.of(context).push(
@@ -51,10 +54,8 @@ class AlertsScreen extends ConsumerWidget {
             children: [
               // Toggle maestro
               SwitchListTile(
-                title: const Text('Alertas activadas'),
-                subtitle: const Text(
-                  'Activa o desactiva todas las notificaciones',
-                ),
+                title: Text(l10n.alertsEnabled),
+                subtitle: Text(l10n.alertsEnabledSubtitle),
                 value: settings.masterEnabled,
                 onChanged: (v) async {
                   if (v) {
@@ -64,11 +65,7 @@ class AlertsScreen extends ConsumerWidget {
                     if (!granted) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Permiso de notificaciones no concedido',
-                            ),
-                          ),
+                          SnackBar(content: Text(l10n.alertsPermissionDenied)),
                         );
                       }
                       return;
@@ -85,7 +82,7 @@ class AlertsScreen extends ConsumerWidget {
                 const Divider(),
                 // Hora de notificación
                 ListTile(
-                  title: const Text('Hora de notificación'),
+                  title: Text(l10n.alertsNotifyTime),
                   subtitle: Text(
                     '${settings.notifyHour.toString().padLeft(2, '0')}:${settings.notifyMinute.toString().padLeft(2, '0')}',
                   ),
@@ -115,16 +112,16 @@ class AlertsScreen extends ConsumerWidget {
                     vertical: 8,
                   ),
                   child: Text(
-                    'Tipos de alerta',
+                    l10n.alertsTypesTitle,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
                 ...allAlertTypes.map((type) {
                   final enabled = enabledTypes.contains(type);
                   return CheckboxListTile(
-                    title: Text(alertTypeLabel(type)),
+                    title: Text(alertTypeLabel(l10n, type)),
                     subtitle: Text(
-                      alertTypeDescription(type),
+                      alertTypeDescription(l10n, type),
                       style: const TextStyle(fontSize: 12),
                     ),
                     value: enabled,
@@ -151,18 +148,18 @@ class AlertsScreen extends ConsumerWidget {
                     vertical: 8,
                   ),
                   child: Text(
-                    'Próximas alertas',
+                    l10n.alertsUpcomingTitle,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
                 upcomingAsync.when(
                   data: (items) {
                     if (items.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16),
+                      return Padding(
+                        padding: const EdgeInsets.all(16),
                         child: Text(
-                          'No hay alertas programadas para los próximos 7 días',
-                          style: TextStyle(
+                          l10n.alertsUpcomingEmpty,
+                          style: const TextStyle(
                             fontStyle: FontStyle.italic,
                             color: Colors.grey,
                           ),
@@ -176,8 +173,8 @@ class AlertsScreen extends ConsumerWidget {
                             '⚠️',
                             style: TextStyle(fontSize: 20),
                           ),
-                          title: Text(item.title),
-                          subtitle: Text(item.body),
+                          title: Text(alertTypeLabel(l10n, item.type)),
+                          subtitle: Text(alertBody(l10n, item.message)),
                           dense: true,
                         );
                       }).toList(),
@@ -185,7 +182,7 @@ class AlertsScreen extends ConsumerWidget {
                   },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e'),
+                  error: (e, _) => Text('${l10n.errorLabel}: $e'),
                 ),
                 const SizedBox(height: 16),
                 // Botón recalcular
@@ -198,12 +195,12 @@ class AlertsScreen extends ConsumerWidget {
                       ref.invalidate(upcomingAlertsProvider);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Alertas recalculadas')),
+                          SnackBar(content: Text(l10n.alertsRecalculated)),
                         );
                       }
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Recalcular ahora'),
+                    label: Text(l10n.alertsRecalculate),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -212,7 +209,7 @@ class AlertsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('${l10n.errorLabel}: $e')),
       ),
     );
   }

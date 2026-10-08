@@ -5,40 +5,43 @@ import 'package:ciclotrack/features/settings/domain/reminder_validators.dart';
 void main() {
   group('validateReminderMessage', () {
     test('rejects an empty or blank message', () {
-      expect(validateReminderMessage(''), 'Escribe un mensaje');
-      expect(validateReminderMessage('   '), 'Escribe un mensaje');
-      expect(validateReminderMessage(null), 'Escribe un mensaje');
+      expect(validateReminderMessage(''), ReminderFieldError.messageRequired);
+      expect(
+        validateReminderMessage('   '),
+        ReminderFieldError.messageRequired,
+      );
+      expect(validateReminderMessage(null), ReminderFieldError.messageRequired);
     });
 
     test('accepts up to 120 characters and rejects 121', () {
       expect(validateReminderMessage('a' * 120), isNull);
-      expect(validateReminderMessage('a' * 121), 'Máximo 120 caracteres');
+      expect(
+        validateReminderMessage('a' * 121),
+        ReminderFieldError.messageTooLong,
+      );
     });
   });
 
   group('validateCycleDayStart', () {
     test('rejects a missing day and day 0', () {
-      expect(validateCycleDayStart(null), 'Introduce un día del ciclo');
-      expect(validateCycleDayStart(0), 'El día inicial debe ser 1 o mayor');
+      expect(validateCycleDayStart(null), ReminderFieldError.startRequired);
+      expect(validateCycleDayStart(0), ReminderFieldError.startTooSmall);
     });
 
     test('accepts 1..60 and rejects 61', () {
       expect(validateCycleDayStart(1), isNull);
       expect(validateCycleDayStart(60), isNull);
-      expect(validateCycleDayStart(61), 'El día inicial no puede superar 60');
+      expect(validateCycleDayStart(61), ReminderFieldError.startTooLarge);
     });
   });
 
   group('validateCycleDayEnd', () {
     test('rejects an end before the start', () {
-      expect(
-        validateCycleDayEnd(5, 4),
-        'El día final no puede ser anterior al inicial',
-      );
+      expect(validateCycleDayEnd(5, 4), ReminderFieldError.endBeforeStart);
     });
 
     test('rejects an end after day 60', () {
-      expect(validateCycleDayEnd(5, 61), 'El día final no puede superar 60');
+      expect(validateCycleDayEnd(5, 61), ReminderFieldError.endTooLarge);
     });
 
     test('accepts a single day and a range up to 60', () {
@@ -63,27 +66,7 @@ void main() {
         cycleDayStart: 0,
         cycleDayEnd: 0,
       );
-      expect(validateReminderDraft(draft), 'Escribe un mensaje');
-    });
-  });
-
-  group('CycleReminder', () {
-    const range = CycleReminder(
-      id: 1,
-      womanId: 1,
-      cycleDayStart: 5,
-      cycleDayEnd: 7,
-      message: 'Mejor evitar sexo',
-      enabled: true,
-    );
-
-    test('adds the range to the body only when it spans several days', () {
-      expect(range.notificationBody, 'Mejor evitar sexo (días 5-7 del ciclo)');
-      expect(range.rangeLabel, 'Días 5-7 del ciclo');
-
-      final single = range.copyWith(cycleDayEnd: 5);
-      expect(single.notificationBody, 'Mejor evitar sexo');
-      expect(single.rangeLabel, 'Día 5 del ciclo');
+      expect(validateReminderDraft(draft), ReminderFieldError.messageRequired);
     });
   });
 

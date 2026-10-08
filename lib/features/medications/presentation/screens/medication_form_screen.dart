@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -45,6 +46,7 @@ class _MedicationFormScreenState extends ConsumerState<MedicationFormScreen> {
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       await ref
@@ -61,35 +63,48 @@ class _MedicationFormScreenState extends ConsumerState<MedicationFormScreen> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo guardar el medicamento')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.medicationSaveError)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
 
+  String? _errorText(AppLocalizations l10n, MedicationFieldError? error) {
+    switch (error) {
+      case MedicationFieldError.nameRequired:
+        return l10n.medicationNameRequired;
+      case MedicationFieldError.nameTooLong:
+        return l10n.medicationNameTooLong;
+      case MedicationFieldError.doseTooLong:
+        return l10n.medicationDoseTooLong;
+      case MedicationFieldError.hourOutOfRange:
+        return l10n.medicationHourRange;
+      case MedicationFieldError.minuteOutOfRange:
+        return l10n.medicationMinuteRange;
+      case null:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final profiles = ref.watch(medicationWomenProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.medication == null
-              ? 'Añadir medicamento'
-              : 'Editar medicamento',
+          widget.medication == null ? l10n.medicationAdd : l10n.medicationEdit,
         ),
       ),
       body: profiles.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) =>
-            const Center(child: Text('No se pudieron cargar los perfiles')),
+        error: (_, _) => Center(child: Text(l10n.medicationProfilesError)),
         data: (women) {
           if (women.isEmpty) {
-            return const Center(
-              child: Text('Crea un perfil para añadir medicación'),
-            );
+            return Center(child: Text(l10n.medicationNoProfiles));
           }
           final selected = women.any((p) => p.woman.id == _womanId)
               ? _womanId
@@ -101,7 +116,9 @@ class _MedicationFormScreenState extends ConsumerState<MedicationFormScreen> {
               children: [
                 DropdownButtonFormField<int>(
                   initialValue: selected,
-                  decoration: const InputDecoration(labelText: 'Mujer'),
+                  decoration: InputDecoration(
+                    labelText: l10n.medicationWomanLabel,
+                  ),
                   items: [
                     for (final profile in women)
                       DropdownMenuItem(
@@ -110,34 +127,40 @@ class _MedicationFormScreenState extends ConsumerState<MedicationFormScreen> {
                       ),
                   ],
                   validator: (value) =>
-                      value == null ? 'Selecciona una mujer' : null,
+                      value == null ? l10n.medicationWomanRequired : null,
                   onChanged: _saving
                       ? null
                       : (value) => setState(() => _womanId = value),
                 ),
                 TextFormField(
                   controller: _name,
-                  decoration: const InputDecoration(labelText: 'Medicamento'),
-                  validator: (value) => validateMedicationName(value ?? ''),
+                  decoration: InputDecoration(
+                    labelText: l10n.medicationNameLabel,
+                  ),
+                  validator: (value) =>
+                      _errorText(l10n, validateMedicationName(value ?? '')),
                   enabled: !_saving,
                 ),
                 TextFormField(
                   controller: _dose,
-                  decoration: const InputDecoration(
-                    labelText: 'Dosis (opcional)',
+                  decoration: InputDecoration(
+                    labelText: l10n.medicationDoseOptional,
                   ),
-                  validator: (value) => validateMedicationDose(value ?? ''),
+                  validator: (value) =>
+                      _errorText(l10n, validateMedicationDose(value ?? '')),
                   enabled: !_saving,
                 ),
                 FormField<TimeOfDay>(
-                  validator: (_) =>
-                      validateMedicationHour(_time.hour) ??
-                      validateMedicationMinute(_time.minute),
+                  validator: (_) => _errorText(
+                    l10n,
+                    validateMedicationHour(_time.hour) ??
+                        validateMedicationMinute(_time.minute),
+                  ),
                   builder: (field) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ListTile(
-                        title: const Text('Hora de la toma'),
+                        title: Text(l10n.medicationTakeTime),
                         subtitle: Text(
                           '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}',
                         ),
@@ -165,7 +188,7 @@ class _MedicationFormScreenState extends ConsumerState<MedicationFormScreen> {
                   ),
                 ),
                 SwitchListTile(
-                  title: const Text('Activo'),
+                  title: Text(l10n.medicationEnabledLabel),
                   value: _enabled,
                   onChanged: _saving
                       ? null
@@ -174,7 +197,7 @@ class _MedicationFormScreenState extends ConsumerState<MedicationFormScreen> {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _saving ? null : _save,
-                  child: Text(_saving ? 'Guardando…' : 'Guardar'),
+                  child: Text(_saving ? l10n.saving : l10n.save),
                 ),
               ],
             ),

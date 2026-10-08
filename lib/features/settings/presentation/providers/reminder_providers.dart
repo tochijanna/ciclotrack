@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/db/app_database_provider.dart';
+import '../../../../core/l10n/app_locale.dart';
 import '../../../../core/time/clock.dart';
 import '../../../alerts/data/alert_settings_dao.dart';
 import '../../../alerts/data/alerts_change_dao.dart';
@@ -25,7 +26,7 @@ final reminderDaoProvider = Provider<ReminderDao>((ref) {
 
 final reminderNotifierProvider = Provider<ReminderNotifier>((ref) {
   final plugin = FlutterLocalNotificationsPlugin();
-  return LocalReminderNotifier(plugin);
+  return LocalReminderNotifier(plugin, ref.watch(appLocalizationsProvider));
 });
 
 final reminderSchedulerProvider = Provider<ReminderScheduler>((ref) {
@@ -35,6 +36,7 @@ final reminderSchedulerProvider = Provider<ReminderScheduler>((ref) {
     repository: ReminderRepository(ref.watch(reminderDaoProvider)),
     predictionDao: PredictionDao(db),
     settingsDao: AlertSettingsDao(db),
+    l10n: ref.watch(appLocalizationsProvider),
   );
 });
 

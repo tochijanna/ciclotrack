@@ -144,14 +144,28 @@ final Map<String, List<String>> backupColumns = {
   for (final entry in _schema.entries) entry.key: entry.value.keys.toList(),
 };
 
-/// Error de formato de una copia. El mensaje es apto para mostrar al usuario.
-class BackupFormatException implements Exception {
-  const BackupFormatException(this.message);
+/// Motivos de rechazo de una copia, independientes del idioma.
+enum BackupFormatError {
+  invalidJson,
+  notCicloTrack,
+  unsupportedVersion,
+  invalidExportDate,
+  noTables,
+  missingTable,
+  invalidRow,
+  invalidValue,
+}
 
-  final String message;
+/// Error de formato de una copia. El mensaje visible se localiza en la
+/// capa de presentación a partir de [error] y, cuando aplica, [detail].
+class BackupFormatException implements Exception {
+  const BackupFormatException(this.error, [this.detail]);
+
+  final BackupFormatError error;
+  final String? detail;
 
   @override
-  String toString() => message;
+  String toString() => 'BackupFormatException($error, $detail)';
 }
 
 /// Copia completa de la base de datos en estructuras JSON-friendly.
@@ -197,10 +211,10 @@ class BackupDocument {
     try {
       decoded = jsonDecode(utf8.decode(bytes));
     } on FormatException {
-      throw const BackupFormatException('El archivo no es un JSON válido');
+      throw const BackupFormatException(BackupFormatError.invalidJson);
     }
     if (decoded is! Map<String, Object?>) {
-      throw const BackupFormatException('El archivo no es un JSON válido');
+      throw const BackupFormatException(BackupFormatError.invalidJson);
     }
     return fromJson(decoded);
   }
@@ -209,25 +223,26 @@ class BackupDocument {
   /// motivo exacto del rechazo.
   static BackupDocument fromJson(Map<String, Object?> json) {
     if (json['app'] != backupAppId) {
-      throw const BackupFormatException(
-        'El archivo no es una copia de CicloTrack',
-      );
+      throw const BackupFormatException(BackupFormatError.notCicloTrack);
     }
 
     final version = json['schemaVersion'];
     if (version is! int || (version < 3 || version > backupSchemaVersion)) {
-      throw BackupFormatException('Versión de copia no soportada (v$version)');
+      throw BackupFormatException(
+        BackupFormatError.unsupportedVersion,
+        '$version',
+      );
     }
 
     final exported = json['exportedAt'];
     final exportedAt = exported is String ? DateTime.tryParse(exported) : null;
     if (exportedAt == null) {
-      throw const BackupFormatException('Fecha de exportación inválida');
+      throw const BackupFormatException(BackupFormatError.invalidExportDate);
     }
 
     final rawTables = json['tables'];
     if (rawTables is! Map) {
-      throw const BackupFormatException('El archivo no contiene tablas');
+      throw const BackupFormatException(BackupFormatError.noTables);
     }
 
     final tables = <String, List<Map<String, Object?>>>{};
@@ -239,11 +254,11 @@ class BackupDocument {
         continue;
       }
       if (!rawTables.containsKey(table)) {
-        throw BackupFormatException('Falta la tabla $table');
+        throw BackupFormatException(BackupFormatError.missingTable, table);
       }
       final rawRows = rawTables[table];
       if (rawRows is! List) {
-        throw BackupFormatException('Fila inválida en $table');
+        throw BackupFormatException(BackupFormatError.invalidRow, table);
       }
       tables[table] = [for (final rawRow in rawRows) _parseRow(table, rawRow)];
     }
@@ -284,7 +299,10 @@ class BackupDocument {
   ) {
     if (value == null) {
       if (spec.nullable) return null;
-      throw BackupFormatException('Valor inválido en $table.$column');
+      throw BackupFormatException(
+        BackupFormatError.invalidValue,
+        '$table.$column',
+      );
     }
 
     switch (spec.kind) {
@@ -301,14 +319,19 @@ class BackupDocument {
         return value.toIso8601String();
     }
 
-    throw BackupFormatException('Valor inválido en $table.$column');
+    throw BackupFormatException(
+      BackupFormatError.invalidValue,
+      '$table.$column',
+    );
   }
 
   static Map<String, Object?> _parseRow(String table, Object? raw) {
-    if (raw is! Map) throw BackupFormatException('Fila inválida en $table');
+    if (raw is! Map) {
+      throw BackupFormatException(BackupFormatError.invalidRow, table);
+    }
     final columns = backupColumns[table]!;
     if (raw.length != columns.length || !columns.every(raw.containsKey)) {
-      throw BackupFormatException('Fila inválida en $table');
+      throw BackupFormatException(BackupFormatError.invalidRow, table);
     }
     final schema = _schema[table]!;
     return {
@@ -325,7 +348,10 @@ class BackupDocument {
   ) {
     if (raw == null) {
       if (spec.nullable) return null;
-      throw BackupFormatException('Valor inválido en $table.$column');
+      throw BackupFormatException(
+        BackupFormatError.invalidValue,
+        '$table.$column',
+      );
     }
 
     switch (spec.kind) {
@@ -353,7 +379,10 @@ class BackupDocument {
         return instant;
     }
 
-    throw BackupFormatException('Valor inválido en $table.$column');
+    throw BackupFormatException(
+      BackupFormatError.invalidValue,
+      '$table.$column',
+    );
   }
 }
 

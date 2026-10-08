@@ -1,4 +1,5 @@
 import 'package:ciclotrack/core/db/app_database.dart';
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:ciclotrack/features/alerts/data/alert_settings_dao.dart';
 import 'package:ciclotrack/features/alerts/data/alerts_change_dao.dart';
 import 'package:ciclotrack/features/alerts/data/alerts_coordinator.dart';
@@ -20,6 +21,7 @@ import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -46,6 +48,7 @@ void main() {
       encounterRepo: encounterRepo,
       medicationDao: MedicationDao(db),
       womenRepo: womenRepo,
+      l10n: lookupAppLocalizations(const Locale('es')),
     );
     coordinator = AlertsCoordinator(
       scheduler: scheduler,
@@ -181,12 +184,12 @@ class FakeNotificationScheduler implements NotificationScheduler {
   Future<bool> canScheduleExact() async => true;
 
   @override
-  Future<void> schedule(AlertItem item) async {
+  Future<void> schedule(AlertItem item, String title, String body) async {
     scheduled.removeWhere((a) => a.id == item.id);
     scheduled.add(item);
     pendingItems.removeWhere((a) => a.id == item.id);
     pendingItems.add(
-      PendingNotification(id: item.id, title: item.title, body: item.body),
+      PendingNotification(id: item.id, title: title, body: body),
     );
   }
 

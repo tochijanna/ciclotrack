@@ -1,10 +1,13 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/tracking_drafts.dart';
 import '../../domain/tracking_event.dart';
 import '../../domain/tracking_options.dart';
 import '../../domain/tracking_validators.dart';
+import '../l10n.dart';
 import '../providers/tracking_providers.dart';
 
 class OvulationFormScreen extends ConsumerStatefulWidget {
@@ -57,13 +60,14 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
 
   Future<void> _save() async {
     if (_saving) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       _date = calendarDate(_date);
       if (!isValidDate(_date)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('La fecha no puede ser futura')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.dateFuture)));
         return;
       }
 
@@ -72,13 +76,9 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
       if (rawTemperature.isNotEmpty) {
         temp = double.tryParse(rawTemperature.replaceAll(',', '.'));
         if (temp == null || !isValidTemperature(temp)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Introduce una temperatura válida entre 34 y 40 °C',
-              ),
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.temperatureInvalid)));
           return;
         }
       }
@@ -100,9 +100,9 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo guardar la ovulación')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.ovulationSaveError)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -111,14 +111,14 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar ovulación' : 'Registrar ovulación'),
+        title: Text(
+          isEditing ? l10n.editOvulationTitle : l10n.ovulationFormTitle,
+        ),
         actions: [
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Guardar'),
-          ),
+          TextButton(onPressed: _saving ? null : _save, child: Text(l10n.save)),
         ],
       ),
       body: SingleChildScrollView(
@@ -128,8 +128,8 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
           children: [
             // Fecha
             ListTile(
-              title: const Text('Fecha'),
-              subtitle: Text(_formatDate(_date)),
+              title: Text(l10n.dateLabel),
+              subtitle: Text(_formatDate(l10n, _date)),
               trailing: const Icon(Icons.calendar_today),
               onTap: _pickDate,
             ),
@@ -139,10 +139,10 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
               padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _tempCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Temperatura basal (°C)',
+                decoration: InputDecoration(
+                  labelText: l10n.temperatureBasalLabel,
                   hintText: '36.5',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
@@ -156,7 +156,7 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Moco cervical',
+                    l10n.cervicalMucusLabel,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
@@ -165,7 +165,7 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
                     runSpacing: 4,
                     children: cervicalMucusOptions.map((opt) {
                       return ChoiceChip(
-                        label: Text(opt),
+                        label: Text(localizedCervicalMucus(l10n, opt)),
                         selected: _cervicalMucus == opt,
                         onSelected: (sel) =>
                             setState(() => _cervicalMucus = sel ? opt : null),
@@ -183,15 +183,15 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Test LH',
+                    l10n.lhTestLabel,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
                   SegmentedButton<bool?>(
-                    segments: const [
-                      ButtonSegment(value: null, label: Text('No realizado')),
-                      ButtonSegment(value: true, label: Text('Positivo')),
-                      ButtonSegment(value: false, label: Text('Negativo')),
+                    segments: [
+                      ButtonSegment(value: null, label: Text(l10n.lhNotDone)),
+                      ButtonSegment(value: true, label: Text(l10n.lhPositive)),
+                      ButtonSegment(value: false, label: Text(l10n.lhNegative)),
                     ],
                     selected: {_lhTest},
                     onSelectionChanged: (sel) =>
@@ -205,7 +205,7 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
               onPressed: _saving ? null : _save,
               icon: Icon(isEditing ? Icons.save : Icons.add),
               label: Text(
-                isEditing ? 'Guardar cambios' : 'Registrar ovulación',
+                isEditing ? l10n.saveChanges : l10n.registerOvulation,
               ),
             ),
           ],
@@ -214,9 +214,6 @@ class _OvulationFormScreenState extends ConsumerState<OvulationFormScreen> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.year}';
-  }
+  String _formatDate(AppLocalizations l10n, DateTime date) =>
+      DateFormat('dd/MM/yyyy', l10n.localeName).format(date);
 }

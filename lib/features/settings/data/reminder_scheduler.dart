@@ -1,9 +1,12 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
+
 import '../../alerts/data/alert_settings_dao.dart';
 import '../../prediction/data/prediction_dao.dart';
 import '../../prediction/domain/prediction_engine.dart';
 import '../domain/reminder_validators.dart';
 import 'reminder_notifier.dart';
 import 'reminder_repository.dart';
+import 'reminder_text.dart';
 
 /// Programa una notificación por ciclo para cada recordatorio activo.
 class ReminderScheduler {
@@ -12,10 +15,9 @@ class ReminderScheduler {
     required this.repository,
     required this.predictionDao,
     required this.settingsDao,
+    required this.l10n,
     PredictionEngine? engine,
   }) : _engine = engine ?? PredictionEngine();
-
-  static const String title = 'Recordatorio';
 
   static const int _defaultNotifyHour = 9;
   static const int _defaultNotifyMinute = 0;
@@ -24,6 +26,7 @@ class ReminderScheduler {
   final ReminderRepository repository;
   final PredictionDao predictionDao;
   final AlertSettingsDao settingsDao;
+  final AppLocalizations l10n;
   final PredictionEngine _engine;
 
   /// Id estable de la notificación de un recordatorio: al cambiar la fecha se
@@ -60,8 +63,8 @@ class ReminderScheduler {
       await notifier.schedule(
         id: id,
         when: when,
-        title: title,
-        body: reminder.notificationBody,
+        title: l10n.reminderNotificationTitle,
+        body: reminderNotificationBody(l10n, reminder),
       );
       newIds.add(id);
     }

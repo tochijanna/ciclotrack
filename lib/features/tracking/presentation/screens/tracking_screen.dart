@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,10 +7,11 @@ import '../../../prediction/presentation/widgets/prediction_card.dart';
 import '../../../profiles/data/women_repository.dart';
 import '../../../settings/presentation/screens/reminders_screen.dart';
 import '../../domain/tracking_event.dart';
+import '../l10n.dart';
 import '../providers/tracking_providers.dart';
 import '../widgets/tracking_event_card.dart';
-import 'period_form_screen.dart';
 import 'ovulation_form_screen.dart';
+import 'period_form_screen.dart';
 import 'symptom_form_screen.dart';
 
 class TrackingScreen extends ConsumerWidget {
@@ -19,6 +21,7 @@ class TrackingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final timelineAsync = ref.watch(trackingTimelineProvider(profile.woman.id));
     final predictionAsync = ref.watch(
       womanPredictionProvider(profile.woman.id),
@@ -41,7 +44,7 @@ class TrackingScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            tooltip: 'Recordatorios',
+            tooltip: l10n.remindersTooltip,
             icon: const Icon(Icons.event_repeat_outlined),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
@@ -91,17 +94,18 @@ class TrackingScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('${l10n.errorLabel}: $e')),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddMenu(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Registrar'),
+        label: Text(l10n.register),
       ),
     );
   }
 
   void _showAddMenu(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -110,7 +114,7 @@ class TrackingScreen extends ConsumerWidget {
           children: [
             ListTile(
               leading: const Text('🩸', style: TextStyle(fontSize: 24)),
-              title: const Text('Periodo'),
+              title: Text(l10n.trackingPeriod),
               onTap: () {
                 Navigator.pop(ctx);
                 _navigateToForm(context, ref, _FormType.period);
@@ -118,7 +122,7 @@ class TrackingScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Text('🥚', style: TextStyle(fontSize: 24)),
-              title: const Text('Ovulación'),
+              title: Text(l10n.trackingOvulation),
               onTap: () {
                 Navigator.pop(ctx);
                 _navigateToForm(context, ref, _FormType.ovulation);
@@ -126,7 +130,7 @@ class TrackingScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Text('📋', style: TextStyle(fontSize: 24)),
-              title: const Text('Síntoma'),
+              title: Text(l10n.trackingSymptom),
               onTap: () {
                 Navigator.pop(ctx);
                 _navigateToForm(context, ref, _FormType.symptom);
@@ -181,19 +185,20 @@ class TrackingScreen extends ConsumerWidget {
     WidgetRef ref,
     TrackingEvent event,
   ) {
+    final l10n = AppLocalizations.of(context);
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar registro'),
-        content: Text('¿Eliminar "${event.title}"?'),
+        title: Text(l10n.deleteRecordTitle),
+        content: Text(l10n.deleteRecordBody(trackingEventTitle(l10n, event))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -231,6 +236,7 @@ class _EmptyTrackingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -241,10 +247,13 @@ class _EmptyTrackingView extends StatelessWidget {
             color: Theme.of(context).colorScheme.outline,
           ),
           const SizedBox(height: 16),
-          Text('Sin registros', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            l10n.trackingEmptyTitle,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           Text(
-            'Añade tu primer registro de tracking',
+            l10n.trackingEmptySubtitle,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
@@ -254,17 +263,17 @@ class _EmptyTrackingView extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onAddPeriod,
                 icon: const Text('🩸'),
-                label: const Text('Periodo'),
+                label: Text(l10n.trackingPeriod),
               ),
               FilledButton.icon(
                 onPressed: onAddOvulation,
                 icon: const Text('🥚'),
-                label: const Text('Ovulación'),
+                label: Text(l10n.trackingOvulation),
               ),
               FilledButton.tonalIcon(
                 onPressed: onAddSymptom,
                 icon: const Text('📋'),
-                label: const Text('Síntoma'),
+                label: Text(l10n.trackingSymptom),
               ),
             ],
           ),

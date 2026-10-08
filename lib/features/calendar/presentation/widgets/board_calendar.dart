@@ -1,3 +1,4 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -30,6 +31,7 @@ class BoardCalendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final marks = marksByDay(
       board,
       desde: _addDays(focusedDay, -markMarginDays),
@@ -37,14 +39,14 @@ class BoardCalendar extends StatelessWidget {
     );
 
     return TableCalendar<DayMark>(
-      locale: 'es_ES',
+      locale: Localizations.localeOf(context).toLanguageTag(),
       firstDay: DateTime(2000),
       lastDay: DateTime(2100),
       focusedDay: focusedDay,
       calendarFormat: format,
-      availableCalendarFormats: const {
-        CalendarFormat.week: 'Semana',
-        CalendarFormat.month: 'Mes',
+      availableCalendarFormats: {
+        CalendarFormat.week: l10n.calendarWeekTab,
+        CalendarFormat.month: l10n.calendarMonthTab,
       },
       startingDayOfWeek: StartingDayOfWeek.monday,
       headerStyle: const HeaderStyle(

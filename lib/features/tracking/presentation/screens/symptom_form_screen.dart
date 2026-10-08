@@ -1,10 +1,13 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/tracking_drafts.dart';
 import '../../domain/tracking_event.dart';
 import '../../domain/tracking_options.dart';
 import '../../domain/tracking_validators.dart';
+import '../l10n.dart';
 import '../providers/tracking_providers.dart';
 
 class SymptomFormScreen extends ConsumerStatefulWidget {
@@ -31,8 +34,9 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
     super.initState();
     final e = widget.event;
     _date = e?.date ?? DateTime.now();
-    if (e != null && symptomTypes.contains(e.title)) {
-      _type = e.title;
+    final type = e?.symptomType;
+    if (type != null && symptomTypes.contains(type)) {
+      _type = type;
     }
     _severity = e?.severity ?? 1;
     _notesCtrl = TextEditingController(text: e?.notes ?? '');
@@ -56,25 +60,26 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
 
   Future<void> _save() async {
     if (_saving) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       _date = calendarDate(_date);
       if (!isValidDate(_date)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('La fecha no puede ser futura')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.dateFuture)));
         return;
       }
       if (!isValidSymptomType(_type)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tipo de síntoma no válido')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.symptomTypeInvalid)));
         return;
       }
       if (!isValidSeverity(_severity)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Intensidad debe estar entre 1 y 5')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.severityRange)));
         return;
       }
 
@@ -95,9 +100,9 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo guardar el síntoma')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.symptomSaveError)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -106,14 +111,12 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar síntoma' : 'Registrar síntoma'),
+        title: Text(isEditing ? l10n.editSymptomTitle : l10n.symptomFormTitle),
         actions: [
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Guardar'),
-          ),
+          TextButton(onPressed: _saving ? null : _save, child: Text(l10n.save)),
         ],
       ),
       body: SingleChildScrollView(
@@ -123,8 +126,8 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
           children: [
             // Fecha
             ListTile(
-              title: const Text('Fecha'),
-              subtitle: Text(_formatDate(_date)),
+              title: Text(l10n.dateLabel),
+              subtitle: Text(_formatDate(l10n, _date)),
               trailing: const Icon(Icons.calendar_today),
               onTap: _pickDate,
             ),
@@ -136,7 +139,7 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tipo de síntoma',
+                    l10n.symptomTypeLabel,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
@@ -145,7 +148,7 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
                     runSpacing: 4,
                     children: symptomTypes.map((type) {
                       return ChoiceChip(
-                        label: Text(type),
+                        label: Text(localizedSymptomType(l10n, type)),
                         selected: _type == type,
                         onSelected: (sel) {
                           if (sel) setState(() => _type = type);
@@ -164,7 +167,7 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Intensidad: $_severity/5',
+                    l10n.intensityLevel(_severity),
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
@@ -185,9 +188,9 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
               padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _notesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Notas',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.notesLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
@@ -196,7 +199,7 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
             FilledButton.icon(
               onPressed: _saving ? null : _save,
               icon: Icon(isEditing ? Icons.save : Icons.add),
-              label: Text(isEditing ? 'Guardar cambios' : 'Registrar síntoma'),
+              label: Text(isEditing ? l10n.saveChanges : l10n.registerSymptom),
             ),
           ],
         ),
@@ -204,9 +207,6 @@ class _SymptomFormScreenState extends ConsumerState<SymptomFormScreen> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.year}';
-  }
+  String _formatDate(AppLocalizations l10n, DateTime date) =>
+      DateFormat('dd/MM/yyyy', l10n.localeName).format(date);
 }

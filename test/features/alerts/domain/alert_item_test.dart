@@ -1,4 +1,5 @@
 import 'package:ciclotrack/features/alerts/domain/alert_item.dart';
+import 'package:ciclotrack/features/alerts/domain/alert_message.dart';
 import 'package:ciclotrack/features/alerts/domain/alert_types.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,8 +12,7 @@ void main() {
   }) => AlertItem(
     type: type,
     fireDate: date ?? DateTime(2026, 9, 10, 12),
-    title: 'Medicación',
-    body: 'Toma',
+    message: const MedicationMessage(hour: 12, minute: 0),
     womanIds: women,
     medicationId: medicationId,
   );

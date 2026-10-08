@@ -1,7 +1,10 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../encounters/presentation/l10n.dart' as encounters_l10n;
+import '../../../tracking/presentation/l10n.dart' as tracking_l10n;
 import '../../domain/report_models.dart';
 
 /// Colores estables para las series y los sectores.
@@ -22,14 +25,14 @@ class CiclosChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (puntos.length < 2) {
-      return const _Aviso(
-        'Hacen falta al menos dos ciclos cerrados para dibujar la evolución.',
-      );
+      return _Aviso(l10n.chartNeedTwoCycles);
     }
 
     final theme = Theme.of(context);
     final valores = [for (final punto in puntos) punto.valor];
+    final formato = DateFormat('MMM yy', l10n.localeName);
 
     return SizedBox(
       height: altura,
@@ -74,7 +77,7 @@ class CiclosChart extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      DateFormat('MMM yy', 'es_ES').format(puntos[index].fecha),
+                      formato.format(puntos[index].fecha),
                       style: theme.textTheme.bodySmall,
                     ),
                   );
@@ -97,8 +100,9 @@ class SintomasChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (barras.isEmpty) {
-      return const _Aviso('Sin síntomas registrados en los últimos 12 meses.');
+      return _Aviso(l10n.chartNoSymptoms);
     }
 
     final theme = Theme.of(context);
@@ -140,8 +144,13 @@ class SintomasChart extends StatelessWidget {
                 showTitles: true,
                 reservedSize: 52,
                 interval: 1,
-                getTitlesWidget: (value, meta) =>
-                    _etiqueta(context, barras, value, rotar: true),
+                getTitlesWidget: (value, meta) => _etiqueta(
+                  context,
+                  barras,
+                  value,
+                  rotar: true,
+                  localize: (e) => tracking_l10n.localizedSymptomType(l10n, e),
+                ),
               ),
             ),
           ),
@@ -161,19 +170,19 @@ class MesesChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final hayDatos = meses.any(
       (mes) => mes.encuentros > 0 || mes.sinProteccion > 0,
     );
     if (!hayDatos) {
-      return const _Aviso(
-        'Sin encuentros registrados en los últimos 12 meses.',
-      );
+      return _Aviso(l10n.chartNoEncounters);
     }
 
     final maximo = meses.fold<int>(
       0,
       (total, mes) => mes.encuentros > total ? mes.encuentros : total,
     );
+    final formato = DateFormat('MMM', l10n.localeName);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +238,7 @@ class MesesChart extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          DateFormat('MMM', 'es_ES').format(meses[index].mes),
+                          formato.format(meses[index].mes),
                           style: theme.textTheme.bodySmall,
                         ),
                       );
@@ -244,8 +253,14 @@ class MesesChart extends StatelessWidget {
         Wrap(
           spacing: 16,
           children: [
-            _Leyenda(color: theme.colorScheme.primary, texto: 'Encuentros'),
-            _Leyenda(color: theme.colorScheme.error, texto: 'Sin protección'),
+            _Leyenda(
+              color: theme.colorScheme.primary,
+              texto: l10n.chartLegendEncounters,
+            ),
+            _Leyenda(
+              color: theme.colorScheme.error,
+              texto: l10n.chartLegendUnprotected,
+            ),
           ],
         ),
       ],
@@ -261,10 +276,9 @@ class ProteccionChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (barras.isEmpty) {
-      return const _Aviso(
-        'Sin encuentros registrados en los últimos 12 meses.',
-      );
+      return _Aviso(l10n.chartNoEncounters);
     }
 
     final theme = Theme.of(context);
@@ -308,7 +322,10 @@ class ProteccionChart extends StatelessWidget {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          barras[i].etiqueta,
+                          encounters_l10n.localizedProtection(
+                            l10n,
+                            barras[i].etiqueta,
+                          ),
                           style: theme.textTheme.bodySmall,
                         ),
                       ),
@@ -340,10 +357,9 @@ class EncuentrosPorMujerChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (barras.isEmpty || barras.every((barra) => barra.valor == 0)) {
-      return const _Aviso(
-        'Sin encuentros registrados en los últimos 12 meses.',
-      );
+      return _Aviso(l10n.chartNoEncounters);
     }
 
     final theme = Theme.of(context);
@@ -401,12 +417,14 @@ Widget _etiqueta(
   List<BarraValor> barras,
   double value, {
   required bool rotar,
+  String Function(String)? localize,
 }) {
   final index = value.round();
   if (index < 0 || index >= barras.length) return const SizedBox.shrink();
 
+  final raw = barras[index].etiqueta;
   final texto = Text(
-    barras[index].etiqueta,
+    localize == null ? raw : localize(raw),
     style: Theme.of(context).textTheme.bodySmall,
     maxLines: 1,
     overflow: TextOverflow.ellipsis,

@@ -218,9 +218,9 @@ void main() {
         () => BackupDocument.fromJson(json),
         throwsA(
           isA<BackupFormatException>().having(
-            (e) => e.message,
-            'message',
-            'El archivo no es una copia de CicloTrack',
+            (e) => e.error,
+            'error',
+            BackupFormatError.notCicloTrack,
           ),
         ),
       );
@@ -233,9 +233,9 @@ void main() {
         () => BackupDocument.fromJson(json),
         throwsA(
           isA<BackupFormatException>().having(
-            (e) => e.message,
-            'message',
-            'Versión de copia no soportada (v5)',
+            (e) => e.error,
+            'error',
+            BackupFormatError.unsupportedVersion,
           ),
         ),
       );
@@ -249,9 +249,9 @@ void main() {
         () => BackupDocument.fromJson(json),
         throwsA(
           isA<BackupFormatException>().having(
-            (e) => e.message,
-            'message',
-            'Falta la tabla reminders',
+            (e) => e.error,
+            'error',
+            BackupFormatError.missingTable,
           ),
         ),
       );
@@ -267,9 +267,9 @@ void main() {
         () => BackupDocument.fromJson(json),
         throwsA(
           isA<BackupFormatException>().having(
-            (e) => e.message,
-            'message',
-            'Fila inválida en women',
+            (e) => e.error,
+            'error',
+            BackupFormatError.invalidRow,
           ),
         ),
       );
@@ -285,9 +285,9 @@ void main() {
         () => BackupDocument.fromJson(json),
         throwsA(
           isA<BackupFormatException>().having(
-            (e) => e.message,
-            'message',
-            'Valor inválido en women.id',
+            (e) => e.error,
+            'error',
+            BackupFormatError.invalidValue,
           ),
         ),
       );
@@ -304,9 +304,9 @@ void main() {
         () => BackupDocument.fromJson(json),
         throwsA(
           isA<BackupFormatException>().having(
-            (e) => e.message,
-            'message',
-            'Valor inválido en period_logs.start_date',
+            (e) => e.error,
+            'error',
+            BackupFormatError.invalidValue,
           ),
         ),
       );
@@ -329,9 +329,9 @@ void main() {
         () => BackupDocument.fromBytes(utf8.encode('{no es json')),
         throwsA(
           isA<BackupFormatException>().having(
-            (e) => e.message,
-            'message',
-            'El archivo no es un JSON válido',
+            (e) => e.error,
+            'error',
+            BackupFormatError.invalidJson,
           ),
         ),
       );

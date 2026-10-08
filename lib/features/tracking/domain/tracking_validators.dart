@@ -1,12 +1,9 @@
 import 'tracking_options.dart';
 
+/// Marca un conflicto de solapamiento de periodos. El mensaje visible se
+/// genera en la capa de presentación, localizado.
 class PeriodConflictException implements Exception {
-  const PeriodConflictException(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
+  const PeriodConflictException();
 }
 
 /// Elimina la hora: tracking y predicción trabajan por día calendario.

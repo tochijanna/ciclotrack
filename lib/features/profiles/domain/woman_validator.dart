@@ -1,32 +1,40 @@
 import 'woman_draft.dart';
 
+/// Errores de validación de un perfil, independientes del idioma.
+enum WomanFieldError {
+  nameRequired,
+  nameTooShort,
+  initialsRequired,
+  initialsTooLong,
+}
+
 /// Errores de validación devueltos por [validateWomanDraft].
 class WomanValidationErrors {
   const WomanValidationErrors({this.name, this.initials});
 
-  final String? name;
-  final String? initials;
+  final WomanFieldError? name;
+  final WomanFieldError? initials;
 
   bool get isValid => name == null && initials == null;
 }
 
 /// Valida un borrador de perfil.
 WomanValidationErrors validateWomanDraft(WomanDraft draft) {
-  String? nameError;
-  String? initialsError;
+  WomanFieldError? nameError;
+  WomanFieldError? initialsError;
 
   final trimmedName = draft.name.trim();
   if (trimmedName.isEmpty) {
-    nameError = 'El nombre es obligatorio';
+    nameError = WomanFieldError.nameRequired;
   } else if (trimmedName.length < 2) {
-    nameError = 'El nombre debe tener al menos 2 caracteres';
+    nameError = WomanFieldError.nameTooShort;
   }
 
   final trimmedInitials = draft.initials.trim();
   if (trimmedInitials.isEmpty) {
-    initialsError = 'Las iniciales son obligatorias';
+    initialsError = WomanFieldError.initialsRequired;
   } else if (trimmedInitials.length > 4) {
-    initialsError = 'Las iniciales no pueden tener más de 4 caracteres';
+    initialsError = WomanFieldError.initialsTooLong;
   }
 
   return WomanValidationErrors(name: nameError, initials: initialsError);

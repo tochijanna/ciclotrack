@@ -1,5 +1,7 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/tracking_drafts.dart';
 import '../../domain/tracking_event.dart';
@@ -63,30 +65,27 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
 
   Future<void> _save() async {
     if (_saving) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       _startDate = calendarDate(_startDate);
       _endDate = _endDate == null ? null : calendarDate(_endDate!);
       if (!isValidDate(_startDate)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('La fecha de inicio no puede ser futura'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.periodStartFuture)));
         return;
       }
       if (!isValidDateRange(_startDate, _endDate)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('La fecha de fin no puede ser anterior al inicio'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.periodEndBeforeStart)));
         return;
       }
       if (!isValidFlowLevel(_flowLevel)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Flujo debe estar entre 1 y 5')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.periodFlowRange)));
         return;
       }
 
@@ -107,9 +106,9 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo guardar el periodo')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.periodSaveError)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -118,14 +117,12 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar periodo' : 'Registrar periodo'),
+        title: Text(isEditing ? l10n.editPeriodTitle : l10n.periodFormTitle),
         actions: [
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Guardar'),
-          ),
+          TextButton(onPressed: _saving ? null : _save, child: Text(l10n.save)),
         ],
       ),
       body: SingleChildScrollView(
@@ -135,17 +132,19 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
           children: [
             // Fecha inicio
             ListTile(
-              title: const Text('Fecha de inicio'),
-              subtitle: Text(_formatDate(_startDate)),
+              title: Text(l10n.dateStartLabel),
+              subtitle: Text(_formatDate(l10n, _startDate)),
               trailing: const Icon(Icons.calendar_today),
               onTap: () => _pickDate(isStart: true),
             ),
             const Divider(),
             // Fecha fin
             ListTile(
-              title: const Text('Fecha de fin (opcional)'),
+              title: Text(l10n.dateEndOptionalLabel),
               subtitle: Text(
-                _endDate != null ? _formatDate(_endDate!) : 'Sin definir',
+                _endDate != null
+                    ? _formatDate(l10n, _endDate!)
+                    : l10n.undefinedDate,
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -167,7 +166,7 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
                   vertical: 4,
                 ),
                 child: Text(
-                  'Duración: ${_endDate!.difference(_startDate).inDays + 1} días',
+                  '${l10n.durationLabel}: ${l10n.daysCount(_endDate!.difference(_startDate).inDays + 1)}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -179,7 +178,7 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Nivel de flujo',
+                    l10n.flowLevelLabel,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
@@ -206,9 +205,9 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
               padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _notesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Notas',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.notesLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
@@ -217,7 +216,7 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
             FilledButton.icon(
               onPressed: _saving ? null : _save,
               icon: Icon(isEditing ? Icons.save : Icons.add),
-              label: Text(isEditing ? 'Guardar cambios' : 'Registrar periodo'),
+              label: Text(isEditing ? l10n.saveChanges : l10n.registerPeriod),
             ),
           ],
         ),
@@ -225,9 +224,6 @@ class _PeriodFormScreenState extends ConsumerState<PeriodFormScreen> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.year}';
-  }
+  String _formatDate(AppLocalizations l10n, DateTime date) =>
+      DateFormat('dd/MM/yyyy', l10n.localeName).format(date);
 }

@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/l10n/app_locale.dart';
+
 /// Interfaz fina sobre la autenticación local, para poder inyectar un fake en
 /// tests sin depender del plugin real.
 abstract class AppAuthenticator {
@@ -11,25 +13,28 @@ abstract class AppAuthenticator {
 
 /// Implementación real con `local_auth` (PIN/huella del sistema).
 class LocalAppAuthenticator implements AppAuthenticator {
-  LocalAppAuthenticator([LocalAuthentication? auth])
-    : _auth = auth ?? LocalAuthentication();
+  LocalAppAuthenticator({required String reason, LocalAuthentication? auth})
+    : _reason = reason,
+      _auth = auth ?? LocalAuthentication();
 
   final LocalAuthentication _auth;
+  final String _reason;
 
   @override
   Future<bool> isSupported() => _auth.isDeviceSupported();
 
   @override
   Future<bool> authenticate() => _auth.authenticate(
-    localizedReason: 'Desbloquea CicloTrack para continuar',
+    localizedReason: _reason,
     options: const AuthenticationOptions(biometricOnly: false),
   );
 }
 
 /// Proveedor de la autenticación local. Se inyecta un fake en tests.
-final localAuthProvider = Provider<AppAuthenticator>(
-  (_) => LocalAppAuthenticator(),
-);
+final localAuthProvider = Provider<AppAuthenticator>((ref) {
+  final l10n = ref.watch(appLocalizationsProvider);
+  return LocalAppAuthenticator(reason: l10n.appLockAuthReason);
+});
 
 /// Clave en `SharedPreferences` que guarda si el bloqueo de acceso está
 /// activado.

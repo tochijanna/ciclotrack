@@ -1,9 +1,12 @@
+import 'package:ciclotrack/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/encounter_draft.dart';
 import '../../domain/encounter_options.dart';
 import '../../domain/encounter_validators.dart';
+import '../l10n.dart';
 import '../providers/encounter_providers.dart';
 
 class EncounterFormScreen extends ConsumerStatefulWidget {
@@ -93,6 +96,7 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
 
   Future<void> _save() async {
     if (_saving) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       final participants = _selectedWomen.entries
@@ -114,13 +118,17 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
 
       final errors = validateEncounterDraft(draft);
       if (!errors.isValid) {
-        final msg = [
-          errors.encounterTime,
-          errors.protection,
-          errors.participants,
-          errors.outcome,
-          errors.relationshipType,
-        ].where((e) => e != null).join('\n');
+        final msg =
+            [
+                  errors.encounterTime,
+                  errors.protection,
+                  errors.participants,
+                  errors.outcome,
+                  errors.relationshipType,
+                ]
+                .where((e) => e != null)
+                .map((e) => encounterErrorText(l10n, e!))
+                .join('\n');
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -140,9 +148,9 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo guardar el encuentro')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.encounterSaveError)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -151,16 +159,16 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final womenAsync = ref.watch(availableWomenForEncounterProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar encuentro' : 'Nuevo encuentro'),
+        title: Text(
+          isEditing ? l10n.editEncounterTitle : l10n.encounterFormTitle,
+        ),
         actions: [
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: const Text('Guardar'),
-          ),
+          TextButton(onPressed: _saving ? null : _save, child: Text(l10n.save)),
         ],
       ),
       body: SingleChildScrollView(
@@ -170,8 +178,8 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
           children: [
             // Fecha y hora
             ListTile(
-              title: const Text('Fecha y hora'),
-              subtitle: Text(_formatDateTime(_encounterTime)),
+              title: Text(l10n.dateTimeLabel),
+              subtitle: Text(_formatDateTime(l10n, _encounterTime)),
               trailing: const Icon(Icons.calendar_today),
               onTap: _pickDateTime,
             ),
@@ -180,16 +188,16 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Participantes',
+                l10n.participantsLabel,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
             womenAsync.when(
               data: (women) {
                 if (women.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No hay perfiles disponibles'),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text(l10n.encounterNoProfiles),
                   );
                 }
                 return Column(
@@ -231,15 +239,17 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: DropdownButtonFormField<String>(
                               initialValue: _selectedWomen[profile.woman.id],
-                              decoration: const InputDecoration(
-                                labelText: 'Tipo de relación',
+                              decoration: InputDecoration(
+                                labelText: l10n.relationshipTypeLabel,
                                 isDense: true,
                               ),
                               items: relationshipTypeOptions
                                   .map(
                                     (t) => DropdownMenuItem(
                                       value: t,
-                                      child: Text(t),
+                                      child: Text(
+                                        localizedRelationship(l10n, t),
+                                      ),
                                     ),
                                   )
                                   .toList(),
@@ -258,7 +268,7 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error: $e'),
+              error: (e, _) => Text('${l10n.errorLabel}: $e'),
             ),
             // Atajo: aplicar a todas
             if (_selectedWomen.length > 1)
@@ -267,10 +277,10 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
                 child: Wrap(
                   spacing: 8,
                   children: [
-                    const Text('Aplicar a todas:'),
+                    Text(l10n.applyToAll),
                     ...relationshipTypeOptions.map(
                       (t) => ActionChip(
-                        label: Text(t),
+                        label: Text(localizedRelationship(l10n, t)),
                         onPressed: () => _applyToAll(t),
                       ),
                     ),
@@ -282,13 +292,18 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Protección',
+                l10n.protectionLabel,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
             SegmentedButton<String>(
               segments: protectionOptions
-                  .map((p) => ButtonSegment<String>(value: p, label: Text(p)))
+                  .map(
+                    (p) => ButtonSegment<String>(
+                      value: p,
+                      label: Text(localizedProtection(l10n, p)),
+                    ),
+                  )
                   .toList(),
               selected: {_protection},
               onSelectionChanged: (sel) =>
@@ -299,16 +314,21 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Resultado',
+                l10n.outcomeLabel,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
             SegmentedButton<String?>(
               segments: [
-                const ButtonSegment(value: null, label: Text('Ninguno')),
+                ButtonSegment(value: null, label: Text(l10n.outcomeNoneOption)),
                 ...outcomeOptions
                     .skip(1)
-                    .map((o) => ButtonSegment(value: o, label: Text(o))),
+                    .map(
+                      (o) => ButtonSegment(
+                        value: o,
+                        label: Text(localizedOutcome(l10n, o)),
+                      ),
+                    ),
               ],
               selected: {_outcome},
               onSelectionChanged: (sel) => setState(() => _outcome = sel.first),
@@ -319,9 +339,9 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
               padding: const EdgeInsets.all(8),
               child: TextField(
                 controller: _notesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Notas',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.notesLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
@@ -331,7 +351,7 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
               onPressed: _saving ? null : _save,
               icon: Icon(isEditing ? Icons.save : Icons.add),
               label: Text(
-                isEditing ? 'Guardar cambios' : 'Registrar encuentro',
+                isEditing ? l10n.saveChanges : l10n.registerEncounter,
               ),
             ),
           ],
@@ -340,10 +360,6 @@ class _EncounterFormScreenState extends ConsumerState<EncounterFormScreen> {
     );
   }
 
-  String _formatDateTime(DateTime dt) {
-    return '${dt.day.toString().padLeft(2, '0')}/'
-        '${dt.month.toString().padLeft(2, '0')}/'
-        '${dt.year} ${dt.hour.toString().padLeft(2, '0')}:'
-        '${dt.minute.toString().padLeft(2, '0')}';
-  }
+  String _formatDateTime(AppLocalizations l10n, DateTime dt) =>
+      DateFormat('dd/MM/yyyy HH:mm', l10n.localeName).format(dt);
 }
