@@ -8,7 +8,7 @@ Consulta el [manual de uso de CicloTrack](MANUAL_DE_USO.md) para aprender a gest
 
 ## Estado
 
-Fases 0–10 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas, reportes, copia de seguridad manual, medicación, recordatorios personalizados y ajustes/pulido). Schema drift **v4 con 11 tablas**. La cabecera reúne Ajustes y Más opciones; la app tiene icono y etiqueta propios. La fase 10 no añade dependencias. La entrega real de notificaciones, permisos, selector de archivos e icono queda por comprobar en dispositivo Android. Detalle en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
+Versión publicada: **v1.2.0** (`1.2.0+4`). Fases 0–10 completadas (scaffold, base de datos + motor de predicción, perfiles, tracking, encuentros, alertas, vistas consolidadas, reportes, copia de seguridad manual, medicación, recordatorios personalizados y ajustes/pulido). Schema drift **v4 con 11 tablas**. La cabecera reúne Ajustes y Más opciones; la app tiene icono y etiqueta propios. Desde v1.1.0 hay bloqueo de acceso opcional con el PIN o la biometría del sistema (controla el acceso, no cifra los datos) y desde v1.2.0 la interfaz está en español e inglés. **Ninguna versión se ha probado en un dispositivo Android**: la entrega real de notificaciones, los permisos, el bloqueo, el selector de archivos y el icono están sin validar (ver [§8 del plan](planDeDesarrollo.md#8-limitaciones-de-dispositivo-y-backlog)). Estado vigente, historial de releases y detalle por fase en [`planDeDesarrollo.md`](planDeDesarrollo.md); requisitos funcionales en [`Especificaciones.md`](Especificaciones.md).
 
 ## Stack
 
@@ -18,7 +18,8 @@ Fases 0–10 completadas (scaffold, base de datos + motor de predicción, perfil
 | Estado | Riverpod 2.6.1 |
 | Datos | SQLite vía drift 2.35.1 + drift_flutter |
 | Notificaciones | flutter_local_notifications 20.1.0, timezone + flutter_timezone |
-| Calendario | table_calendar 3.2.1 + intl 0.20.2 (es-ES) |
+| Bloqueo de acceso | local_auth 2.3.0 + shared_preferences 2.5.3 |
+| Calendario | table_calendar 3.2.1 + intl 0.20.3 (es/en) |
 | Gráficos | fl_chart 1.2.0 |
 | Copia de seguridad | csv 8.0.0 + archive 4.0.9 + pdf 3.12.0 + file_picker 13.1.0 (selector del sistema, sin `share_plus`) |
 
