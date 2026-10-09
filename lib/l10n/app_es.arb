@@ -733,5 +733,6 @@
   "@backupInvalidValue": {
     "placeholders": {"column": {"type": "String"}}
   },
-  "backupPeriodOverlap": "La copia contiene periodos solapados"
+  "backupPeriodOverlap": "La copia contiene periodos solapados",
+  "backupTooLarge": "El archivo supera el tamaño máximo permitido"
 }

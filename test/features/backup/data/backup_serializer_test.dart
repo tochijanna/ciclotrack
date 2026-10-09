@@ -199,10 +199,12 @@ void main() {
     final doc = await dumpDatabase(db, now: now);
 
     final destino = AppDatabase.forTesting(NativeDatabase.memory());
-    final zoe = await womenOf(destino)
-        .create(WomanDraft(name: 'Zoe', initials: 'ZO', tags: ['Otra']));
-    await trackingOf(destino)
-        .createPeriod(zoe, PeriodDraft(startDate: DateTime(2026, 1, 1)));
+    final zoe = await womenOf(
+      destino,
+    ).create(WomanDraft(name: 'Zoe', initials: 'ZO', tags: ['Otra']));
+    await trackingOf(
+      destino,
+    ).createPeriod(zoe, PeriodDraft(startDate: DateTime(2026, 1, 1)));
     await EncounterRepository(EncounterDao(destino)).create(
       EncounterDraft(
         encounterTime: DateTime(2026, 1, 2, 20),
@@ -235,10 +237,12 @@ void main() {
     ];
 
     final destino = AppDatabase.forTesting(NativeDatabase.memory());
-    final zoe = await womenOf(destino)
-        .create(WomanDraft(name: 'Zoe', initials: 'ZO', tags: ['Otra']));
-    await trackingOf(destino)
-        .createPeriod(zoe, PeriodDraft(startDate: DateTime(2026, 1, 1)));
+    final zoe = await womenOf(
+      destino,
+    ).create(WomanDraft(name: 'Zoe', initials: 'ZO', tags: ['Otra']));
+    await trackingOf(
+      destino,
+    ).createPeriod(zoe, PeriodDraft(startDate: DateTime(2026, 1, 1)));
 
     await expectLater(restoreDatabase(destino, doc), throwsA(isA<Exception>()));
 
@@ -262,8 +266,9 @@ void main() {
     final destino = AppDatabase.forTesting(NativeDatabase.memory());
     await restoreDatabase(destino, doc);
 
-    final nueva = await womenOf(destino)
-        .create(WomanDraft(name: 'Ce', initials: 'CE'));
+    final nueva = await womenOf(
+      destino,
+    ).create(WomanDraft(name: 'Ce', initials: 'CE'));
     expect(nueva, maxId + 1);
 
     await destino.close();
@@ -285,4 +290,77 @@ void main() {
 
     await vacia.close();
   });
+
+  test(
+    'ida y vuelta por JSON conserva las once tablas con medicamentos',
+    () async {
+      await seedAll(db);
+      final doc = await dumpDatabase(db, now: now);
+      expect(doc.counts['medications'], 1);
+
+      final destino = AppDatabase.forTesting(NativeDatabase.memory());
+      await restoreDatabase(
+        destino,
+        BackupDocument.fromBytes(doc.toUtf8Bytes()),
+      );
+      final vuelta = await dumpDatabase(destino, now: now);
+
+      expect(vuelta.tables, doc.tables);
+
+      await destino.close();
+    },
+  );
+
+  test(
+    'un volcado concurrente con escrituras sale referencialmente cerrado',
+    () async {
+      // Sin transacción, una escritura se cuela entre dos SELECT del volcado
+      // (ambas tareas se entrelazan en los await) y la copia sale con huérfanos.
+      for (var i = 0; i < 30; i++) {
+        final resultados = await Future.wait([
+          dumpDatabase(db, now: now),
+          () async {
+            final id = await womenOf(
+              db,
+            ).create(WomanDraft(name: 'Concurrente $i', initials: 'C$i'));
+            await trackingOf(db).createPeriod(
+              id,
+              PeriodDraft(startDate: DateTime(2026, 1, 1 + i % 28)),
+            );
+          }(),
+        ]);
+        final doc = resultados.first as BackupDocument;
+
+        final ids = <String, Set<int>>{
+          for (final tabla in backupTables)
+            tabla: {for (final fila in doc.rows(tabla)) fila['id']! as int},
+        };
+        void sinHuerfanos(String tabla, String columna, String objetivo) {
+          for (final fila in doc.rows(tabla)) {
+            expect(
+              ids[objetivo],
+              contains(fila[columna] as int),
+              reason:
+                  'vuelto $i: $tabla fila ${fila['id']} '
+                  'apunta a $objetivo inexistente',
+            );
+          }
+        }
+
+        for (final tabla in const [
+          'woman_tags',
+          'period_logs',
+          'ovulation_logs',
+          'symptoms',
+          'medications',
+          'reminders',
+        ]) {
+          sinHuerfanos(tabla, 'woman_id', 'women');
+        }
+        sinHuerfanos('woman_tags', 'tag_id', 'tags');
+        sinHuerfanos('encounter_women', 'encounter_id', 'encounters');
+        sinHuerfanos('encounter_women', 'woman_id', 'women');
+      }
+    },
+  );
 }

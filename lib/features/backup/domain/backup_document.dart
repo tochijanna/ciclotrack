@@ -10,6 +10,13 @@ const backupAppId = 'ciclotrack';
 /// Versión del schema que sabe leer y escribir esta copia (drift v4).
 const backupSchemaVersion = 4;
 
+/// Tamaño máximo aceptado al importar, en bytes. La medición de TOC-17 dio
+/// ~930 kB de JSON por ~4 500 filas (pico de RSS +27 MB); 8 MB cubre con
+/// holgura el peor caso realista (~2 MB para 5 perfiles × 10 años) acotando
+/// el pico de memoria del decodificado a ~200 MB.
+/// ponytail: tope fijo; se revisa si un uso real lo alcanza.
+const backupMaxBytes = 8 * 1024 * 1024;
+
 /// Tablas incluidas, en el orden del esquema. El volcado y la restauración
 /// usan además [backupDeleteOrder] y [backupInsertOrder], marcados por las
 /// claves foráneas.
@@ -151,6 +158,7 @@ final Map<String, List<String>> backupColumns = {
 /// Motivos de rechazo de una copia, independientes del idioma.
 enum BackupFormatError {
   invalidJson,
+  tooLarge,
   notCicloTrack,
   unsupportedVersion,
   invalidExportDate,
@@ -212,6 +220,9 @@ class BackupDocument {
   /// Lee una copia desde bytes UTF-8, envolviendo cualquier error de
   /// `dart:convert` en [BackupFormatException].
   static BackupDocument fromBytes(List<int> bytes) {
+    if (bytes.length > backupMaxBytes) {
+      throw const BackupFormatException(BackupFormatError.tooLarge);
+    }
     final Object? decoded;
     try {
       decoded = jsonDecode(utf8.decode(bytes));

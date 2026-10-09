@@ -36,14 +36,20 @@ const backupInsertOrder = <String>[
 ];
 
 /// Lee las tablas completas y las convierte a documento de copia.
+///
+/// Las once lecturas corren dentro de una transacción: es el snapshot que
+/// impide que una escritura (alta del usuario, planificador de alertas) se
+/// cuele entre dos tablas y deje una copia con huérfanos o filas perdidas.
 Future<BackupDocument> dumpDatabase(
   AppDatabase db, {
   required DateTime now,
 }) async {
   final tables = <String, List<Map<String, Object?>>>{};
-  for (final table in backupInsertOrder) {
-    tables[table] = await _dumpTable(db, table);
-  }
+  await db.transaction(() async {
+    for (final table in backupInsertOrder) {
+      tables[table] = await _dumpTable(db, table);
+    }
+  });
   return BackupDocument(exportedAt: now, tables: tables);
 }
 

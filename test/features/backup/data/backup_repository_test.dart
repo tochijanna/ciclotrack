@@ -180,8 +180,9 @@ void main() {
       destino,
       lookupAppLocalizations(const Locale('es')),
     );
-    await WomenRepository(WomenDao(destino))
-        .create(WomanDraft(name: 'Zoe', initials: 'ZO'));
+    await WomenRepository(
+      WomenDao(destino),
+    ).create(WomanDraft(name: 'Zoe', initials: 'ZO'));
 
     final resumen = await destinoRepo.importJson(doc);
 
@@ -206,8 +207,9 @@ void main() {
     ];
 
     final destino = AppDatabase.forTesting(NativeDatabase.memory());
-    await WomenRepository(WomenDao(destino))
-        .create(WomanDraft(name: 'Zoe', initials: 'ZO'));
+    await WomenRepository(
+      WomenDao(destino),
+    ).create(WomanDraft(name: 'Zoe', initials: 'ZO'));
 
     await expectLater(
       BackupRepository(

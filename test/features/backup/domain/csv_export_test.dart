@@ -65,9 +65,9 @@ void main() {
     test('el manifest declara la app y el schema', () {
       final archive = descomprimir(buildCsvBundle(documento()));
 
-      final manifest = jsonDecode(
-        contenido(archive, 'manifest.json'),
-      ) as Map<String, Object?>;
+      final manifest =
+          jsonDecode(contenido(archive, 'manifest.json'))
+              as Map<String, Object?>;
 
       expect(manifest['app'], 'cicloTrack'.toLowerCase());
       expect(manifest['schemaVersion'], 4);

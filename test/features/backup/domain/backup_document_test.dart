@@ -159,9 +159,9 @@ void main() {
     });
 
     test('las columnas de fecha salen como YYYY-MM-DD', () {
-      final json = jsonDecode(
-        utf8.decode(muestra().toUtf8Bytes()),
-      ) as Map<String, Object?>;
+      final json =
+          jsonDecode(utf8.decode(muestra().toUtf8Bytes()))
+              as Map<String, Object?>;
       final tablas = json['tables']! as Map<String, Object?>;
 
       final periodo =
@@ -338,6 +338,19 @@ void main() {
       expect(
         () => BackupDocument.fromBytes(utf8.encode('[1, 2, 3]')),
         throwsA(isA<BackupFormatException>()),
+      );
+    });
+
+    test('rechaza un archivo mayor que el tope sin decodificarlo', () {
+      expect(
+        () => BackupDocument.fromBytes(List.filled(backupMaxBytes + 1, 0x20)),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.error,
+            'error',
+            BackupFormatError.tooLarge,
+          ),
+        ),
       );
     });
   });

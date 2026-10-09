@@ -252,6 +252,8 @@ String backupFormatErrorText(AppLocalizations l10n, BackupFormatException e) {
   switch (e.error) {
     case BackupFormatError.invalidJson:
       return l10n.backupInvalidJson;
+    case BackupFormatError.tooLarge:
+      return l10n.backupTooLarge;
     case BackupFormatError.notCicloTrack:
       return l10n.backupNotCicloTrack;
     case BackupFormatError.unsupportedVersion:

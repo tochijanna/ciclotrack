@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1541,4 +1540,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get backupPeriodOverlap => 'La copia contiene periodos solapados';
+
+  @override
+  String get backupTooLarge => 'El archivo supera el tamaño máximo permitido';
 }
