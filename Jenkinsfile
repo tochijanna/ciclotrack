@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        FLUTTER_HOME = "${env.FLUTTER_HOME}"
-        ANDROID_HOME = "${env.ANDROID_HOME}"
-        ANDROID_SDK_ROOT = "${env.ANDROID_SDK_ROOT}"
+        FLUTTER_HOME = "${env.FLUTTER_HOME ?: ''}"
+        ANDROID_HOME = "${env.ANDROID_HOME ?: env.ANDROID_SDK_ROOT ?: ''}"
+        ANDROID_SDK_ROOT = "${env.ANDROID_SDK_ROOT ?: env.ANDROID_HOME ?: ''}"
         PATH = "${env.FLUTTER_HOME}/bin:${env.ANDROID_HOME}/cmdline-tools/latest/bin:${env.ANDROID_HOME}/platform-tools:${env.PATH}"
     }
 
@@ -21,6 +21,7 @@ pipeline {
                     java -version
                     flutter --version
                     flutter doctor -v
+                    bash -n ci/build-signed-apk.sh
                 '''
             }
         }
@@ -43,16 +44,31 @@ pipeline {
             }
         }
 
-        stage('Build APK Debug') {
+        stage('Build and verify signed APK') {
             steps {
-                sh 'flutter build apk --debug'
+                withCredentials([
+                    file(
+                        credentialsId: 'ciclotrack-android-release-keystore',
+                        variable: 'ANDROID_KEYSTORE_FILE'
+                    ),
+                    string(
+                        credentialsId: 'ciclotrack-android-release-password',
+                        variable: 'ANDROID_KEYSTORE_PASSWORD'
+                    )
+                ]) {
+                    sh 'bash ci/build-signed-apk.sh'
+                }
             }
         }
     }
 
     post {
         success {
-            archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/*.apk', fingerprint: true
+            archiveArtifacts(
+                artifacts: 'build/app/outputs/flutter-apk/app-release.apk',
+                fingerprint: true,
+                allowEmptyArchive: false
+            )
         }
     }
 }
