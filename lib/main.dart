@@ -26,15 +26,15 @@ class CicloTrackApp extends ConsumerWidget {
     ref.watch(alertsCoordinatorProvider);
     ref.watch(reminderCoordinatorProvider);
     final appLock = ref.watch(appLockProvider);
-    final Widget home;
+    final Widget? gate;
     if (!appLock.ready) {
       // Aún cargando la preferencia: pantalla neutra para no mostrar contenido
       // sensible antes de saber si el bloqueo está activado.
-      home = const _LaunchGate();
+      gate = const _LaunchGate();
     } else if (appLock.enabled && !appLock.unlocked) {
-      home = const AppLockScreen();
+      gate = const AppLockScreen();
     } else {
-      home = const WomenListScreen();
+      gate = null;
     }
     return MaterialApp(
       title: 'CicloTrack',
@@ -43,7 +43,18 @@ class CicloTrackApp extends ConsumerWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: home,
+      home: const WomenListScreen(),
+      // La puerta va por encima del `Navigator` para tapar también las rutas
+      // abiertas (PRIV-02); `Offstage` conserva su estado sin pintarlas ni
+      // exponerlas a los lectores de pantalla.
+      // ponytail: el botón Atrás aún cierra la ruta oculta de debajo (no se ve
+      // nada); interceptarlo exige un `Router`, hacerlo si molesta en uso real.
+      builder: (context, child) => Stack(
+        children: [
+          Offstage(offstage: gate != null, child: child),
+          ?gate,
+        ],
+      ),
     );
   }
 }
