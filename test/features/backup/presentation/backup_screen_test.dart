@@ -287,6 +287,63 @@ void main() {
     await closeTestDatabase(tester, db);
   });
 
+  testWidgets('rechaza periodos solapados sin tocar la base', (tester) async {
+    await seedWoman(tester, db, name: 'Zoe');
+    gateway.aLeer = Uint8List.fromList(
+      utf8.encode(
+        jsonEncode(
+          BackupDocument(
+            exportedAt: now,
+            tables: {
+              'women': [
+                {
+                  'id': 1,
+                  'name': 'Ana',
+                  'initials': 'AN',
+                  'emoji': '👩',
+                  'color': 4294198070,
+                  'private_notes': '',
+                  'sort_order': 0,
+                  'created_at': now,
+                },
+              ],
+              'period_logs': [
+                {
+                  'id': 1,
+                  'woman_id': 1,
+                  'start_date': DateTime(2026, 9, 1),
+                  'end_date': DateTime(2026, 9, 5),
+                  'flow_level': null,
+                  'notes': '',
+                },
+                {
+                  'id': 2,
+                  'woman_id': 1,
+                  'start_date': DateTime(2026, 9, 4),
+                  'end_date': null,
+                  'flow_level': null,
+                  'notes': '',
+                },
+              ],
+            },
+          ).toJson(),
+        ),
+      ),
+    );
+    await pumpBackup(tester);
+
+    await pulsar(tester, 'Restaurar desde JSON');
+
+    expect(
+      find.text('No se pudo importar: La copia contiene periodos solapados'),
+      findsOneWidget,
+    );
+    final mujeres = await runReal(tester, () => db.select(db.women).get());
+    expect(mujeres.single.name, 'Zoe');
+
+    await closeTestDatabase(tester, db);
+  });
+
   testWidgets('cancelar el diálogo deja la copia sin aplicar', (tester) async {
     await seedWoman(tester, db, name: 'Zoe');
     gateway.aLeer = Uint8List.fromList(
