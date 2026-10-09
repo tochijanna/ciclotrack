@@ -203,19 +203,46 @@ void main() {
       expect(ana.tags, containsAll(['Ex', 'Amiga']));
     });
 
-    // Una etiqueta repetida viola la clave única {womanId, tagId} en el
-    // segundo enlace: sirve de fallo inducido a mitad de la escritura.
     Future<List<String>> tagsOf(int id) async =>
         (await dao.watchTagsForWoman(id).first).map((t) => t.name).toList();
 
+    test('tags are normalized before linking', () async {
+      final id = await repo.create(
+        const WomanDraft(
+          name: 'María',
+          initials: 'MR',
+          tags: ['Amiga', ' Amiga ', '', 'Ex'],
+        ),
+      );
+      expect(await tagsOf(id), ['Amiga', 'Ex']);
+
+      await repo.update(
+        id,
+        const WomanDraft(name: 'María', initials: 'MR', tags: ['Ex', 'Ex']),
+      );
+      expect(await tagsOf(id), ['Ex']);
+
+      await dao.replaceTags(id, [' Casual', 'Casual']);
+      expect(await tagsOf(id), ['Casual']);
+      expect((await dao.allTags()).map((t) => t.name), [
+        'Amiga',
+        'Ex',
+        'Casual',
+      ]);
+    });
+
+    // Fallo inducido a mitad de la escritura: aborta el enlace de etiquetas,
+    // cuando el perfil (y la etiqueta nueva) ya se han escrito.
+    Future<void> failTagLinks() => db.customStatement(
+      'CREATE TRIGGER fallo_enlace BEFORE INSERT ON woman_tags '
+      "BEGIN SELECT RAISE(ABORT, 'fallo inducido'); END",
+    );
+
     test('create leaves nothing behind when linking tags fails', () async {
+      await failTagLinks();
       await expectLater(
         repo.create(
-          const WomanDraft(
-            name: 'María',
-            initials: 'MR',
-            tags: ['Amiga', 'Amiga'],
-          ),
+          const WomanDraft(name: 'María', initials: 'MR', tags: ['Amiga']),
         ),
         throwsA(anything),
       );
@@ -229,14 +256,11 @@ void main() {
         const WomanDraft(name: 'María', initials: 'MR', tags: ['Ex']),
       );
 
+      await failTagLinks();
       await expectLater(
         repo.update(
           id,
-          const WomanDraft(
-            name: 'Nuevo',
-            initials: 'NV',
-            tags: ['Amiga', 'Amiga'],
-          ),
+          const WomanDraft(name: 'Nuevo', initials: 'NV', tags: ['Amiga']),
         ),
         throwsA(anything),
       );
@@ -252,10 +276,8 @@ void main() {
         const WomanDraft(name: 'María', initials: 'MR', tags: ['Ex']),
       );
 
-      await expectLater(
-        dao.replaceTags(id, ['Amiga', 'Amiga']),
-        throwsA(anything),
-      );
+      await failTagLinks();
+      await expectLater(dao.replaceTags(id, ['Amiga']), throwsA(anything));
 
       expect(await tagsOf(id), ['Ex']);
     });
