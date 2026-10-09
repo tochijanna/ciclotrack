@@ -1980,6 +1980,18 @@ abstract class AppLocalizations {
   /// **'Desbloquea CicloTrack para continuar'**
   String get appLockAuthReason;
 
+  /// No description provided for @appLockLoadError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo comprobar si el bloqueo está activado. Desbloquea o reinténtalo.'**
+  String get appLockLoadError;
+
+  /// No description provided for @appLockRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get appLockRetry;
+
   /// No description provided for @remindersOf.
   ///
   /// In es, this message translates to:
@@ -2507,6 +2519,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No disponible en este dispositivo'**
   String get settingsAppLockUnavailable;
+
+  /// No description provided for @settingsAppLockSaveError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.'**
+  String get settingsAppLockSaveError;
 
   /// No description provided for @settingsLocalTitle.
   ///

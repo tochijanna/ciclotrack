@@ -506,6 +506,8 @@
   "appLockedSubtitle": "Unlock with your PIN or fingerprint to continue.",
   "appUnlock": "Unlock",
   "appLockAuthReason": "Unlock CicloTrack to continue",
+  "appLockLoadError": "Could not check whether the lock is enabled. Unlock or try again.",
+  "appLockRetry": "Retry",
 
   "remindersOf": "Reminders for {name}",
   "@remindersOf": {
@@ -658,6 +660,7 @@
   "settingsAppLockTitle": "App lock (PIN/fingerprint)",
   "settingsAppLockSupported": "Requires PIN or fingerprint when opening the app",
   "settingsAppLockUnavailable": "Not available on this device",
+  "settingsAppLockSaveError": "Could not save the app lock setting. Try again.",
   "settingsLocalTitle": "100% local and cloud-free",
   "settingsLocalSubtitle": "All data is stored only on this device: no accounts, sync or servers.",
   "settingsMedicationSubtitle": "Pills and alert times, per woman",

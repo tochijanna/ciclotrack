@@ -506,6 +506,8 @@
   "appLockedSubtitle": "Desbloquea con tu PIN o huella para continuar.",
   "appUnlock": "Desbloquear",
   "appLockAuthReason": "Desbloquea CicloTrack para continuar",
+  "appLockLoadError": "No se pudo comprobar si el bloqueo está activado. Desbloquea o reinténtalo.",
+  "appLockRetry": "Reintentar",
 
   "remindersOf": "Recordatorios de {name}",
   "@remindersOf": {
@@ -658,6 +660,7 @@
   "settingsAppLockTitle": "Bloqueo de acceso (PIN/huella)",
   "settingsAppLockSupported": "Requiere PIN o huella al abrir la app",
   "settingsAppLockUnavailable": "No disponible en este dispositivo",
+  "settingsAppLockSaveError": "No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.",
   "settingsLocalTitle": "100 % local y sin nube",
   "settingsLocalSubtitle": "Todos los datos se guardan solo en este dispositivo: no hay cuentas, sincronización ni servidores.",
   "settingsMedicationSubtitle": "Pastillas y horas de aviso, por mujer",
