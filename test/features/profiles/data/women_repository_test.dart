@@ -176,5 +176,72 @@ void main() {
       final ana = profiles.firstWhere((p) => p.woman.name == 'Ana');
       expect(ana.tags, containsAll(['Ex', 'Amiga']));
     });
+
+    // Una etiqueta repetida viola la clave única {womanId, tagId} en el
+    // segundo enlace: sirve de fallo inducido a mitad de la escritura.
+    Future<List<String>> tagsOf(int id) async =>
+        (await dao.watchTagsForWoman(id).first).map((t) => t.name).toList();
+
+    test('create leaves nothing behind when linking tags fails', () async {
+      await expectLater(
+        repo.create(
+          const WomanDraft(
+            name: 'María',
+            initials: 'MR',
+            tags: ['Amiga', 'Amiga'],
+          ),
+        ),
+        throwsA(anything),
+      );
+
+      expect(await repo.watchAllProfiles().first, isEmpty);
+      expect(await dao.allTags(), isEmpty);
+    });
+
+    test('update keeps profile and tags when linking tags fails', () async {
+      final id = await repo.create(
+        const WomanDraft(name: 'María', initials: 'MR', tags: ['Ex']),
+      );
+
+      await expectLater(
+        repo.update(
+          id,
+          const WomanDraft(
+            name: 'Nuevo',
+            initials: 'NV',
+            tags: ['Amiga', 'Amiga'],
+          ),
+        ),
+        throwsA(anything),
+      );
+
+      final woman = await dao.getById(id);
+      expect(woman!.name, 'María');
+      expect(woman.initials, 'MR');
+      expect(await tagsOf(id), ['Ex']);
+    });
+
+    test('replaceTags keeps previous links when it fails', () async {
+      final id = await repo.create(
+        const WomanDraft(name: 'María', initials: 'MR', tags: ['Ex']),
+      );
+
+      await expectLater(
+        dao.replaceTags(id, ['Amiga', 'Amiga']),
+        throwsA(anything),
+      );
+
+      expect(await tagsOf(id), ['Ex']);
+    });
+
+    test('update of a missing woman does nothing', () async {
+      await repo.update(
+        99,
+        const WomanDraft(name: 'Nadie', initials: 'ND', tags: ['Amiga']),
+      );
+
+      expect(await repo.watchAllProfiles().first, isEmpty);
+      expect(await dao.allTags(), isEmpty);
+    });
   });
 }
