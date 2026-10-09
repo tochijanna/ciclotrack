@@ -31,7 +31,7 @@ class CicloTrackApp extends ConsumerWidget {
       // Aún cargando la preferencia: pantalla neutra para no mostrar contenido
       // sensible antes de saber si el bloqueo está activado.
       gate = const _LaunchGate();
-    } else if (appLock.enabled && !appLock.unlocked) {
+    } else if (appLock.locked) {
       gate = const AppLockScreen();
     } else {
       gate = null;

@@ -1069,6 +1069,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get appLockAuthReason => 'Desbloquea CicloTrack para continuar';
 
   @override
+  String get appLockLoadError =>
+      'No se pudo comprobar si el bloqueo está activado. Desbloquea o reinténtalo.';
+
+  @override
+  String get appLockRetry => 'Reintentar';
+
+  @override
   String remindersOf(String name) {
     return 'Recordatorios de $name';
   }
@@ -1392,6 +1399,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsAppLockUnavailable => 'No disponible en este dispositivo';
+
+  @override
+  String get settingsAppLockSaveError =>
+      'No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.';
 
   @override
   String get settingsLocalTitle => '100 % local y sin nube';

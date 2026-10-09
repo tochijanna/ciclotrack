@@ -5,14 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/app_lock_provider.dart';
 
 /// Pantalla que bloquea el acceso hasta que la usuaria se autentica con su
-/// PIN o huella. Solo se muestra cuando el bloqueo está activado y la sesión
-/// aún no se ha desbloqueado.
+/// PIN o huella. Se muestra cuando el bloqueo está activado, o no se pudo
+/// saber si lo está, y la sesión aún no se ha desbloqueado.
 class AppLockScreen extends ConsumerWidget {
   const AppLockScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final loadFailed = ref.watch(appLockProvider.select((s) => s.loadFailed));
     return Scaffold(
       body: Center(
         child: Padding(
@@ -30,7 +31,10 @@ class AppLockScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(l10n.appLockedSubtitle, textAlign: TextAlign.center),
+              Text(
+                loadFailed ? l10n.appLockLoadError : l10n.appLockedSubtitle,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: () =>
@@ -38,6 +42,11 @@ class AppLockScreen extends ConsumerWidget {
                 icon: const Icon(Icons.lock_open),
                 label: Text(l10n.appUnlock),
               ),
+              if (loadFailed)
+                TextButton(
+                  onPressed: () => ref.read(appLockProvider.notifier).retry(),
+                  child: Text(l10n.appLockRetry),
+                ),
             ],
           ),
         ),
