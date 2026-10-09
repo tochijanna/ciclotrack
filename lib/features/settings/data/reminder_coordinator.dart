@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart' show PlatformException;
+
 import '../../alerts/data/alerts_change_dao.dart';
 import 'reminder_notifier.dart';
 import 'reminder_scheduler.dart';
@@ -23,8 +25,14 @@ class ReminderCoordinator {
   Timer? _debounce;
   bool _refreshing = false;
   bool _refreshQueued = false;
-  bool _started = false;
   bool _disposed = false;
+  bool _started = false;
+
+  /// Momento del último refresco fallido, `null` si el último fue correcto.
+  DateTime? lastRefreshFailure;
+
+  /// Tipo del último error (solo identificador, sin mensaje ni datos).
+  String? lastErrorKind;
 
   Future<void> start() async {
     if (_started) return;
@@ -45,8 +53,15 @@ class ReminderCoordinator {
     _refreshing = true;
     try {
       await scheduler.refresh(today: now());
-    } catch (_) {
+      lastRefreshFailure = null;
+      lastErrorKind = null;
+    } catch (e) {
       // Los recordatorios no deben bloquear la UI ni el arranque.
+      // Diagnóstico sin contenido sensible: solo el tipo (y código, si lo hay).
+      lastErrorKind = e is PlatformException
+          ? 'PlatformException(${e.code})'
+          : e.runtimeType.toString();
+      lastRefreshFailure = DateTime.now();
     } finally {
       _refreshing = false;
       if (_refreshQueued) {

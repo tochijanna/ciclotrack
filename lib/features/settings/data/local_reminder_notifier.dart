@@ -8,7 +8,14 @@ import 'reminder_notifier.dart';
 
 /// Implementación de [ReminderNotifier] con flutter_local_notifications.
 class LocalReminderNotifier implements ReminderNotifier {
-  LocalReminderNotifier(this._plugin, this._l10n);
+  LocalReminderNotifier(
+    this._plugin,
+    this._l10n, {
+    Future<String> Function() timezoneId = _defaultTimezoneId,
+  }) : _timezoneId = timezoneId;
+
+  static Future<String> _defaultTimezoneId() async =>
+      (await FlutterTimezone.getLocalTimezone()).identifier;
 
   /// Marca las notificaciones propias para distinguirlas de las alertas, que
   /// comparten plugin.
@@ -18,6 +25,10 @@ class LocalReminderNotifier implements ReminderNotifier {
   final AppLocalizations _l10n;
   Future<void>? _initialization;
   bool _available = true;
+  final Future<String> Function() _timezoneId;
+
+  /// Si el último intento de inicialización tuvo éxito.
+  bool get isAvailable => _available;
 
   @override
   Future<void> initialize() {
@@ -25,10 +36,10 @@ class LocalReminderNotifier implements ReminderNotifier {
   }
 
   Future<void> _initialize() async {
+    _available = true;
     try {
       tz.initializeTimeZones();
-      final tzInfo = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+      tz.setLocalLocation(tz.getLocation(await _timezoneId()));
 
       const androidSettings = AndroidInitializationSettings(
         '@mipmap/ic_launcher',
@@ -38,6 +49,9 @@ class LocalReminderNotifier implements ReminderNotifier {
     } catch (_) {
       // Widget/unit tests and unsupported platforms have no plugin channel.
       _available = false;
+      // Sin caché del fallo: la próxima operación reintenta la inicialización
+      // y un error transitorio no desactiva los recordatorios para siempre.
+      _initialization = null;
     }
   }
 
