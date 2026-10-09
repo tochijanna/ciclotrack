@@ -123,4 +123,60 @@ void main() {
       }
     });
   }
+
+  test('PRIV-04/05: los avisos discretos no llevan tipo ni datos', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    try {
+      final scheduler = _Scheduler()..notifications.clear();
+      final settingsDao = AlertSettingsDao(db);
+      final settings = await settingsDao.getOrCreate();
+      await settingsDao.updateSettings(
+        settings.copyWith(masterEnabled: true, enabledTypes: 'medicacion'),
+      );
+      final womanId = await db
+          .into(db.women)
+          .insert(
+            WomenCompanion.insert(
+              name: 'María',
+              initials: 'MR',
+              createdAt: DateTime(2026, 9, 10),
+            ),
+          );
+      await MedicationDao(db).insert(
+        MedicationsCompanion.insert(
+          womanId: womanId,
+          name: 'Hierro',
+          hour: 12,
+          minute: 0,
+        ),
+      );
+      var discreet = true;
+      final repo = AlertsRepository(
+        scheduler: scheduler,
+        settingsDao: settingsDao,
+        predictionRepo: PredictionRepository(PredictionDao(db)),
+        encounterRepo: EncounterRepository(EncounterDao(db)),
+        womenRepo: WomenRepository(WomenDao(db)),
+        medicationDao: MedicationDao(db),
+        l10n: lookupAppLocalizations(const Locale('es')),
+        discreet: () async => discreet,
+      );
+
+      await repo.refreshAlerts(today: DateTime(2026, 9, 10, 10));
+      var pending = scheduler.notifications.single;
+      expect(pending.title, 'CicloTrack');
+      expect(pending.body, 'Tienes un aviso nuevo. Abre la app para verlo.');
+
+      // Al cambiar el ajuste, el mismo aviso pendiente se reescribe.
+      discreet = false;
+      await repo.refreshAlerts(today: DateTime(2026, 9, 10, 10));
+      final id = pending.id;
+      pending = scheduler.notifications.single;
+      expect(pending.id, id);
+      expect(pending.title, 'Medicación');
+      expect(pending.body, 'Es hora de tu medicación (12:00)');
+    } finally {
+      await db.close();
+    }
+  });
 }

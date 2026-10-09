@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ciclotrack/core/db/app_database.dart';
+import 'package:ciclotrack/core/privacy/discreet_notices.dart';
 import 'package:ciclotrack/features/settings/presentation/providers/reminder_providers.dart';
 import 'package:ciclotrack/features/settings/presentation/screens/reminder_form_screen.dart';
 import 'package:ciclotrack/features/settings/presentation/screens/reminders_screen.dart';
@@ -14,6 +16,12 @@ import '../../../support/widget_harness.dart';
 void main() {
   late AppDatabase db;
   late FakeReminderNotifier notifier;
+
+  // Estos tests comprueban el texto detallado del aviso.
+  setUp(
+    () =>
+        SharedPreferences.setMockInitialValues({discreetNoticesPrefKey: false}),
+  );
 
   List<Override> overrides({bool permissionGranted = true}) {
     notifier = FakeReminderNotifier(permissionGranted: permissionGranted);

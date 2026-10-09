@@ -8,6 +8,7 @@ import '../../../calendar/presentation/screens/calendar_home_screen.dart';
 import '../../../medications/presentation/screens/medications_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
 import '../providers/app_lock_provider.dart';
+import '../providers/discreet_notices_provider.dart';
 
 /// Versión publicada en `pubspec.yaml`; se actualiza a la vez que aquella.
 const appVersion = '1.2.0+4';
@@ -83,6 +84,14 @@ class SettingsScreen extends ConsumerWidget {
                     }
                   }
                 : null,
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.visibility_off_outlined),
+            title: Text(l10n.settingsDiscreetNoticesTitle),
+            subtitle: Text(l10n.settingsDiscreetNoticesSubtitle),
+            value: ref.watch(discreetNoticesProvider),
+            onChanged: (value) =>
+                ref.read(discreetNoticesProvider.notifier).setEnabled(value),
           ),
           const Divider(),
           _SectionHeader(l10n.settingsAbout),

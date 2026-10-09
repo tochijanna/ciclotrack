@@ -5,11 +5,37 @@ import 'package:ciclotrack/features/alerts/presentation/providers/alerts_provide
 import 'package:ciclotrack/features/alerts/presentation/screens/alerts_screen.dart';
 import 'package:ciclotrack/features/medications/presentation/screens/medications_screen.dart';
 import 'package:ciclotrack/features/profiles/presentation/screens/women_list_screen.dart';
+import 'package:ciclotrack/features/settings/presentation/providers/app_lock_provider.dart';
 import 'package:ciclotrack/features/settings/presentation/screens/settings_screen.dart';
 
+import '../../../support/fake_app_authenticator.dart';
 import '../../../support/widget_harness.dart';
 
 void main() {
+  testWidgets('PRIV-07: seguridad aclara que el bloqueo no cifra', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    await pumpScreen(
+      tester,
+      db,
+      const SettingsScreen(),
+      overrides: [localAuthProvider.overrideWithValue(FakeAppAuthenticator())],
+    );
+    await settleProviders(tester);
+
+    expect(find.textContaining('tras 1 minuto en segundo plano'), findsOne);
+    expect(find.textContaining('no cifra los datos'), findsOne);
+    // Privado por defecto: los avisos discretos salen activados.
+    await tester.scrollUntilVisible(find.text('Avisos discretos'), 200);
+    final discretos = tester.widget<SwitchListTile>(
+      find.widgetWithText(SwitchListTile, 'Avisos discretos'),
+    );
+    expect(discretos.value, isTrue);
+
+    await closeTestDatabase(tester, db);
+  });
+
   testWidgets('ajustes abre la medicación real y permite volver', (
     tester,
   ) async {

@@ -2511,8 +2511,26 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppLockSupported.
   ///
   /// In es, this message translates to:
-  /// **'Requiere PIN o huella al abrir la app'**
+  /// **'Pide PIN o huella al abrir la app y tras 1 minuto en segundo plano. Controla el acceso; no cifra los datos.'**
   String get settingsAppLockSupported;
+
+  /// No description provided for @settingsDiscreetNoticesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos discretos'**
+  String get settingsDiscreetNoticesTitle;
+
+  /// No description provided for @settingsDiscreetNoticesSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Las notificaciones no muestran iniciales, fechas ni el texto de los recordatorios'**
+  String get settingsDiscreetNoticesSubtitle;
+
+  /// No description provided for @discreetNoticeBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tienes un aviso nuevo. Abre la app para verlo.'**
+  String get discreetNoticeBody;
 
   /// No description provided for @settingsAppLockUnavailable.
   ///
@@ -2651,6 +2669,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Restaurar'**
   String get backupRestoreAction;
+
+  /// No description provided for @backupUnencryptedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo sin cifrar'**
+  String get backupUnencryptedTitle;
+
+  /// No description provided for @backupUnencryptedWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo se guardará sin cifrar: cualquiera que lo abra podrá leer todos los datos. El bloqueo de acceso de la app no lo protege. Guárdalo en un lugar seguro.'**
+  String get backupUnencryptedWarning;
+
+  /// No description provided for @backupUnencryptedAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar'**
+  String get backupUnencryptedAction;
 
   /// No description provided for @backupSaveFailed.
   ///

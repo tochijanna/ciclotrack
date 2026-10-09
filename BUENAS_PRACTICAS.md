@@ -54,6 +54,8 @@ lib/features/<feature>/
 - **Los datos son 100 % locales** (diseño por specs): nada de logs que contengan contenido sensible (nombres, notas privadas, registros de encuentros).
 - El backup es siempre **manual y explícito** (export), nunca automático (según specs).
 - No se introducen secretos ni claves en el código; nada apunta a servicios en la nube.
+- **Bloqueo no es cifrado.** La política de re-autenticación, avisos y copias son los requisitos PRIV-01…07 de `Especificaciones.md` §7; ningún texto de la app ni de la documentación debe presentar el bloqueo de acceso como protección de los datos guardados o exportados.
+- Todo texto nuevo que salga en una notificación pasa por el ajuste de avisos discretos (`lib/core/privacy/discreet_notices.dart`).
 
 ---
 

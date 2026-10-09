@@ -1375,7 +1375,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAppLockSupported =>
-      'Requires PIN or fingerprint when opening the app';
+      'Asks for PIN or fingerprint when opening the app and after 1 minute in the background. It controls access; it does not encrypt the data.';
+
+  @override
+  String get settingsDiscreetNoticesTitle => 'Discreet notifications';
+
+  @override
+  String get settingsDiscreetNoticesSubtitle =>
+      'Notifications do not show initials, dates or reminder text';
+
+  @override
+  String get discreetNoticeBody =>
+      'You have a new notice. Open the app to see it.';
 
   @override
   String get settingsAppLockUnavailable => 'Not available on this device';
@@ -1449,6 +1460,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupRestoreAction => 'Restore';
+
+  @override
+  String get backupUnencryptedTitle => 'Unencrypted file';
+
+  @override
+  String get backupUnencryptedWarning =>
+      'The file will be saved unencrypted: anyone who opens it can read all the data. The app lock does not protect it. Keep it somewhere safe.';
+
+  @override
+  String get backupUnencryptedAction => 'Export';
 
   @override
   String backupSaveFailed(String reason) {

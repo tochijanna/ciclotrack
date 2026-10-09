@@ -113,6 +113,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final l10n = AppLocalizations.of(context);
     final gateway = ref.read(backupFileGatewayProvider);
     final now = ref.read(clockProvider).now();
+    // Ningún formato va cifrado: sin aceptar el aviso no se escribe nada.
+    if (await _confirmarSinCifrar() != true) return;
+    if (!mounted) return;
     setState(() => _working = true);
 
     try {
@@ -169,6 +172,27 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     } finally {
       if (mounted) setState(() => _working = false);
     }
+  }
+
+  Future<bool?> _confirmarSinCifrar() {
+    final l10n = AppLocalizations.of(context);
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.backupUnencryptedTitle),
+        content: Text(l10n.backupUnencryptedWarning),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.backupUnencryptedAction),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<bool?> _confirmar(int perfiles) {

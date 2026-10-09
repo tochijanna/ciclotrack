@@ -658,7 +658,10 @@
   "medicationSaveChangeError": "Could not save the change",
   "settingsSectionSecurity": "Security",
   "settingsAppLockTitle": "App lock (PIN/fingerprint)",
-  "settingsAppLockSupported": "Requires PIN or fingerprint when opening the app",
+  "settingsAppLockSupported": "Asks for PIN or fingerprint when opening the app and after 1 minute in the background. It controls access; it does not encrypt the data.",
+  "settingsDiscreetNoticesTitle": "Discreet notifications",
+  "settingsDiscreetNoticesSubtitle": "Notifications do not show initials, dates or reminder text",
+  "discreetNoticeBody": "You have a new notice. Open the app to see it.",
   "settingsAppLockUnavailable": "Not available on this device",
   "settingsAppLockSaveError": "Could not save the app lock setting. Try again.",
   "settingsLocalTitle": "100% local and cloud-free",
@@ -682,6 +685,9 @@
   "backupCancelled": "Export cancelled",
   "backupImportCancelled": "Import cancelled",
   "backupRestoreAction": "Restore",
+  "backupUnencryptedTitle": "Unencrypted file",
+  "backupUnencryptedWarning": "The file will be saved unencrypted: anyone who opens it can read all the data. The app lock does not protect it. Keep it somewhere safe.",
+  "backupUnencryptedAction": "Export",
   "backupSaveFailed": "Could not save: {reason}",
   "@backupSaveFailed": {
     "placeholders": {"reason": {"type": "String"}}

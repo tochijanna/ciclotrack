@@ -27,6 +27,7 @@ void main() {
   late FakeReminderNotifier notifier;
   late ReminderRepository repo;
   late ReminderScheduler scheduler;
+  late bool discreet;
   late TrackingRepository tracking;
   late int womanId;
 
@@ -48,7 +49,9 @@ void main() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     notifier = FakeReminderNotifier();
     repo = ReminderRepository(ReminderDao(db));
+    discreet = false;
     scheduler = ReminderScheduler(
+      discreet: () async => discreet,
       notifier: notifier,
       repository: repo,
       predictionDao: PredictionDao(db),
@@ -89,6 +92,30 @@ void main() {
       expect(item.body, 'Mejor evitar sexo (días 5-7 del ciclo)');
     },
   );
+
+  test('PRIV-04/05: discreet notices hide the reminder text', () async {
+    await tracking.createPeriod(
+      womanId,
+      PeriodDraft(startDate: DateTime(2026, 9, 1)),
+    );
+    final id = await repo.create(womanId, draft);
+
+    discreet = true;
+    await scheduler.refresh(today: DateTime(2026, 9, 2, 12));
+
+    var item = notifier.scheduled.values.single;
+    expect(item.id, 1000000 + id);
+    expect(item.title, 'CicloTrack');
+    expect(item.body, 'Tienes un aviso nuevo. Abre la app para verlo.');
+
+    // Al cambiar el ajuste, el mismo aviso pendiente se reescribe.
+    discreet = false;
+    await scheduler.refresh(today: DateTime(2026, 9, 2, 12));
+
+    item = notifier.scheduled.values.single;
+    expect(item.id, 1000000 + id);
+    expect(item.body, 'Mejor evitar sexo (días 5-7 del ciclo)');
+  });
 
   test('uses 09:00 and the plain message without settings or range', () async {
     await tracking.createPeriod(
