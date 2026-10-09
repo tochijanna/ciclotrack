@@ -84,8 +84,8 @@ ReportsBoard buildReports(
   ];
 
   final duracionesCiclo = [
-    for (final report in mujeres)
-      for (final punto in report.ciclos) punto.valor.round(),
+    for (final wc in board.women)
+      for (final punto in _serieCiclos(wc)) punto.valor.round(),
   ];
   final duracionesMenstruacion = [
     for (final wc in board.women) ..._duracionesMenstruacion(wc),
