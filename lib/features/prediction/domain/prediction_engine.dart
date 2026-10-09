@@ -1,3 +1,5 @@
+import '../../../../core/time/calendar_days.dart';
+
 class CyclePrediction {
   const CyclePrediction({
     required this.minCycle,
@@ -37,7 +39,7 @@ final class PredictionEngine {
     }
     return [
       for (var i = 1; i < dates.length; i++)
-        if (dates[i] != dates[i - 1]) _daysBetween(dates[i - 1], dates[i]),
+        if (dates[i] != dates[i - 1]) daysBetween(dates[i - 1], dates[i]),
     ];
   }
 
@@ -93,11 +95,3 @@ final class PredictionEngine {
   int _clamp(int value, {required int min, required int max}) =>
       value < min ? min : (value > max ? max : value);
 }
-
-/// Días de calendario entre dos fechas, insensible a cambios de hora (DST):
-/// se normaliza a UTC antes de restar para que 28 días reales midan 28.
-int _daysBetween(DateTime from, DateTime to) => DateTime.utc(
-  to.year,
-  to.month,
-  to.day,
-).difference(DateTime.utc(from.year, from.month, from.day)).inDays;

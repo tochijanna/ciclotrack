@@ -1,3 +1,4 @@
+import '../../../../core/time/calendar_days.dart';
 import 'cycle_phase.dart';
 import 'prediction_calculator.dart';
 import 'prediction_engine.dart';
@@ -86,7 +87,7 @@ class CycleTimeline {
       ]),
     );
     final media = prediction.averageCycle.round();
-    final limite = _calendarDate(horizonte);
+    final limite = calendarDate(horizonte);
 
     final spans = <CycleSpan>[
       for (final log in unicos)
@@ -102,7 +103,7 @@ class CycleTimeline {
     if (media > 0) {
       var inicio = unicos.last.startDate;
       while (true) {
-        final siguiente = _addDays(inicio, media);
+        final siguiente = addDays(inicio, media);
         if (siguiente.isAfter(limite)) break;
         spans.add(
           _span(
@@ -132,9 +133,9 @@ class CycleTimeline {
 
   /// Ciclo que contiene [day], o `null` si queda fuera de la línea temporal.
   CycleSpan? spanFor(DateTime day) {
-    final fecha = _calendarDate(day);
+    final fecha = calendarDate(day);
     if (spans.isEmpty) return null;
-    if (fecha.isAfter(_addDays(spans.last.start, _mediaCiclo - 1))) return null;
+    if (fecha.isAfter(addDays(spans.last.start, _mediaCiclo - 1))) return null;
 
     CycleSpan? encontrado;
     for (final span in spans) {
@@ -148,8 +149,8 @@ class CycleTimeline {
   CyclePhase? phaseOn(DateTime day) {
     final span = spanFor(day);
     if (span == null) return null;
-    final cycleDay = _daysBetween(span.start, day) + 1;
-    final periodDays = _daysBetween(span.start, span.periodEnd) + 1;
+    final cycleDay = daysBetween(span.start, day) + 1;
+    final periodDays = daysBetween(span.start, span.periodEnd) + 1;
     return phaseForCycleDay(
       cycleDay,
       _prediction,
@@ -162,14 +163,14 @@ class CycleTimeline {
   bool isPeriodOn(DateTime day) {
     final span = spanFor(day);
     if (span == null) return false;
-    return !_calendarDate(day).isAfter(span.periodEnd);
+    return !calendarDate(day).isAfter(span.periodEnd);
   }
 
   /// `true` si [day] cae dentro de la ventana fértil.
   bool isFertileOn(DateTime day) {
     final span = spanFor(day);
     if (span == null) return false;
-    final fecha = _calendarDate(day);
+    final fecha = calendarDate(day);
     return !fecha.isBefore(span.fertileStart) &&
         !fecha.isAfter(span.fertileEnd);
   }
@@ -177,7 +178,7 @@ class CycleTimeline {
   /// `true` si [day] es el día de ovulación estimado.
   bool isOvulationOn(DateTime day) {
     final span = spanFor(day);
-    return span != null && _calendarDate(day) == span.ovulation;
+    return span != null && calendarDate(day) == span.ovulation;
   }
 
   /// `true` cuando lo que se muestra en [day] es una proyección, no un registro:
@@ -191,7 +192,7 @@ class CycleTimeline {
 
   /// Inicio de la primera ventana fértil que no ha terminado antes de [from].
   DateTime? nextFertileStart(DateTime from) {
-    final fecha = _calendarDate(from);
+    final fecha = calendarDate(from);
     for (final span in spans) {
       if (!span.fertileEnd.isBefore(fecha)) return span.fertileStart;
     }
@@ -203,7 +204,7 @@ class CycleTimeline {
 int _duracionMedia(List<PeriodLogInput> logs) {
   final duraciones = [
     for (final log in logs)
-      if (log.endDate != null) _daysBetween(log.startDate, log.endDate!) + 1,
+      if (log.endDate != null) daysBetween(log.startDate, log.endDate!) + 1,
   ];
   if (duraciones.isEmpty) return defaultPeriodDuration;
   return (duraciones.reduce((a, b) => a + b) / duraciones.length).round();
@@ -216,34 +217,21 @@ CycleSpan _span({
   required int duracionPeriodo,
   required bool esReal,
 }) {
-  final inicio = _calendarDate(desde);
+  final inicio = calendarDate(desde);
   return CycleSpan(
     start: inicio,
     periodEnd: finReal == null
-        ? _addDays(inicio, duracionPeriodo - 1)
-        : _calendarDate(finReal),
-    ovulation: _addDays(inicio, prediction.estimatedOvulationDay - 1),
-    fertileStart: _addDays(inicio, prediction.fertilityWindowStart - 1),
-    fertileEnd: _addDays(inicio, prediction.fertilityWindowEnd - 1),
+        ? addDays(inicio, duracionPeriodo - 1)
+        : calendarDate(finReal),
+    ovulation: addDays(inicio, prediction.estimatedOvulationDay - 1),
+    fertileStart: addDays(inicio, prediction.fertilityWindowStart - 1),
+    fertileEnd: addDays(inicio, prediction.fertilityWindowEnd - 1),
     esReal: esReal,
     periodoEstimado: finReal == null,
   );
 }
 
 PeriodLogInput _normalizar(PeriodLogInput log) => PeriodLogInput(
-  startDate: _calendarDate(log.startDate),
-  endDate: log.endDate == null ? null : _calendarDate(log.endDate!),
+  startDate: calendarDate(log.startDate),
+  endDate: log.endDate == null ? null : calendarDate(log.endDate!),
 );
-
-DateTime _calendarDate(DateTime value) =>
-    DateTime(value.year, value.month, value.day);
-
-/// Días de calendario entre dos fechas, insensible a cambios de hora (DST).
-int _daysBetween(DateTime from, DateTime to) => DateTime.utc(
-  to.year,
-  to.month,
-  to.day,
-).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
-
-DateTime _addDays(DateTime base, int days) =>
-    DateTime(base.year, base.month, base.day + days);

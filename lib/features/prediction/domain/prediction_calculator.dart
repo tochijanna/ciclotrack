@@ -1,3 +1,4 @@
+import '../../../../core/time/calendar_days.dart';
 import 'cycle_phase.dart';
 import 'prediction_engine.dart';
 import 'woman_prediction.dart';
@@ -46,10 +47,7 @@ class PredictionCalculator {
         .where((p) => p.endDate != null)
         .map(
           (p) =>
-              _daysBetween(
-                _calendarDate(p.startDate),
-                _calendarDate(p.endDate!),
-              ) +
+              daysBetween(calendarDate(p.startDate), calendarDate(p.endDate!)) +
               1,
         )
         .toList();
@@ -59,23 +57,23 @@ class PredictionCalculator {
 
     // Motor de predicción.
     final startDates = periodLogs
-        .map((p) => _calendarDate(p.startDate))
+        .map((p) => calendarDate(p.startDate))
         .toList();
     final cycleLengths = _engine.cycleLengthsFrom(startDates);
     final prediction = _engine.predict(cycleLengths: cycleLengths);
-    final lastStart = _calendarDate(periodLogs.last.startDate);
+    final lastStart = calendarDate(periodLogs.last.startDate);
     final avgCycle = prediction.averageCycle;
     final expectedPeriod = _engine.predictNextPeriod(lastStart, avgCycle);
     final isDefault = cycleLengths.isEmpty;
 
     // Día actual del ciclo.
-    final cycleDay = _daysBetween(lastStart, now) + 1;
+    final cycleDay = daysBetween(lastStart, now) + 1;
     final lastEnd = periodLogs.last.endDate == null
         ? null
-        : _calendarDate(periodLogs.last.endDate!);
+        : calendarDate(periodLogs.last.endDate!);
     final periodDurationToday = lastEnd == null
         ? periodDuration
-        : _daysBetween(lastStart, lastEnd) + 1;
+        : daysBetween(lastStart, lastEnd) + 1;
 
     // Fase y humor de hoy.
     final phase = phaseForCycleDay(
@@ -97,9 +95,6 @@ class PredictionCalculator {
     );
 
     // Fechas concretas.
-    DateTime? addDays(DateTime base, int days) =>
-        DateTime(base.year, base.month, base.day + days);
-
     final ovulEstimada = addDays(
       lastStart,
       prediction.estimatedOvulationDay - 1,
@@ -138,16 +133,6 @@ class PredictionCalculator {
       cicloActual: cycleDay,
     );
   }
-
-  DateTime _calendarDate(DateTime value) =>
-      DateTime(value.year, value.month, value.day);
-
-  /// Días de calendario entre dos fechas, insensible a cambios de hora (DST).
-  int _daysBetween(DateTime from, DateTime to) => DateTime.utc(
-    to.year,
-    to.month,
-    to.day,
-  ).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
 
   EstadoRiesgo _estadoRiesgo(
     int cycleDay,
@@ -188,7 +173,7 @@ class PredictionCalculator {
     var dayStart = now;
 
     while (dayStart.isBefore(expectedPeriod)) {
-      final cycleDayOfStart = _daysBetween(lastStart, dayStart) + 1;
+      final cycleDayOfStart = daysBetween(lastStart, dayStart) + 1;
       final phase = phaseForCycleDay(
         cycleDayOfStart,
         prediction,
@@ -201,7 +186,7 @@ class PredictionCalculator {
       while (true) {
         final nextDay = DateTime(dayEnd.year, dayEnd.month, dayEnd.day + 1);
         if (!nextDay.isBefore(expectedPeriod)) break;
-        final nextCycleDay = _daysBetween(lastStart, nextDay) + 1;
+        final nextCycleDay = daysBetween(lastStart, nextDay) + 1;
         final nextPhase = phaseForCycleDay(
           nextCycleDay,
           prediction,
