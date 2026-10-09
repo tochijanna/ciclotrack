@@ -111,7 +111,7 @@ void main() {
 
     final notifier = await load(container);
 
-    expect(await notifier.setEnabled(true), isTrue);
+    expect(await notifier.setEnabled(true), AppLockChange.saved);
     expect(notifier.state.enabled, isTrue);
     expect(notifier.state.unlocked, isTrue);
 
@@ -189,7 +189,7 @@ void main() {
 
     final notifier = await load(container);
     fail = true;
-    expect(await notifier.setEnabled(true), isFalse);
+    expect(await notifier.setEnabled(true), AppLockChange.failed);
     expect(notifier.state.enabled, isFalse);
   });
 
@@ -204,8 +204,30 @@ void main() {
     );
 
     final notifier = await load(container);
-    expect(await notifier.setEnabled(true), isFalse);
+    expect(await notifier.setEnabled(true), AppLockChange.failed);
     expect(notifier.state.enabled, isFalse);
+  });
+
+  test('desactivar el bloqueo exige autenticarse', () async {
+    SharedPreferences.setMockInitialValues({appLockEnabledPrefKey: true});
+    final denied = await load(
+      makeContainer(FakeAppAuthenticator(authenticateResult: false)),
+    );
+    expect(await denied.setEnabled(false), AppLockChange.denied);
+    expect(denied.state.enabled, isTrue);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getBool(appLockEnabledPrefKey), isTrue);
+
+    final thrown = await load(
+      makeContainer(FakeAppAuthenticator(throwOnAuthenticate: true)),
+    );
+    expect(await thrown.setEnabled(false), AppLockChange.denied);
+    expect(thrown.state.enabled, isTrue);
+
+    final allowed = await load(makeContainer(FakeAppAuthenticator()));
+    expect(await allowed.setEnabled(false), AppLockChange.saved);
+    expect(allowed.state.enabled, isFalse);
+    expect(prefs.getBool(appLockEnabledPrefKey), isFalse);
   });
 
   test('authenticate() con resultado true desbloquea', () async {
@@ -274,6 +296,40 @@ void main() {
     await pumpStreams(tester);
     expect(find.byType(AppLockScreen), findsOneWidget);
     expect(find.byType(WomenListScreen), findsNothing);
+  });
+
+  testWidgets('ajustes no desactiva el bloqueo sin autenticación', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({appLockEnabledPrefKey: true});
+    final db = createTestDatabase();
+    await pumpScreen(
+      tester,
+      db,
+      const SettingsScreen(),
+      overrides: [
+        localAuthProvider.overrideWithValue(
+          FakeAppAuthenticator(authenticateResult: false),
+        ),
+      ],
+    );
+
+    final toggle = find.widgetWithIcon(SwitchListTile, Icons.fingerprint);
+    await tester.scrollUntilVisible(toggle, 200);
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+    await tester.tap(toggle);
+    await settleProviders(tester);
+
+    expect(
+      find.text(
+        'El bloqueo sigue activado: hay que desbloquear con PIN o huella '
+        'para desactivarlo.',
+      ),
+      findsOneWidget,
+    );
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+
+    await closeTestDatabase(tester, db);
   });
 
   testWidgets('ajustes avisa si no se pudo guardar el bloqueo', (tester) async {
