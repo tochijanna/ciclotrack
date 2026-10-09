@@ -1,3 +1,4 @@
+import '../../../../core/time/calendar_days.dart';
 import '../../encounters/domain/encounter_event.dart';
 import '../../prediction/domain/woman_prediction.dart';
 import 'alert_item.dart';
@@ -40,8 +41,8 @@ class AlertRuleEngine {
     if (!settings.masterEnabled) return [];
 
     final alerts = <AlertItem>[];
-    final todayDate = DateTime(today.year, today.month, today.day);
-    final tomorrow = todayDate.add(const Duration(days: 1));
+    final todayDate = calendarDate(today);
+    final tomorrow = addDays(todayDate, 1);
     final endHorizon = todayDate.add(Duration(days: settings.horizonDays));
 
     for (final w in women) {
@@ -59,7 +60,7 @@ class AlertRuleEngine {
           ovulacion != null &&
           _sameDay(ovulacion, tomorrow)) {
         final dias = ventFin != null && ventIni != null
-            ? ventFin.difference(ventIni).inDays + 1
+            ? daysBetween(ventIni, ventFin) + 1
             : 7;
         alerts.add(
           AlertItem(
@@ -137,15 +138,14 @@ class AlertRuleEngine {
 
     // 5–6. Encuentro + fertilidad / advertencia post-encuentro
     for (final e in encounters) {
-      final diasDesdeEncuentro = todayDate
-          .difference(
-            DateTime(
-              e.encounterTime.year,
-              e.encounterTime.month,
-              e.encounterTime.day,
-            ),
-          )
-          .inDays;
+      final diasDesdeEncuentro = daysBetween(
+        DateTime(
+          e.encounterTime.year,
+          e.encounterTime.month,
+          e.encounterTime.day,
+        ),
+        todayDate,
+      );
 
       for (final part in e.participants) {
         final ctx = women.where((w) => w.womanId == part.womanId);
@@ -158,9 +158,9 @@ class AlertRuleEngine {
             diasDesdeEncuentro <= 7 &&
             diasDesdeEncuentro >= 0 &&
             p.estadoRiesgo == EstadoRiesgo.diaDeRiesgo) {
-          final diasRestantes = p.ventanaFertilFin
-              ?.difference(todayDate)
-              .inDays;
+          final diasRestantes = p.ventanaFertilFin == null
+              ? null
+              : daysBetween(todayDate, p.ventanaFertilFin!);
           final fire = _atTime(todayDate, settings);
           if (fire.isAfter(today)) {
             alerts.add(
@@ -182,9 +182,7 @@ class AlertRuleEngine {
         if (settings.isEnabled(AlertType.advertenciaPostEncuentro) &&
             diasDesdeEncuentro >= 12 &&
             p.periodoPrevisto != null) {
-          final diasHastaPeriodo = p.periodoPrevisto!
-              .difference(todayDate)
-              .inDays;
+          final diasHastaPeriodo = daysBetween(todayDate, p.periodoPrevisto!);
           if (diasHastaPeriodo >= 0 && diasHastaPeriodo <= 3) {
             final fire = _atTime(todayDate, settings);
             if (fire.isAfter(today)) {

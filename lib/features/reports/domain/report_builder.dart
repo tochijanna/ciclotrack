@@ -2,6 +2,7 @@ import '../../calendar/domain/calendar_board.dart';
 import '../../encounters/domain/encounter_event.dart';
 import '../../encounters/domain/encounter_options.dart';
 import '../../prediction/domain/cycle_timeline.dart';
+import '../../../../core/time/calendar_days.dart';
 import '../../tracking/domain/tracking_event.dart';
 import 'report_models.dart';
 
@@ -17,7 +18,7 @@ ReportsBoard buildReports(
   int meses = 12,
   int ciclosMax = 12,
 }) {
-  final hoy = _calendarDate(today);
+  final hoy = calendarDate(today);
   final ventana = [
     for (var i = meses - 1; i >= 0; i--) DateTime(hoy.year, hoy.month - i),
   ];
@@ -186,23 +187,27 @@ WomanReport _womanReport(
 /// Duración de cada ciclo cerrado, por fecha de cierre ascendente.
 List<PuntoSerie> _serieCiclos(WomanCalendar wc) {
   final inicios = [
-    for (final periodo in wc.periodos) _calendarDate(periodo.startDate),
+    for (final periodo in wc.periodos) calendarDate(periodo.startDate),
   ]..sort();
   return [
+    // Inicios duplicados (p. ej. vía importación) no generan ciclos de
+    // longitud cero.
     for (var i = 1; i < inicios.length; i++)
-      PuntoSerie(
-        fecha: inicios[i],
-        valor: inicios[i].difference(inicios[i - 1]).inDays.toDouble(),
-      ),
+      if (inicios[i] != inicios[i - 1])
+        PuntoSerie(
+          fecha: inicios[i],
+          valor: daysBetween(inicios[i - 1], inicios[i]).toDouble(),
+        ),
   ];
 }
 
 List<int> _duracionesMenstruacion(WomanCalendar wc) => [
   for (final periodo in wc.periodos)
     if (periodo.endDate != null)
-      _calendarDate(
-            periodo.endDate!,
-          ).difference(_calendarDate(periodo.startDate)).inDays +
+      daysBetween(
+            calendarDate(periodo.startDate),
+            calendarDate(periodo.endDate!),
+          ) +
           1,
 ];
 
@@ -258,7 +263,7 @@ int _diasFertilesDelMes(CycleTimeline timeline, DateTime mes) {
   final inicio = DateTime(mes.year, mes.month);
   final fin = DateTime(mes.year, mes.month + 1, 0);
   var dias = 0;
-  for (var day = inicio; !day.isAfter(fin); day = _addDays(day, 1)) {
+  for (var day = inicio; !day.isAfter(fin); day = addDays(day, 1)) {
     if (timeline.isFertileOn(day)) dias++;
   }
   return dias;
@@ -284,9 +289,3 @@ double _porcentaje(int parte, int total) =>
     total == 0 ? 0 : parte * 100 / total;
 
 DateTime _firstOfMonth(DateTime value) => DateTime(value.year, value.month);
-
-DateTime _calendarDate(DateTime value) =>
-    DateTime(value.year, value.month, value.day);
-
-DateTime _addDays(DateTime base, int days) =>
-    DateTime(base.year, base.month, base.day + days);

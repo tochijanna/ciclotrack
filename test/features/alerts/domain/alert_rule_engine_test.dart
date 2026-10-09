@@ -212,6 +212,30 @@ void main() {
   });
 
   group('AlertRuleEngine - fertilidadInminente', () {
+    test('la "mañana" tras un cambio de hora es la fecha siguiente', () {
+      // 2026-03-29 tiene 23 h en España; mañana sigue siendo el día siguiente.
+      final alerts = engine.evaluate(
+        today: DateTime(2026, 3, 28),
+        women: [
+          ctx(
+            1,
+            'María',
+            ovulacion: DateTime(2026, 3, 29, 3),
+            ventanaIni: DateTime(2026, 3, 24),
+            ventanaFin: DateTime(2026, 3, 31),
+            periodoPrevisto: DateTime(2026, 4, 12),
+          ),
+        ],
+        medications: const [],
+        encounters: const [],
+        settings: settings(),
+      );
+      expect(
+        alerts.any((a) => a.type == AlertType.fertilidadInminente),
+        isTrue,
+      );
+    });
+
     test('fires when ovulation is tomorrow', () {
       final today = DateTime(2026, 9, 10);
       final tomorrow = DateTime(2026, 9, 11);

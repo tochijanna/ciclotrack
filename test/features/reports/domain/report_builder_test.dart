@@ -124,6 +124,25 @@ void main() {
       expect(informe.mujeres.single.ciclos.last.valor, 28);
     });
 
+    test('los inicios duplicados no generan ciclos de longitud cero', () {
+      final board = CalendarBoard(
+        women: [
+          conPeriodos(ana, [
+            periodo(2026, 1, 1, duracionDias: 5),
+            periodo(2026, 1, 1, duracionDias: 5),
+            periodo(2026, 1, 29, duracionDias: 5),
+          ]),
+        ],
+        encuentros: const [],
+      );
+
+      final informe = buildReports(board, today: hoy);
+
+      expect(informe.mujeres.single.ciclos.map((p) => p.valor), [28]);
+      expect(informe.mujeres.single.kpis.ciclos, 1);
+      expect(informe.mujeres.single.kpis.mediaCiclo, 28);
+    });
+
     test('sin periodos no hay ciclos ni periodo previsto', () {
       final board = CalendarBoard(
         women: [conPeriodos(ce, const [])],
