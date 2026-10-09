@@ -21,6 +21,7 @@ import 'package:ciclotrack/features/tracking/data/tracking_dao.dart';
 import 'package:ciclotrack/features/tracking/data/tracking_repository.dart';
 import 'package:ciclotrack/features/tracking/domain/tracking_drafts.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -147,6 +148,28 @@ void main() {
     expect(scheduler.cancelledIds, contains(alertNotificationIdBase));
   });
 
+  test('expone el diagnóstico de un refresco fallido y se recupera', () async {
+    await coordinator.start();
+
+    // Fallo transitorio: PlatformException del canal del plugin.
+    scheduler.pendingFailures = 1;
+    scheduler.pendingError = () => PlatformException(code: 'channel');
+    await coordinator.refreshNow();
+    expect(coordinator.lastErrorKind, 'PlatformException(channel)');
+    expect(coordinator.lastRefreshFailure, isNotNull);
+
+    // Otro fallo con tipo distinto.
+    scheduler.pendingFailures = 1;
+    scheduler.pendingError = () => StateError('x');
+    await coordinator.refreshNow();
+    expect(coordinator.lastErrorKind, 'StateError');
+
+    // Éxito posterior limpia el diagnóstico.
+    await coordinator.refreshNow();
+    expect(coordinator.lastErrorKind, isNull);
+    expect(coordinator.lastRefreshFailure, isNull);
+  });
+
   test(
     'disabling master cancels pending notifications after refresh',
     () async {
@@ -170,6 +193,10 @@ class FakeNotificationScheduler implements NotificationScheduler {
   final cancelledIds = <int>[];
   final scheduled = <AlertItem>[];
   final pendingItems = <PendingNotification>[];
+
+  /// Si es >0, `pending()` lanza esta excepción y decrementa el contador.
+  int pendingFailures = 0;
+  Object Function()? pendingError;
 
   @override
   Future<void> initialize() async => initializeCalls++;
@@ -209,5 +236,11 @@ class FakeNotificationScheduler implements NotificationScheduler {
   }
 
   @override
-  Future<List<PendingNotification>> pending() async => [...pendingItems];
+  Future<List<PendingNotification>> pending() async {
+    if (pendingFailures > 0) {
+      pendingFailures--;
+      throw pendingError!();
+    }
+    return [...pendingItems];
+  }
 }
