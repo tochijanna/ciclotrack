@@ -63,6 +63,17 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
         WomenCompanion(sortOrder: Value(sortOrder)),
       );
 
+  /// Persiste sortOrder según la posición en la lista, en una transacción.
+  Future<void> reorder(List<Woman> ordered) {
+    return transaction(() async {
+      for (var i = 0; i < ordered.length; i++) {
+        if (ordered[i].sortOrder != i) {
+          await updateOrder(ordered[i].id, i);
+        }
+      }
+    });
+  }
+
   Future<void> deleteWoman(int id) =>
       (delete(women)..where((t) => t.id.equals(id))).go();
 

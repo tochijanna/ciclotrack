@@ -159,6 +159,32 @@ void main() {
       expect(reordered2!.sortOrder, 0);
     });
 
+    test('reorder keeps the previous order when a write fails', () async {
+      final ids = [
+        for (var i = 0; i < 3; i++)
+          await repo.create(
+            WomanDraft(name: 'Perfil $i', initials: 'P$i', sortOrder: i),
+          ),
+      ];
+      final women = [for (final id in ids) (await dao.getById(id))!];
+      // Fallo inducido en la última escritura, tras haber movido ya otra fila.
+      await db.customStatement(
+        'CREATE TRIGGER fallo_orden BEFORE UPDATE OF sort_order ON women '
+        'WHEN NEW.id = ${ids.first} '
+        "BEGIN SELECT RAISE(ABORT, 'fallo inducido'); END",
+      );
+
+      await expectLater(
+        repo.reorder(women.reversed.toList()),
+        throwsA(anything),
+      );
+
+      expect(
+        [for (final id in ids) (await dao.getById(id))!.sortOrder],
+        [0, 1, 2],
+      );
+    });
+
     test('watchAllProfiles returns women with tags', () async {
       await repo.create(
         const WomanDraft(name: 'María', initials: 'MR', tags: ['Amiga']),
