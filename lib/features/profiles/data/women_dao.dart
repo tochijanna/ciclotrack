@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/db/tables.dart';
+import '../domain/woman_validator.dart';
 
 part 'women_dao.g.dart';
 
@@ -143,11 +144,12 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
     );
   }
 
-  /// Reemplaza las etiquetas de una mujer en una transacción.
+  /// Reemplaza las etiquetas de una mujer en una transacción. Los nombres se
+  /// normalizan (trim, sin vacías ni repetidas) antes de enlazarlos.
   Future<void> replaceTags(int womanId, List<String> tagNames) {
     return transaction(() async {
       await (delete(womanTags)..where((t) => t.womanId.equals(womanId))).go();
-      for (final name in tagNames) {
+      for (final name in normalizeTags(tagNames)) {
         final tagId = await getOrCreateTag(name);
         await into(
           womanTags,
