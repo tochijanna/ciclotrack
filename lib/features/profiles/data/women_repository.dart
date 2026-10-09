@@ -82,11 +82,5 @@ class WomenRepository {
   Future<void> delete(int id) => _dao.deleteWomanCascade(id);
 
   /// Reordena perfiles persistiendo sortOrder según el orden de la lista.
-  Future<void> reorder(List<Woman> ordered) async {
-    for (var i = 0; i < ordered.length; i++) {
-      if (ordered[i].sortOrder != i) {
-        await _dao.updateOrder(ordered[i].id, i);
-      }
-    }
-  }
+  Future<void> reorder(List<Woman> ordered) => _dao.reorder(ordered);
 }
