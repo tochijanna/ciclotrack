@@ -1,5 +1,6 @@
 import 'package:ciclotrack/l10n/app_localizations.dart';
 
+import '../../../core/privacy/discreet_notices.dart';
 import '../../alerts/data/alert_settings_dao.dart';
 import '../../prediction/data/prediction_dao.dart';
 import '../../prediction/domain/prediction_engine.dart';
@@ -16,6 +17,7 @@ class ReminderScheduler {
     required this.predictionDao,
     required this.settingsDao,
     required this.l10n,
+    this.discreet = readDiscreetNotices,
     PredictionEngine? engine,
   }) : _engine = engine ?? PredictionEngine();
 
@@ -27,6 +29,9 @@ class ReminderScheduler {
   final PredictionDao predictionDao;
   final AlertSettingsDao settingsDao;
   final AppLocalizations l10n;
+
+  /// Si los avisos se programan con texto genérico (PRIV-04).
+  final Future<bool> Function() discreet;
   final PredictionEngine _engine;
 
   /// Id estable de la notificación de un recordatorio: al cambiar la fecha se
@@ -40,6 +45,7 @@ class ReminderScheduler {
     final hour = settings?.notifyHour ?? _defaultNotifyHour;
     final minute = settings?.notifyMinute ?? _defaultNotifyMinute;
 
+    final generic = await discreet();
     final reminders = await repository.watchActive().first;
     final cycles = <int, _WomanCycle>{};
     final newIds = <int>{};
@@ -63,8 +69,10 @@ class ReminderScheduler {
       await notifier.schedule(
         id: id,
         when: when,
-        title: l10n.reminderNotificationTitle,
-        body: reminderNotificationBody(l10n, reminder),
+        title: generic ? discreetNoticeTitle : l10n.reminderNotificationTitle,
+        body: generic
+            ? l10n.discreetNoticeBody
+            : reminderNotificationBody(l10n, reminder),
       );
       newIds.add(id);
     }

@@ -86,6 +86,27 @@ Múltiples mujeres + ventana combinada 	“Sofía es fértil los días 5-10. Ana
     Importar/Exportar: Opción de copiar toda la base de datos a un archivo local (JSON, CSV, PDF) para backup manual. Se hace manualmente, no automático.
     Modo offline: Funcionamiento completo sin internet (necesario por diseño, no por necesidad).
 
+### Política de privacidad: bloqueo, avisos y copias
+
+El bloqueo de acceso **controla quién abre la app; no cifra nada**. La base de datos y los archivos exportados se guardan en claro: su protección depende del cifrado del propio dispositivo y de dónde se guarde cada copia. Ningún requisito de esta sección debe leerse como cifrado.
+
+| ID | Requisito | Comprobación |
+|---|---|---|
+| PRIV-01 | Con el bloqueo activado, la app pide PIN o huella en cada arranque en frío y al volver tras **60 s o más** en segundo plano. Por debajo de 60 s no interrumpe. Si el reloj retrocede mientras está fuera, re-bloquea. El plazo es fijo, no configurable. | `test/features/settings/presentation/app_lock_test.dart` |
+| PRIV-02 | La pantalla de bloqueo tapa cualquier pantalla abierta (también para lectores de pantalla) y, al desbloquear, la usuaria vuelve a donde estaba. | `test/widget_test.dart` |
+| PRIV-03 | El diálogo de autenticación del sistema no cuenta como segundo plano: desbloquear nunca provoca un re-bloqueo inmediato. | `app_lock_test.dart` |
+| PRIV-04 | **Avisos discretos**, activado por defecto: toda notificación (alertas, medicación y recordatorios personalizados) muestra el título «CicloTrack» y un cuerpo genérico, sin tipo de aviso, iniciales, fechas ni el texto escrito por la usuaria. El detalle solo se ve dentro de la app. Desactivarlo vuelve al texto detallado (iniciales, nunca nombres). | `alerts_repository_test.dart`, `reminder_scheduler_test.dart` |
+| PRIV-05 | Cambiar el ajuste reescribe los avisos ya programados; no queda pendiente ninguno con el texto anterior. | `discreet_notices_test.dart` |
+| PRIV-06 | Exportar en cualquier formato (JSON, CSV, PDF) exige aceptar antes una advertencia de archivo sin cifrar; cancelar no escribe nada. | `backup_screen_test.dart` |
+| PRIV-07 | Ajustes dice de forma explícita cuándo se pide el PIN y que el bloqueo no cifra los datos. | `settings_navigation_test.dart` |
+
+Límites conocidos, pendientes de validar en dispositivo (TOC-15):
+
+    La miniatura de «aplicaciones recientes» puede mostrar la última pantalla aunque el bloqueo esté activado (no se usa FLAG_SECURE).
+    Con la app bloqueada, el botón Atrás puede cerrar la pantalla que queda oculta debajo; no llega a verse su contenido.
+    El nombre de la app y el de sus canales de notificación siguen siendo visibles en el sistema.
+    No hay cifrado de aplicación para la base de datos ni para las copias.
+
 8. 🎨 Personalización
 
     Colores por perfil: Cada mujer con un color distintivo

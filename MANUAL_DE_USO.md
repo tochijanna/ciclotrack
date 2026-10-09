@@ -304,7 +304,12 @@ No hay deshacer. Puedes restaurar o trasladar los datos con una copia JSON desde
 
 ## Privacidad y límites
 
-Los datos se guardan localmente. El uso cotidiano no necesita internet ni una cuenta. Las notas pueden verse en la lista de perfiles y los avisos incluyen información de los registros; ajusta la visibilidad de notificaciones en Android si quieres limitar lo que aparece en la pantalla de bloqueo.
+Los datos se guardan localmente. El uso cotidiano no necesita internet ni una cuenta. Las notas pueden verse en la lista de perfiles.
+
+- **Bloqueo de acceso.** En **Ajustes → Seguridad** puedes activar el bloqueo con el PIN o la huella del sistema. La app lo pide cada vez que se abre y al volver después de 1 minuto o más en segundo plano; si vuelves antes, sigues donde estabas. El bloqueo controla quién entra en la app, **no cifra los datos**: la base de datos y las copias exportadas se guardan en claro y dependen de la protección del propio teléfono.
+- **Avisos discretos.** Activado por defecto en **Ajustes → Seguridad**: las notificaciones solo dicen «Tienes un aviso nuevo. Abre la app para verlo.», sin tipo de aviso, iniciales, fechas ni el texto de tus recordatorios. Si lo desactivas, las notificaciones muestran el detalle (con iniciales, nunca nombres) a cualquiera que vea la pantalla desbloqueada.
+- **Copias sin cifrar.** Antes de exportar en JSON, CSV o PDF la app avisa de que el archivo no va cifrado: quien lo abra puede leer todo su contenido. Guárdalo en un lugar de confianza y bórralo cuando no lo necesites.
+- La vista de aplicaciones recientes de Android puede mostrar la última pantalla abierta aunque el bloqueo esté activado.
 
 Eliminar datos de la aplicación desde Android elimina también su información local. Una copia JSON manual guardada fuera del almacenamiento de la app permite restaurarla.
 

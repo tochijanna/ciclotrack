@@ -1377,7 +1377,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsAppLockSupported =>
-      'Requiere PIN o huella al abrir la app';
+      'Pide PIN o huella al abrir la app y tras 1 minuto en segundo plano. Controla el acceso; no cifra los datos.';
+
+  @override
+  String get settingsDiscreetNoticesTitle => 'Avisos discretos';
+
+  @override
+  String get settingsDiscreetNoticesSubtitle =>
+      'Las notificaciones no muestran iniciales, fechas ni el texto de los recordatorios';
+
+  @override
+  String get discreetNoticeBody =>
+      'Tienes un aviso nuevo. Abre la app para verlo.';
 
   @override
   String get settingsAppLockUnavailable => 'No disponible en este dispositivo';
@@ -1449,6 +1460,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get backupRestoreAction => 'Restaurar';
+
+  @override
+  String get backupUnencryptedTitle => 'Archivo sin cifrar';
+
+  @override
+  String get backupUnencryptedWarning =>
+      'El archivo se guardará sin cifrar: cualquiera que lo abra podrá leer todos los datos. El bloqueo de acceso de la app no lo protege. Guárdalo en un lugar seguro.';
+
+  @override
+  String get backupUnencryptedAction => 'Exportar';
 
   @override
   String backupSaveFailed(String reason) {
