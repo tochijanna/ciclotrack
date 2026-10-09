@@ -132,14 +132,42 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
     );
   }
 
-  Future<void> replaceTags(int womanId, List<String> tagNames) async {
-    await (delete(womanTags)..where((t) => t.womanId.equals(womanId))).go();
-    for (final name in tagNames) {
-      final tagId = await getOrCreateTag(name);
-      await into(
-        womanTags,
-      ).insert(WomanTagsCompanion.insert(womanId: womanId, tagId: tagId));
-    }
+  /// Reemplaza las etiquetas de una mujer en una transacción.
+  Future<void> replaceTags(int womanId, List<String> tagNames) {
+    return transaction(() async {
+      await (delete(womanTags)..where((t) => t.womanId.equals(womanId))).go();
+      for (final name in tagNames) {
+        final tagId = await getOrCreateTag(name);
+        await into(
+          womanTags,
+        ).insert(WomanTagsCompanion.insert(womanId: womanId, tagId: tagId));
+      }
+    });
+  }
+
+  /// Crea una mujer con sus etiquetas en una transacción.
+  Future<int> insertWithTags(WomenCompanion entry, List<String> tagNames) {
+    return transaction(() async {
+      final id = await into(women).insert(entry);
+      await replaceTags(id, tagNames);
+      return id;
+    });
+  }
+
+  /// Actualiza una mujer y reemplaza sus etiquetas en una transacción.
+  /// No hace nada si la mujer no existe.
+  Future<void> updateWithTags(
+    int id,
+    WomenCompanion changes,
+    List<String> tagNames,
+  ) {
+    return transaction(() async {
+      final updated = await (update(
+        women,
+      )..where((t) => t.id.equals(id))).write(changes);
+      if (updated == 0) return;
+      await replaceTags(id, tagNames);
+    });
   }
 
   Future<void> unlinkAllTags(int womanId) =>
