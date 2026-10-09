@@ -48,8 +48,8 @@ class WomenRepository {
   // --- CRUD ---
 
   /// Crea un perfil nuevo. Devuelve el id asignado.
-  Future<int> create(WomanDraft draft) async {
-    final id = await _dao.insert(
+  Future<int> create(WomanDraft draft) {
+    return _dao.insertWithTags(
       WomenCompanion.insert(
         name: draft.name,
         initials: draft.initials,
@@ -59,25 +59,23 @@ class WomenRepository {
         sortOrder: Value(draft.sortOrder),
         createdAt: DateTime.now(),
       ),
+      draft.tags,
     );
-    await _dao.replaceTags(id, draft.tags);
-    return id;
   }
 
   /// Actualiza un perfil existente.
-  Future<void> update(int id, WomanDraft draft) async {
-    final existing = await _dao.getById(id);
-    if (existing == null) return;
-    await _dao.updateWoman(
-      existing.copyWith(
-        name: draft.name,
-        initials: draft.initials,
-        emoji: draft.emoji,
-        color: draft.color,
-        privateNotes: draft.privateNotes,
+  Future<void> update(int id, WomanDraft draft) {
+    return _dao.updateWithTags(
+      id,
+      WomenCompanion(
+        name: Value(draft.name),
+        initials: Value(draft.initials),
+        emoji: Value(draft.emoji),
+        color: Value(draft.color),
+        privateNotes: Value(draft.privateNotes),
       ),
+      draft.tags,
     );
-    await _dao.replaceTags(id, draft.tags);
   }
 
   /// Elimina un perfil y todos sus datos dependientes de forma transaccional.
