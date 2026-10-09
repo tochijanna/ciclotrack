@@ -266,5 +266,7 @@ String backupFormatErrorText(AppLocalizations l10n, BackupFormatException e) {
       return l10n.backupInvalidRow(e.detail ?? '');
     case BackupFormatError.invalidValue:
       return l10n.backupInvalidValue(e.detail ?? '');
+    case BackupFormatError.periodOverlap:
+      return l10n.backupPeriodOverlap;
   }
 }
