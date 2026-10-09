@@ -162,6 +162,14 @@ F-01, F-02 y F-03 fueron corregidos en el ciclo de estabilización de alertas.
 - **Fix:** ignorar tokens desconocidos y, opcionalmente, registrar/normalizar la configuración.
 - **Pruebas:** CSV vacío, válido, duplicado y con tipos inexistentes.
 
+### F-20 — Volcado transaccional y límite de tamaño al importar ✅ Resuelto (TOC-17)
+
+- **Archivo:** `lib/features/backup/data/backup_serializer.dart`, `lib/features/backup/domain/backup_document.dart`
+- **Problema:** `dumpDatabase()` lanzaba once `SELECT` sueltos sin transacción; al ser la app mono-isolate, una escritura del usuario o del planificador podía colarse entre dos tablas y la copia salía con huérfanos o filas perdidas. Además, el import aceptaba cualquier tamaño de archivo: el `jsonDecode` de un fichero enorme podía tumbar la app por memoria.
+- **Impacto:** una copia exportada durante uso activo no siempre restauraba los datos tal como estaban al pulsar «Exportar».
+- **Fix:** las once lecturas corren dentro de `db.transaction()` (snapshot atómico, las escrituras externas quedan en cola hasta el commit). El import rechaza antes de decodificar todo archivo mayor que `backupMaxBytes` (8 MB) con el nuevo `BackupFormatError.tooLarge` y su texto en es/en. La medición (base sintética de 4 497 filas: JSON de 927 kB, export 89 ms, import 134 ms, pico de RSS +27 MB) justifica el tope: ×8 sobre el peor caso realista (~2 MB) con pico acotado a ~200 MB.
+- **Pruebas:** volcados concurrentes con altas en bucle, comprobando que cada copia sale referencialmente cerrada; archivo sobre el tope → `tooLarge`; ida y vuelta dump → JSON → restore → dump con las once tablas (incluida `medications`) idénticas.
+
 ## Cobertura — plan de trabajo y resultado
 
 ### Estado de partida (rama `feature/coverage-backlog`, 2026-09-29)

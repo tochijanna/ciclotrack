@@ -159,9 +159,9 @@ void main() {
     });
 
     test('las columnas de fecha salen como YYYY-MM-DD', () {
-      final json = jsonDecode(
-        utf8.decode(muestra().toUtf8Bytes()),
-      ) as Map<String, Object?>;
+      final json =
+          jsonDecode(utf8.decode(muestra().toUtf8Bytes()))
+              as Map<String, Object?>;
       final tablas = json['tables']! as Map<String, Object?>;
 
       final periodo =
