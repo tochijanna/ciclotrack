@@ -1,5 +1,6 @@
 import 'package:ciclotrack/l10n/app_localizations.dart';
 
+import '../../../core/privacy/discreet_notices.dart';
 import '../../encounters/data/encounter_repository.dart';
 import '../../medications/data/medication_dao.dart';
 import '../../prediction/data/prediction_repository.dart';
@@ -24,6 +25,7 @@ class AlertsRepository {
     required this.medicationDao,
     required this.l10n,
     this.engine = const AlertRuleEngine(),
+    this.discreet = readDiscreetNotices,
   });
 
   final NotificationScheduler scheduler;
@@ -34,6 +36,9 @@ class AlertsRepository {
   final MedicationDao medicationDao;
   final AppLocalizations l10n;
   final AlertRuleEngine engine;
+
+  /// Si los avisos se programan con texto genérico (PRIV-04).
+  final Future<bool> Function() discreet;
 
   /// Recalcula y reprograma todas las alertas.
   Future<void> refreshAlerts({DateTime? today}) async {
@@ -87,11 +92,12 @@ class AlertsRepository {
         .where(isAlertNotificationId)
         .toSet();
     final newIds = items.map((item) => item.id).toSet();
+    final generic = await discreet();
     for (final item in items) {
       await scheduler.schedule(
         item,
-        alertTypeLabel(l10n, item.type),
-        alertBody(l10n, item.message),
+        generic ? discreetNoticeTitle : alertTypeLabel(l10n, item.type),
+        generic ? l10n.discreetNoticeBody : alertBody(l10n, item.message),
       );
     }
     await scheduler.cancel(oldIds.difference(newIds).toList());

@@ -656,7 +656,10 @@
   "medicationSaveChangeError": "No se pudo guardar el cambio",
   "settingsSectionSecurity": "Seguridad",
   "settingsAppLockTitle": "Bloqueo de acceso (PIN/huella)",
-  "settingsAppLockSupported": "Requiere PIN o huella al abrir la app",
+  "settingsAppLockSupported": "Pide PIN o huella al abrir la app y tras 1 minuto en segundo plano. Controla el acceso; no cifra los datos.",
+  "settingsDiscreetNoticesTitle": "Avisos discretos",
+  "settingsDiscreetNoticesSubtitle": "Las notificaciones no muestran iniciales, fechas ni el texto de los recordatorios",
+  "discreetNoticeBody": "Tienes un aviso nuevo. Abre la app para verlo.",
   "settingsAppLockUnavailable": "No disponible en este dispositivo",
   "settingsLocalTitle": "100 % local y sin nube",
   "settingsLocalSubtitle": "Todos los datos se guardan solo en este dispositivo: no hay cuentas, sincronización ni servidores.",
@@ -679,6 +682,9 @@
   "backupCancelled": "Exportación cancelada",
   "backupImportCancelled": "Importación cancelada",
   "backupRestoreAction": "Restaurar",
+  "backupUnencryptedTitle": "Archivo sin cifrar",
+  "backupUnencryptedWarning": "El archivo se guardará sin cifrar: cualquiera que lo abra podrá leer todos los datos. El bloqueo de acceso de la app no lo protege. Guárdalo en un lugar seguro.",
+  "backupUnencryptedAction": "Exportar",
   "backupSaveFailed": "No se pudo guardar: {reason}",
   "@backupSaveFailed": {
     "placeholders": {"reason": {"type": "String"}}
