@@ -2771,6 +2771,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'La copia contiene periodos solapados'**
   String get backupPeriodOverlap;
+
+  /// No description provided for @backupTooLarge.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo supera el tamaño máximo permitido'**
+  String get backupTooLarge;
 }
 
 class _AppLocalizationsDelegate

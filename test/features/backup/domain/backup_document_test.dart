@@ -340,6 +340,19 @@ void main() {
         throwsA(isA<BackupFormatException>()),
       );
     });
+
+    test('rechaza un archivo mayor que el tope sin decodificarlo', () {
+      expect(
+        () => BackupDocument.fromBytes(List.filled(backupMaxBytes + 1, 0x20)),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.error,
+            'error',
+            BackupFormatError.tooLarge,
+          ),
+        ),
+      );
+    });
   });
 
   group('invariantes de negocio', () {

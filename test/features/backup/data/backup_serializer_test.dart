@@ -286,6 +286,21 @@ void main() {
     await vacia.close();
   });
 
+  test('ida y vuelta por JSON conserva las once tablas con medicamentos',
+      () async {
+    await seedAll(db);
+    final doc = await dumpDatabase(db, now: now);
+    expect(doc.counts['medications'], 1);
+
+    final destino = AppDatabase.forTesting(NativeDatabase.memory());
+    await restoreDatabase(destino, BackupDocument.fromBytes(doc.toUtf8Bytes()));
+    final vuelta = await dumpDatabase(destino, now: now);
+
+    expect(vuelta.tables, doc.tables);
+
+    await destino.close();
+  });
+
   test('un volcado concurrente con escrituras sale referencialmente cerrado',
       () async {
     // Sin transacción, una escritura se cuela entre dos SELECT del volcado
