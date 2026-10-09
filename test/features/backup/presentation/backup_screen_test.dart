@@ -107,11 +107,43 @@ void main() {
     await asentar(tester);
   }
 
+  /// Elige un formato y acepta el aviso de archivo sin cifrar.
+  Future<void> exportar(WidgetTester tester, String texto) async {
+    await pulsar(tester, texto);
+    expect(find.text('Archivo sin cifrar'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Exportar'));
+    await asentar(tester);
+  }
+
+  testWidgets('PRIV-06: sin aceptar el aviso de sin cifrar no exporta nada', (
+    tester,
+  ) async {
+    await seedWoman(tester, db, name: 'Ana');
+    await pumpBackup(tester);
+
+    for (final formato in [
+      'Copia completa (JSON)',
+      'Tablas (CSV)',
+      'Informe (PDF)',
+    ]) {
+      await pulsar(tester, formato);
+      expect(find.textContaining('se guardará sin cifrar'), findsOneWidget);
+      expect(find.textContaining('bloqueo de acceso'), findsOneWidget);
+      await pulsar(tester, 'Cancelar');
+      expect(find.text('Archivo sin cifrar'), findsNothing);
+    }
+
+    expect(gateway.guardados, isEmpty);
+    expect(gateway.ultimasExtensiones, isNull);
+
+    await closeTestDatabase(tester, db);
+  });
+
   testWidgets('exporta la copia completa en JSON', (tester) async {
     await seedWoman(tester, db, name: 'Ana');
     await pumpBackup(tester);
 
-    await pulsar(tester, 'Copia completa (JSON)');
+    await exportar(tester, 'Copia completa (JSON)');
 
     expect(gateway.ultimasExtensiones, ['json']);
     expect(gateway.guardados, hasLength(1));
@@ -127,7 +159,7 @@ void main() {
     gateway.cancelarGuardado = true;
     await pumpBackup(tester);
 
-    await pulsar(tester, 'Copia completa (JSON)');
+    await exportar(tester, 'Copia completa (JSON)');
 
     expect(gateway.guardados, isEmpty);
     expect(find.text('Exportación cancelada'), findsOneWidget);
@@ -139,7 +171,7 @@ void main() {
     await seedWoman(tester, db, name: 'Ana');
     await pumpBackup(tester);
 
-    await pulsar(tester, 'Tablas (CSV)');
+    await exportar(tester, 'Tablas (CSV)');
 
     expect(gateway.ultimasExtensiones, ['zip']);
     final file = gateway.guardados.single;
@@ -156,7 +188,7 @@ void main() {
     await seedWoman(tester, db, name: 'Ana');
     await pumpBackup(tester);
 
-    await pulsar(tester, 'Informe (PDF)');
+    await exportar(tester, 'Informe (PDF)');
 
     expect(gateway.ultimasExtensiones, ['pdf']);
     final file = gateway.guardados.single;
