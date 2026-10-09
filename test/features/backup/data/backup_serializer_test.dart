@@ -285,4 +285,56 @@ void main() {
 
     await vacia.close();
   });
+
+  test('un volcado concurrente con escrituras sale referencialmente cerrado',
+      () async {
+    // Sin transacción, una escritura se cuela entre dos SELECT del volcado
+    // (ambas tareas se entrelazan en los await) y la copia sale con huérfanos.
+    for (var i = 0; i < 30; i++) {
+      final resultados = await Future.wait([
+        dumpDatabase(db, now: now),
+        () async {
+          final id = await womenOf(db).create(
+            WomanDraft(name: 'Concurrente $i', initials: 'C$i'),
+          );
+          await trackingOf(db).createPeriod(
+            id,
+            PeriodDraft(startDate: DateTime(2026, 1, 1 + i % 28)),
+          );
+        }(),
+      ]);
+      final doc = resultados.first as BackupDocument;
+
+      final ids = <String, Set<int>>{
+        for (final tabla in backupTables)
+          tabla: {
+            for (final fila in doc.rows(tabla)) fila['id']! as int,
+          },
+      };
+      void sinHuerfanos(String tabla, String columna, String objetivo) {
+        for (final fila in doc.rows(tabla)) {
+          expect(
+            ids[objetivo],
+            contains(fila[columna] as int),
+            reason: 'vuelto $i: $tabla fila ${fila['id']} '
+                'apunta a $objetivo inexistente',
+          );
+        }
+      }
+
+      for (final tabla in const [
+        'woman_tags',
+        'period_logs',
+        'ovulation_logs',
+        'symptoms',
+        'medications',
+        'reminders',
+      ]) {
+        sinHuerfanos(tabla, 'woman_id', 'women');
+      }
+      sinHuerfanos('woman_tags', 'tag_id', 'tags');
+      sinHuerfanos('encounter_women', 'encounter_id', 'encounters');
+      sinHuerfanos('encounter_women', 'woman_id', 'women');
+    }
+  });
 }
