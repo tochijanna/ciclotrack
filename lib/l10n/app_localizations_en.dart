@@ -1396,6 +1396,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not save the app lock setting. Try again.';
 
   @override
+  String get settingsAppLockAuthRequired =>
+      'The lock is still on: unlock with your PIN or fingerprint to turn it off.';
+
+  @override
   String get settingsLocalTitle => '100% local and cloud-free';
 
   @override

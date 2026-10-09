@@ -2544,6 +2544,12 @@ abstract class AppLocalizations {
   /// **'No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.'**
   String get settingsAppLockSaveError;
 
+  /// No description provided for @settingsAppLockAuthRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El bloqueo sigue activado: hay que desbloquear con PIN o huella para desactivarlo.'**
+  String get settingsAppLockAuthRequired;
+
   /// No description provided for @settingsLocalTitle.
   ///
   /// In es, this message translates to:

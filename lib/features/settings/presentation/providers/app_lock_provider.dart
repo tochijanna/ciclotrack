@@ -54,6 +54,18 @@ const appLockEnabledPrefKey = 'app_lock_enabled';
 /// de archivos de la copia de seguridad.
 const appLockGracePeriod = Duration(seconds: 60);
 
+/// Resultado de intentar activar o desactivar el bloqueo de acceso.
+enum AppLockChange {
+  /// El cambio se guardó.
+  saved,
+
+  /// Desactivar exige autenticarse y la usuaria no lo consiguió o canceló.
+  denied,
+
+  /// No se pudo persistir el cambio.
+  failed,
+}
+
 class AppLockState {
   const AppLockState({
     this.enabled = false,
@@ -172,10 +184,14 @@ class AppLockController extends Notifier<AppLockState> {
     }
   }
 
-  /// Activa o desactiva el bloqueo de acceso. Devuelve `false`, sin cambiar
-  /// el estado, si no se pudo persistir. Quien lo activa ya está dentro de la
-  /// app, así que la sesión en curso sigue desbloqueada.
-  Future<bool> setEnabled(bool value) async {
+  /// Activa o desactiva el bloqueo de acceso; el estado solo cambia con
+  /// [AppLockChange.saved]. Quien lo activa ya está dentro de la app, así que
+  /// la sesión en curso sigue desbloqueada. Desactivarlo exige PIN o huella:
+  /// tener la app abierta en la mano no basta para quitar el bloqueo.
+  Future<AppLockChange> setEnabled(bool value) async {
+    if (!value && state.enabled && !await authenticate()) {
+      return AppLockChange.denied;
+    }
     var saved = false;
     try {
       final prefs = await ref.read(sharedPreferencesProvider)();
@@ -187,12 +203,12 @@ class AppLockController extends Notifier<AppLockState> {
       // Lo recién escrito es el estado conocido: ya no hay fallo de lectura.
       state = state.copyWith(enabled: value, unlocked: true, loadFailed: false);
     }
-    return saved;
+    return saved ? AppLockChange.saved : AppLockChange.failed;
   }
 
   /// Pide PIN o huella y desbloquea la sesión si la usuaria se autentica.
-  /// Cualquier error del plugin mantiene el cierre.
-  Future<void> authenticate() async {
+  /// Cualquier error del plugin mantiene el cierre. Devuelve si se autenticó.
+  Future<bool> authenticate() async {
     var ok = false;
     try {
       ok = await ref.read(localAuthProvider).authenticate();
@@ -202,6 +218,7 @@ class AppLockController extends Notifier<AppLockState> {
     if (ok && !_disposed) {
       state = state.copyWith(unlocked: true);
     }
+    return ok;
   }
 }
 

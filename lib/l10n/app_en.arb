@@ -664,6 +664,7 @@
   "discreetNoticeBody": "You have a new notice. Open the app to see it.",
   "settingsAppLockUnavailable": "Not available on this device",
   "settingsAppLockSaveError": "Could not save the app lock setting. Try again.",
+  "settingsAppLockAuthRequired": "The lock is still on: unlock with your PIN or fingerprint to turn it off.",
   "settingsLocalTitle": "100% local and cloud-free",
   "settingsLocalSubtitle": "All data is stored only on this device: no accounts, sync or servers.",
   "settingsMedicationSubtitle": "Pills and alert times, per woman",

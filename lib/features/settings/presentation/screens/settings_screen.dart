@@ -74,13 +74,16 @@ class SettingsScreen extends ConsumerWidget {
             onChanged: appLock.supported
                 ? (value) async {
                     final messenger = ScaffoldMessenger.of(context);
-                    final saved = await ref
+                    final change = await ref
                         .read(appLockProvider.notifier)
                         .setEnabled(value);
-                    if (!saved) {
-                      messenger.showSnackBar(
-                        SnackBar(content: Text(l10n.settingsAppLockSaveError)),
-                      );
+                    final error = switch (change) {
+                      AppLockChange.saved => null,
+                      AppLockChange.denied => l10n.settingsAppLockAuthRequired,
+                      AppLockChange.failed => l10n.settingsAppLockSaveError,
+                    };
+                    if (error != null) {
+                      messenger.showSnackBar(SnackBar(content: Text(error)));
                     }
                   }
                 : null,

@@ -664,6 +664,7 @@
   "discreetNoticeBody": "Tienes un aviso nuevo. Abre la app para verlo.",
   "settingsAppLockUnavailable": "No disponible en este dispositivo",
   "settingsAppLockSaveError": "No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.",
+  "settingsAppLockAuthRequired": "El bloqueo sigue activado: hay que desbloquear con PIN o huella para desactivarlo.",
   "settingsLocalTitle": "100 % local y sin nube",
   "settingsLocalSubtitle": "Todos los datos se guardan solo en este dispositivo: no hay cuentas, sincronización ni servidores.",
   "settingsMedicationSubtitle": "Pastillas y horas de aviso, por mujer",
