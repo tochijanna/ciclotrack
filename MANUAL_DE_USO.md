@@ -247,7 +247,7 @@ Para restaurar, selecciona una copia JSON y revisa la confirmación: la importac
 
 La lista agrupa los medicamentos por mujer. Toca uno para editarlo, usa el interruptor para activarlo o desactivarlo y **Eliminar medicamento** para borrarlo tras confirmar.
 
-El aviso usa el texto **«Es hora de la pastilla para …»** con el nombre de la mujer, a la hora configurada en ese medicamento, independientemente de la hora general de alertas. No necesita periodos registrados. En cada recálculo se programa la siguiente toma: hoy si la hora aún no ha pasado, mañana en caso contrario. Hay una hora diaria por medicamento; no se registra si se tomó, ni se configuran frecuencias semanales o fecha de fin. Abre la app para mantener actualizada la programación: no hay una repetición diaria indefinida ya programada.
+El aviso se repite **cada día** a la hora configurada en ese medicamento, independientemente de la hora general de alertas, y no necesita periodos registrados. Con **Avisos discretos** activado (por defecto) muestra el texto genérico; si lo desactivas, dice **«Es hora de tu medicación (HH:MM)»**, sin el nombre de la mujer ni el del medicamento. Hay una hora diaria por medicamento; no se registra si se tomó, ni se configuran frecuencias semanales o fecha de fin. La repetición diaria está comprobada en los tests de la app, pero no en un dispositivo real: si echas en falta un aviso, abre la app y pulsa **Recalcular ahora** en **Alertas**.
 
 ## Recordatorios personalizados
 

@@ -1,17 +1,44 @@
 # Plan Técnico — Calendario Menstrual (Flutter)
 
-## 0. Estado verificado
+## 0. Estado vigente
+
+Contrastado con `pubspec.yaml` y `pubspec.lock`. Las secciones «Fase N: plan/resultado» del §5 son **históricas** y describen el estado de la versión que indica cada una; si contradicen esta sección, manda esta.
 
 | Ítem | Estado |
 |---|---|
-| Proyecto | Flutter Android-only `ciclotrack`; fases 0–10 publicadas como **v1.0.0** (tag sobre `main`), `develop` como rama de integración |
-| Repositorio | GitHub: `https://github.com/tochijanna/ciclotrack.git` |
-| Flutter | 3.32.7 en `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` (ignorado por git; los worktrees nuevos no lo incluyen) |
-| Dart | 3.8.1 |
-| Android SDK | 34/35 en la misma carpeta `.toolchain/` |
-| Java | OpenJDK 17 del sistema |
-| Calidad | `flutter analyze` limpio, suite completa verde |
-| APK debug | Compila correctamente |
+| Proyecto | Flutter Android-only `ciclotrack`; fases 0–10 cerradas |
+| Versión publicada | **v1.2.0** (`version: 1.2.0+4`, tag sobre `main`) |
+| Sin publicar en `develop` | Política de privacidad PRIV-01…07 (TOC-12): re-bloqueo a los 60 s, avisos discretos, advertencia de copia sin cifrar y bloqueo *fail-closed*. Detalle en `Especificaciones.md` §7 |
+| Repositorio | GitHub: `https://github.com/tochijanna/ciclotrack.git`; `main` (releases) y `develop` (integración) |
+| Flutter | 3.47.4 en `/home/tochi/Proyectos/CalendarioMenstrual/.toolchain/` (ignorado por git; los worktrees nuevos no lo incluyen) |
+| Dart | 3.13.3 (`environment.sdk: ^3.10.0`; el lockfile exige `>=3.11.0`) |
+| Android SDK | Plataforma 36 y build-tools 36.0.0 en la misma carpeta `.toolchain/` |
+| Java | OpenJDK 17 del sistema (Jenkins usa JDK 21) |
+| Schema drift | v4, 11 tablas (§3) |
+| Idiomas | Español e inglés, con español de respaldo (`lib/l10n/`) |
+| Calidad | Ver «Última verificación registrada» |
+| Dispositivo | **Sin validar**: ver §8 |
+
+### Última verificación registrada
+
+Ejecutada el 2026-10-09 con Flutter 3.47.4 / Dart 3.13.3, en local y sin dispositivo:
+
+| Código | `flutter analyze` | `flutter test` | `flutter build apk --debug` |
+|---|---|---|---|
+| v1.2.0 (árbol idéntico a `bf9ee97`) | Sin incidencias | 425 tests verdes | No ejecutado en esta pasada |
+| `develop` en `550353e` (sin publicar) | Sin incidencias | 447 tests verdes | Compila |
+
+No se ha ejecutado `flutter build apk --release` ni ninguna prueba en dispositivo. Las cifras de tests de las secciones históricas (p. ej. 406 en v1.0.0) corresponden a su versión.
+
+### Historial de releases
+
+| Versión | Fecha | Commit en `main` | Alcance |
+|---|---|---|---|
+| v1.0.0 | 2026-10-01 | `7987c91` | Fases 0–10: schema drift v4, medicación, recordatorios y ajustes. Flutter 3.32.7 / Dart 3.8.1 |
+| v1.0.1 | 2026-10-01 | `81b6c37` | Solo documentación (reconciliación) |
+| v1.1.0 | 2026-10-02 | `420d8fa` | Bloqueo de acceso opcional (`local_auth`), `allowBackup="false"`, iniciales en los avisos, **medicación con repetición diaria**, aritmética de días de calendario en la predicción y firma de release con keystore propio |
+| v1.1.1 | 2026-10-02 | `961647d` | Subida a Flutter 3.47.4 / Dart 3.13.3 y de las dependencias (§2) |
+| v1.2.0 | 2026-10-08 | `e2502dc` | Localización al inglés con español de respaldo |
 
 Antes de cualquier comando Flutter/Dart:
 
@@ -45,26 +72,33 @@ Las reglas de dominio requieren tests unitarios. Las fuentes reactivas usan `Str
 
 ## 2. Dependencias
 
-| Paquete | Uso | Estado |
+Versiones resueltas en `pubspec.lock` (v1.2.0):
+
+| Paquete | Uso | Versión |
 |---|---|---|
-| `flutter_riverpod` | Estado y providers | Instalado |
-| `drift` + `drift_flutter` | SQLite local y streams | Instalado, Drift 2.31.0 |
-| `flutter_local_notifications` | Notificaciones locales | Instalado |
-| `timezone` + `flutter_timezone` | Programación por zona horaria | Instalado |
-| `table_calendar` | Vistas semana/mes | Instalado (3.2.1) |
-| `fl_chart` | Reportes/estadísticas | `1.0.0`, Fase 8 — 1.1.x declara `vector_math ^2.1` pero usa API de 2.2 y no compila |
-| `csv` + `pdf` + `archive` + `file_picker` | Backup manual: ZIP de CSV, informe PDF e import/export por el selector del sistema | Instalado, Fase 9 — `pdf` 3.11.3 (3.12.x pide `vector_math ^2.2`), `archive` 3.6.1 (pdf exige `<4.1`), `csv` 6.0.0 y `file_picker` 11.0.3 |
-| `intl` | Fechas y localización es-ES | Instalado (0.20.2) + `flutter_localizations` |
-| `go_router` | Navegación avanzada | **No instalado**: la navegación usa `MaterialPageRoute` (pantalla de Ajustes y menú overflow). Descartado, sin deep links |
-| `ReorderableListView` | Orden de perfiles | Nativo, implementado |
+| `flutter_riverpod` | Estado y providers | 2.6.1 |
+| `drift` + `drift_flutter` | SQLite local y streams | 2.35.1 + 0.3.1 |
+| `sqlite3` | Motor SQLite (native assets) | 3.7.0 |
+| `flutter_local_notifications` | Notificaciones locales | 20.1.0 |
+| `timezone` + `flutter_timezone` | Programación por zona horaria | 0.10.1 + 5.1.0 |
+| `table_calendar` | Vistas semana/mes | 3.2.1 |
+| `fl_chart` | Reportes/estadísticas | 1.2.0 |
+| `csv` + `pdf` + `archive` + `file_picker` | Backup manual: ZIP de CSV, informe PDF e import/export por el selector del sistema | 8.0.0 + 3.12.0 + 4.0.9 + 13.1.0 |
+| `intl` + `flutter_localizations` | Fechas y localización es/en | 0.20.3 |
+| `local_auth` | Bloqueo de acceso con PIN/biometría del sistema (desde v1.1.0) | 2.3.0 |
+| `shared_preferences` | Ajustes de bloqueo y avisos discretos (desde v1.1.0) | 2.5.3 |
+| `go_router` | Navegación avanzada | **No instalado**: la navegación usa `MaterialPageRoute`. Descartado, sin deep links |
+| `ReorderableListView` | Orden de perfiles | Nativo |
+
+Restricciones vigentes: `pdf` se queda por debajo de 3.13 (3.13+ exige `xml 7.x`, incompatible con `flutter_local_notifications 20.1.0`) y `archive` por debajo de 4.1 (lo que admite `pdf` 3.12). Los pines que citan las fases 7–9 (`fl_chart 1.0.0`, `pdf 3.11.3`, `archive 3.6.1`, `csv 6.0.0`, `file_picker 11.0.3`, Drift 2.31.0) eran consecuencia de Flutter 3.32.7 y **dejaron de aplicar en v1.1.1**.
+
+Toda dependencia nueva se valida compilando un test de widget **y** el APK, no solo resolviendo versiones.
 
 Después de modificar tablas o DAOs:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
-
-No actualizar Drift/Riverpod sin actualizar Dart: Drift está fijado en `2.31.0` para Dart 3.8.1.
 
 ---
 
@@ -126,7 +160,7 @@ La predicción se muestra en la tarjeta superior del tracking individual y se ac
 | **9** | Export/import manual JSON, CSV y PDF | ✅ Completada | Backup |
 | **10** | Medicación, recordatorios personalizados, ajustes finales, iconos y pulido | ✅ Completada | Versión 1.0 |
 
-### Fase 6: alcance actual
+### Fase 6: alcance
 
 Implementadas 8 reglas de alerta automáticas:
 
@@ -142,6 +176,8 @@ Implementadas 8 reglas de alerta automáticas:
 La alerta de medicación se pospone a la Fase 10 porque requiere tabla y CRUD de medicamentos por mujer.
 
 ### Fase 7: plan (dashboard de vistas consolidadas)
+
+> **Histórico — estado a v1.0.0** (Flutter 3.32.7 / Dart 3.8.1). Versiones, pines y recuentos de tests de esta sección no son los vigentes: ver §0 y §2.
 
 **Rama:** `feature/fase-7-vistas` desde `develop`. **Schema:** sin cambios (sigue en v3); no hay migración ni código generado nuevo (solo métodos escritos a mano en DAOs existentes). **Alcances de commit:** `calendar` (principal), con `core`, `prediction` y `tracking` en los cambios que caen dentro de esas features.
 
@@ -250,6 +286,8 @@ Modificados: `pubspec.yaml` (deps), `lib/main.dart` (locale + `initializeDateFor
 
 ### Fase 7: resultado
 
+> **Histórico — estado a v1.0.0** (Flutter 3.32.7 / Dart 3.8.1). Versiones, pines y recuentos de tests de esta sección no son los vigentes: ver §0 y §2.
+
 Cerrada en la rama `feature/fase-7-vistas` con **11 commits** y **55 tests nuevos** (257 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni código generado nuevo.
 
 | Vista | Pestaña | Implementación |
@@ -273,6 +311,8 @@ Desviaciones respecto al plan, todas por simplificación y sin recortar alcance:
 Límites que se mantienen: proyección de ciclos a ~18 meses (`CalendarRepository.defaultHorizonte`), máximo 4 glifos por celda y «+N», ventanas de ciclos proyectados atenuadas y etiquetadas como estimadas, y ausencia de deep links (sin `go_router`).
 
 ### Fase 8: plan (reportes y estadísticas)
+
+> **Histórico — estado a v1.0.0** (Flutter 3.32.7 / Dart 3.8.1). Versiones, pines y recuentos de tests de esta sección no son los vigentes: ver §0 y §2.
 
 **Rama:** `feature/fase-8-reportes` desde `develop`. **Schema:** sin cambios (sigue en v3); no hay migración ni código generado nuevo. **Alcances de commit:** `reports` (principal), con `calendar` en la extensión del tablero.
 
@@ -355,6 +395,8 @@ Modificados: `pubspec.yaml` (`fl_chart`), `lib/features/calendar/domain/calendar
 
 ### Fase 8: resultado
 
+> **Histórico — estado a v1.0.0** (Flutter 3.32.7 / Dart 3.8.1). Versiones, pines y recuentos de tests de esta sección no son los vigentes: ver §0 y §2.
+
 Cerrada en la rama `feature/fase-8-reportes` con **9 commits** y **26 tests nuevos** (283 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni codegen. Los reportes se calculan sobre el tablero consolidado (extendido con los periodos registrados de cada mujer): una sola fuente de datos, sin un segundo agregado de los mismos cinco streams.
 
 | Punto de la spec | Implementación |
@@ -378,6 +420,8 @@ Desviaciones respecto al plan, por simplificación y sin recortar alcance:
 Límites que se mantienen: ventana fija de 12 meses sin selector de rango, sin golden tests (la forma exacta de las curvas se valida a mano sobre el APK; los tests cubren los números y la presencia de los gráficos), y el `AppBar` de la lista de perfiles acumula ya cuatro acciones.
 
 ### Fase 9: resultado
+
+> **Histórico — estado a v1.0.0** (Flutter 3.32.7 / Dart 3.8.1). Versiones, pines y recuentos de tests de esta sección no son los vigentes: ver §0 y §2.
 
 Cerrada en la rama `feature/fase-9-backup` con **5 commits** y **53 tests nuevos** (336 en total), `flutter analyze` limpio y `flutter build apk --debug` correcto. Schema sin cambios (v3), sin migración ni codegen: la copia se hace con `select` de drift y se restaura con los `Companion` generados.
 
@@ -419,6 +463,8 @@ Límites aceptados: la restauración es destructiva (por eso pide confirmación 
 
 ### Fase 10 — avance (medicación)
 
+> **Histórico — estado a v1.0.0** (Flutter 3.32.7 / Dart 3.8.1). Versiones, pines y recuentos de tests de esta sección no son los vigentes: ver §0 y §2.
+
 **Entregado:** medicación por mujer con alta, edición, activación y borrado,
 lista agrupada por perfil y acceso desde el AppBar de Alertas. El formulario
 valida nombre (obligatorio, hasta 80 caracteres), dosis opcional (hasta 60)
@@ -436,11 +482,15 @@ y hora/minuto. La UI observa los streams del repositorio con Riverpod.
   incluye un listado con mujer, medicamento, dosis, hora y estado.
 
 **Límites:** una hora diaria por medicamento; sin historial de tomas,
-frecuencias semanales ni fecha de fin. El motor programa la siguiente toma
-en cada recálculo de alertas. Recordatorios personalizados, ajustes finales,
+frecuencias semanales ni fecha de fin. En v1.0.0 el motor programaba solo la
+siguiente toma en cada recálculo de alertas; desde v1.1.0 la repite a diario. Recordatorios personalizados, ajustes finales,
 iconos y pulido se integraron después; el cierre completo se recoge en el resultado siguiente.
 
 ### Fase 10: resultado
+
+> **Histórico — estado a v1.0.0** (Flutter 3.32.7 / Dart 3.8.1). Versiones, pines y recuentos de tests de esta sección no son los vigentes: ver §0 y §2.
+
+> **Cambios posteriores:** desde v1.1.0 el aviso de medicación **se repite a diario** (`recurringDaily: true` en `alert_rule_engine.dart`, `DateTimeComponents.time` en `local_notification_scheduler.dart`) y su texto es «Es hora de tu medicación (HH:MM)», sin nombre; los avisos usan iniciales en lugar de nombres. En `develop`, sin publicar, los avisos discretos sustituyen además todo el texto por uno genérico.
 
 Integrada en `develop` mediante las ramas `feature/fase-10-medicacion`, `feature/fase-10-recordatorios`, `feature/fase-10-ajustes-pulido` y el cierre `feature/fase-10-pulido`, con merges `--no-ff`. Las tres piezas reúnen **16 commits de implementación, tests y documentación** (sin contar merges); el cierre añade **3 commits atómicos**: enlace de Medicación (`feat(settings)`), navegación (`test(test)`) y manual/estado de fase (`docs(docs)`). Schema **v4 con 11 tablas**, sin dependencias nuevas.
 
@@ -458,7 +508,7 @@ Verificación del cierre: `dart format lib test` sin cambios, `flutter analyze` 
 Desviaciones y límites reales:
 
 - Los recordatorios viven en `settings` y se abren por mujer desde tracking, sin entrada global en Ajustes. Se programa un aviso al inicio del rango, no uno diario durante todo el rango.
-- Medicación programa la siguiente toma en cada recálculo, sin repetición diaria indefinida, historial de tomas, frecuencias semanales ni fecha de fin. Los recordatorios requieren al menos un periodo y proyectan el ciclo siguiente con la media (28 días por defecto).
+- Medicación programaba en v1.0.0 solo la siguiente toma en cada recálculo, sin repetición diaria (corregido en v1.1.0: ver nota inicial). Sigue sin historial de tomas, frecuencias semanales ni fecha de fin. Los recordatorios requieren al menos un periodo y proyectan el ciclo siguiente con la media (28 días por defecto).
 - Las notificaciones de alertas y recordatorios preservan los IDs de la otra función; desactivar el maestro no cancela los recordatorios personalizados.
 - No se ha instalado ni probado la app en dispositivo en este cierre: entrega real y puntualidad de avisos, permisos Android, selector SAF, apariencia del icono/etiqueta y pulido visual requieren esa comprobación. Compilar el APK no demuestra esos comportamientos.
 - Release publicada: PR #4 (`release/1.0.0` → `main`) fusionado con merge commit `7987c91d` y tag anotado `v1.0.0` sobre ese commit; `develop` quedó en `09f9454`.
@@ -480,7 +530,7 @@ Si se modifica configuración Android o plugins nativos:
 flutter build apk --debug
 ```
 
-Estado actual de calidad: análisis limpio, suite completa verde y APK debug compilable.
+El último resultado registrado está en §0; no se da por verde ningún commit posterior sin repetir estos comandos.
 
 ---
 
@@ -494,3 +544,37 @@ Estado actual de calidad: análisis limpio, suite completa verde y APK debug com
 - La restauración de una copia sustituye todos los datos: se hace solo bajo confirmación explícita del usuario y dentro de una transacción, nunca de forma automática ni parcial.
 
 El orden sigue siendo incremental: cada fase debe ser usable, testeable y mergeada a `develop` antes de comenzar la siguiente.
+
+---
+
+## 8. Limitaciones de dispositivo y backlog
+
+No hay dispositivo Android ni emulador en el entorno de desarrollo (`adb devices` vacío; sin `emulator/` ni `system-images/` en el SDK). **Ninguna versión, de v1.0.0 a v1.2.0, se ha instalado ni probado en un dispositivo.** Los tests ejercitan la lógica con fakes de los plugins y compilar el APK no demuestra el comportamiento nativo.
+
+En la tabla, «Test» significa que la lógica está cubierta por la suite; «Dispositivo» es siempre el resultado de una prueba real, y hoy no existe ninguno.
+
+| Área | Evidencia disponible | Test | Dispositivo | Ticket |
+|---|---|---|---|---|
+| Entrega y puntualidad de notificaciones (alarma exacta y *fallback* inexacto) | `test/features/alerts/` con scheduler falso | Sí | Sin validar | TOC-15, TOC-11 |
+| Repetición diaria de medicación | `alert_rule_engine_test.dart` comprueba `recurringDaily`; el scheduler pasa `DateTimeComponents.time` | Sí (solo el dato) | Sin validar | TOC-15 |
+| Permisos Android (`POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`) | Declarados en `AndroidManifest.xml` | No | Sin validar | TOC-15 |
+| Bloqueo de acceso (`local_auth`): diálogo del sistema, re-bloqueo y miniatura de recientes | `app_lock_test.dart`, `widget_test.dart` (PRIV-01…03) | Sí | Sin validar | TOC-15 |
+| Avisos discretos y visibilidad en pantalla de bloqueo | `alerts_repository_test.dart`, `discreet_notices_test.dart` (PRIV-04/05) | Sí | Sin validar | TOC-15 |
+| Selector SAF (exportar/importar) | Humo en disco de la fase 9 (v1.0.0, formato JSON v3), `backup_screen_test.dart` | Sí (sin el selector real) | Sin validar | TOC-15, TOC-17 |
+| Icono y etiqueta «CicloTrack» | Recursos y manifiesto en el repositorio | No | Sin validar | TOC-15 |
+| APK de release firmado | Configuración de firma desde v1.1.0; sin resultado de build registrado aquí | No | Sin validar | TOC-15 |
+| Interfaz en inglés sobre un sistema en inglés | `test/l10n/app_localizations_test.dart` | Sí | Sin validar | — |
+
+Backlog de corrección abierto en Linear (no son fases nuevas; ninguno está resuelto):
+
+| Ticket | Asunto |
+|---|---|
+| TOC-6 | KPI globales de ciclos sobre el historial completo |
+| TOC-7 | Unificar aritmética de días de calendario (DST y duplicados) |
+| TOC-8 | Validar invariantes de negocio al restaurar una copia |
+| TOC-9 | Escrituras atómicas de perfil y etiquetas |
+| TOC-10 | Recuento en el diálogo de restauración destructiva |
+| TOC-11 | Exponer errores y recuperación de notificaciones |
+| TOC-15 | Validación de release firmada y flujos nativos en Android |
+| TOC-16 | Migraciones con fixtures históricas completas |
+| TOC-17 | Consistencia y límites del backup |
