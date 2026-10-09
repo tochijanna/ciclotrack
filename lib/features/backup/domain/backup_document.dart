@@ -1,10 +1,21 @@
 import 'dart:convert';
 
+import '../../medications/domain/medication_validators.dart';
+import '../../settings/domain/reminder_validators.dart';
+import '../../tracking/domain/tracking_validators.dart';
+
 /// Identificador que firma los documentos de copia de CicloTrack.
 const backupAppId = 'ciclotrack';
 
 /// Versión del schema que sabe leer y escribir esta copia (drift v4).
 const backupSchemaVersion = 4;
+
+/// Tamaño máximo aceptado al importar, en bytes. La medición de TOC-17 dio
+/// ~930 kB de JSON por ~4 500 filas (pico de RSS +27 MB); 8 MB cubre con
+/// holgura el peor caso realista (~2 MB para 5 perfiles × 10 años) acotando
+/// el pico de memoria del decodificado a ~200 MB.
+/// ponytail: tope fijo; se revisa si un uso real lo alcanza.
+const backupMaxBytes = 8 * 1024 * 1024;
 
 /// Tablas incluidas, en el orden del esquema. El volcado y la restauración
 /// usan además [backupDeleteOrder] y [backupInsertOrder], marcados por las
@@ -147,6 +158,7 @@ final Map<String, List<String>> backupColumns = {
 /// Motivos de rechazo de una copia, independientes del idioma.
 enum BackupFormatError {
   invalidJson,
+  tooLarge,
   notCicloTrack,
   unsupportedVersion,
   invalidExportDate,
@@ -154,6 +166,7 @@ enum BackupFormatError {
   missingTable,
   invalidRow,
   invalidValue,
+  periodOverlap,
 }
 
 /// Error de formato de una copia. El mensaje visible se localiza en la
@@ -207,6 +220,9 @@ class BackupDocument {
   /// Lee una copia desde bytes UTF-8, envolviendo cualquier error de
   /// `dart:convert` en [BackupFormatException].
   static BackupDocument fromBytes(List<int> bytes) {
+    if (bytes.length > backupMaxBytes) {
+      throw const BackupFormatException(BackupFormatError.tooLarge);
+    }
     final Object? decoded;
     try {
       decoded = jsonDecode(utf8.decode(bytes));
@@ -263,11 +279,146 @@ class BackupDocument {
       tables[table] = [for (final rawRow in rawRows) _parseRow(table, rawRow)];
     }
 
+    _validateInvariants(tables);
+
     return BackupDocument(
       exportedAt: exportedAt,
       tables: tables,
       schemaVersion: version,
     );
+  }
+
+  /// Coherencia de negocio sobre las filas ya normalizadas: la validez
+  /// estructural no garantiza que los registros restaurados sean válidos.
+  /// Reutiliza los validadores de cada funcionalidad para no duplicar los
+  /// rangos que la propia aplicación admite; cualquier incumplimiento
+  /// rechaza la copia con [BackupFormatError.invalidValue] y detalle
+  /// `tabla.columna` (nombres técnicos, nunca datos del usuario).
+  static void _validateInvariants(
+    Map<String, List<Map<String, Object?>>> tables,
+  ) {
+    for (final row in tables['period_logs'] ?? const []) {
+      final start = calendarDate(row['start_date']! as DateTime);
+      final end = row['end_date'] == null
+          ? start
+          : calendarDate(row['end_date']! as DateTime);
+      if (!isValidDateRange(start, end)) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'period_logs.end_date',
+        );
+      }
+      if (!isValidFlowLevel(row['flow_level'] as int?)) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'period_logs.flow_level',
+        );
+      }
+    }
+    _rejectPeriodOverlap(tables['period_logs'] ?? const []);
+
+    for (final row in tables['ovulation_logs'] ?? const []) {
+      if (!isValidTemperature(row['temperature'] as double?)) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'ovulation_logs.temperature',
+        );
+      }
+    }
+
+    for (final row in tables['symptoms'] ?? const []) {
+      if (!isValidSeverity(row['severity']! as int)) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'symptoms.severity',
+        );
+      }
+    }
+
+    for (final row in tables['medications'] ?? const []) {
+      if (validateMedicationHour(row['hour']! as int) != null) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'medications.hour',
+        );
+      }
+      if (validateMedicationMinute(row['minute']! as int) != null) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'medications.minute',
+        );
+      }
+    }
+
+    for (final row in tables['reminders'] ?? const []) {
+      final start = row['cycle_day_start']! as int;
+      if (validateCycleDayStart(start) != null) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'reminders.cycle_day_start',
+        );
+      }
+      if (validateCycleDayEnd(start, row['cycle_day_end']! as int) != null) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'reminders.cycle_day_end',
+        );
+      }
+    }
+
+    for (final row in tables['alert_settings'] ?? const []) {
+      final hour = row['notify_hour']! as int;
+      final minute = row['notify_minute']! as int;
+      if (hour < 0 || hour > 23) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'alert_settings.notify_hour',
+        );
+      }
+      if (minute < 0 || minute > 59) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'alert_settings.notify_minute',
+        );
+      }
+      if ((row['horizon_days']! as int) < 1) {
+        throw const BackupFormatException(
+          BackupFormatError.invalidValue,
+          'alert_settings.horizon_days',
+        );
+      }
+    }
+  }
+
+  /// Dos periodos del mismo perfil no pueden compartir un día: misma
+  /// semántica inclusiva que `_ensurePeriodDoesNotOverlap`, con
+  /// `end_date` nulo equivalente al día de inicio.
+  static void _rejectPeriodOverlap(List<Map<String, Object?>> rows) {
+    final porMujer = <int, List<Map<String, Object?>>>{};
+    for (final row in rows) {
+      porMujer.putIfAbsent(row['woman_id']! as int, () => []).add(row);
+    }
+    for (final periodos in porMujer.values) {
+      periodos.sort(
+        (a, b) => (a['start_date']! as DateTime).compareTo(
+          b['start_date']! as DateTime,
+        ),
+      );
+      for (var i = 1; i < periodos.length; i++) {
+        final anterior = periodos[i - 1];
+        final finAnterior = calendarDate(
+          anterior['end_date'] as DateTime? ??
+              anterior['start_date']! as DateTime,
+        );
+        final inicio = calendarDate(periodos[i]['start_date']! as DateTime);
+        if (!inicio.isAfter(finAnterior)) {
+          throw const BackupFormatException(
+            BackupFormatError.periodOverlap,
+            'period_logs',
+          );
+        }
+      }
+    }
   }
 
   /// Filas de [table]; lista vacía si la tabla no está en el documento.

@@ -8,6 +8,7 @@ import '../../../calendar/presentation/screens/calendar_home_screen.dart';
 import '../../../medications/presentation/screens/medications_screen.dart';
 import '../../../reports/presentation/screens/reports_screen.dart';
 import '../providers/app_lock_provider.dart';
+import '../providers/discreet_notices_provider.dart';
 
 /// Versión publicada en `pubspec.yaml`; se actualiza a la vez que aquella.
 const appVersion = '1.2.0+4';
@@ -71,9 +72,29 @@ class SettingsScreen extends ConsumerWidget {
             ),
             value: appLock.enabled,
             onChanged: appLock.supported
-                ? (value) =>
-                      ref.read(appLockProvider.notifier).setEnabled(value)
+                ? (value) async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final change = await ref
+                        .read(appLockProvider.notifier)
+                        .setEnabled(value);
+                    final error = switch (change) {
+                      AppLockChange.saved => null,
+                      AppLockChange.denied => l10n.settingsAppLockAuthRequired,
+                      AppLockChange.failed => l10n.settingsAppLockSaveError,
+                    };
+                    if (error != null) {
+                      messenger.showSnackBar(SnackBar(content: Text(error)));
+                    }
+                  }
                 : null,
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.visibility_off_outlined),
+            title: Text(l10n.settingsDiscreetNoticesTitle),
+            subtitle: Text(l10n.settingsDiscreetNoticesSubtitle),
+            value: ref.watch(discreetNoticesProvider),
+            onChanged: (value) =>
+                ref.read(discreetNoticesProvider.notifier).setEnabled(value),
           ),
           const Divider(),
           _SectionHeader(l10n.settingsAbout),

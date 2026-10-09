@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/db/tables.dart';
+import '../domain/woman_validator.dart';
 
 part 'women_dao.g.dart';
 
@@ -62,6 +63,17 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
       (update(women)..where((t) => t.id.equals(id))).write(
         WomenCompanion(sortOrder: Value(sortOrder)),
       );
+
+  /// Persiste sortOrder según la posición en la lista, en una transacción.
+  Future<void> reorder(List<Woman> ordered) {
+    return transaction(() async {
+      for (var i = 0; i < ordered.length; i++) {
+        if (ordered[i].sortOrder != i) {
+          await updateOrder(ordered[i].id, i);
+        }
+      }
+    });
+  }
 
   Future<void> deleteWoman(int id) =>
       (delete(women)..where((t) => t.id.equals(id))).go();
@@ -132,14 +144,43 @@ class WomenDao extends DatabaseAccessor<AppDatabase> with _$WomenDaoMixin {
     );
   }
 
-  Future<void> replaceTags(int womanId, List<String> tagNames) async {
-    await (delete(womanTags)..where((t) => t.womanId.equals(womanId))).go();
-    for (final name in tagNames) {
-      final tagId = await getOrCreateTag(name);
-      await into(
-        womanTags,
-      ).insert(WomanTagsCompanion.insert(womanId: womanId, tagId: tagId));
-    }
+  /// Reemplaza las etiquetas de una mujer en una transacción. Los nombres se
+  /// normalizan (trim, sin vacías ni repetidas) antes de enlazarlos.
+  Future<void> replaceTags(int womanId, List<String> tagNames) {
+    return transaction(() async {
+      await (delete(womanTags)..where((t) => t.womanId.equals(womanId))).go();
+      for (final name in normalizeTags(tagNames)) {
+        final tagId = await getOrCreateTag(name);
+        await into(
+          womanTags,
+        ).insert(WomanTagsCompanion.insert(womanId: womanId, tagId: tagId));
+      }
+    });
+  }
+
+  /// Crea una mujer con sus etiquetas en una transacción.
+  Future<int> insertWithTags(WomenCompanion entry, List<String> tagNames) {
+    return transaction(() async {
+      final id = await into(women).insert(entry);
+      await replaceTags(id, tagNames);
+      return id;
+    });
+  }
+
+  /// Actualiza una mujer y reemplaza sus etiquetas en una transacción.
+  /// No hace nada si la mujer no existe.
+  Future<void> updateWithTags(
+    int id,
+    WomenCompanion changes,
+    List<String> tagNames,
+  ) {
+    return transaction(() async {
+      final updated = await (update(
+        women,
+      )..where((t) => t.id.equals(id))).write(changes);
+      if (updated == 0) return;
+      await replaceTags(id, tagNames);
+    });
   }
 
   Future<void> unlinkAllTags(int womanId) =>

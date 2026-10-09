@@ -382,9 +382,12 @@
   "backupTitle": "Copia de seguridad",
   "backupSaved": "Copia guardada",
   "backupRestoreTitle": "Restaurar copia",
-  "backupRestoreConfirm": "¿Reemplazar todos los datos actuales? Se borrarán los {count} perfiles y todos sus registros.",
+  "backupRestoreConfirm": "¿Reemplazar todos los datos actuales? Se borrarán los {actuales} perfiles actuales y todos sus registros. La copia contiene {entrantes}.",
   "@backupRestoreConfirm": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "actuales": {"type": "int"},
+      "entrantes": {"type": "int"}
+    }
   },
   "pdfDocumentTitle": "CicloTrack — copia de seguridad",
   "pdfFooterPage": "Página {page} de {total}",
@@ -506,6 +509,8 @@
   "appLockedSubtitle": "Desbloquea con tu PIN o huella para continuar.",
   "appUnlock": "Desbloquear",
   "appLockAuthReason": "Desbloquea CicloTrack para continuar",
+  "appLockLoadError": "No se pudo comprobar si el bloqueo está activado. Desbloquea o reinténtalo.",
+  "appLockRetry": "Reintentar",
 
   "remindersOf": "Recordatorios de {name}",
   "@remindersOf": {
@@ -656,8 +661,13 @@
   "medicationSaveChangeError": "No se pudo guardar el cambio",
   "settingsSectionSecurity": "Seguridad",
   "settingsAppLockTitle": "Bloqueo de acceso (PIN/huella)",
-  "settingsAppLockSupported": "Requiere PIN o huella al abrir la app",
+  "settingsAppLockSupported": "Pide PIN o huella al abrir la app y tras 1 minuto en segundo plano. Controla el acceso; no cifra los datos.",
+  "settingsDiscreetNoticesTitle": "Avisos discretos",
+  "settingsDiscreetNoticesSubtitle": "Las notificaciones no muestran iniciales, fechas ni el texto de los recordatorios",
+  "discreetNoticeBody": "Tienes un aviso nuevo. Abre la app para verlo.",
   "settingsAppLockUnavailable": "No disponible en este dispositivo",
+  "settingsAppLockSaveError": "No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.",
+  "settingsAppLockAuthRequired": "El bloqueo sigue activado: hay que desbloquear con PIN o huella para desactivarlo.",
   "settingsLocalTitle": "100 % local y sin nube",
   "settingsLocalSubtitle": "Todos los datos se guardan solo en este dispositivo: no hay cuentas, sincronización ni servidores.",
   "settingsMedicationSubtitle": "Pastillas y horas de aviso, por mujer",
@@ -679,6 +689,9 @@
   "backupCancelled": "Exportación cancelada",
   "backupImportCancelled": "Importación cancelada",
   "backupRestoreAction": "Restaurar",
+  "backupUnencryptedTitle": "Archivo sin cifrar",
+  "backupUnencryptedWarning": "El archivo se guardará sin cifrar: cualquiera que lo abra podrá leer todos los datos. El bloqueo de acceso de la app no lo protege. Guárdalo en un lugar seguro.",
+  "backupUnencryptedAction": "Exportar",
   "backupSaveFailed": "No se pudo guardar: {reason}",
   "@backupSaveFailed": {
     "placeholders": {"reason": {"type": "String"}}
@@ -719,5 +732,7 @@
   "backupInvalidValue": "Valor inválido en {column}",
   "@backupInvalidValue": {
     "placeholders": {"column": {"type": "String"}}
-  }
+  },
+  "backupPeriodOverlap": "La copia contiene periodos solapados",
+  "backupTooLarge": "El archivo supera el tamaño máximo permitido"
 }

@@ -340,6 +340,248 @@ void main() {
         throwsA(isA<BackupFormatException>()),
       );
     });
+
+    test('rechaza un archivo mayor que el tope sin decodificarlo', () {
+      expect(
+        () => BackupDocument.fromBytes(List.filled(backupMaxBytes + 1, 0x20)),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.error,
+            'error',
+            BackupFormatError.tooLarge,
+          ),
+        ),
+      );
+    });
+  });
+
+  group('invariantes de negocio', () {
+    /// JSON de la muestra con una fila añadida en `tabla`.
+    Map<String, Object?> con(String tabla, Map<String, Object?> fila) {
+      final json = muestra().toJson();
+      final filas = (json['tables']! as Map<String, Object?>)[tabla]!;
+      (filas as List<Object?>).add(fila);
+      return json;
+    }
+
+    test('acepta periodos el mismo día en mujeres distintas', () {
+      final json = con('period_logs', {
+        'id': 3,
+        'woman_id': 2,
+        'start_date': '2026-09-01',
+        'end_date': '2026-09-05',
+        'flow_level': null,
+        'notes': '',
+      });
+      expect(BackupDocument.fromJson(json).rows('period_logs'), hasLength(3));
+    });
+
+    test('rechaza periodos solapados del mismo perfil', () {
+      final json = con('period_logs', {
+        'id': 3,
+        'woman_id': 1,
+        'start_date': '2026-09-05',
+        'end_date': '2026-09-08',
+        'flow_level': null,
+        'notes': '',
+      });
+      expect(
+        () => BackupDocument.fromJson(json),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.error,
+            'error',
+            BackupFormatError.periodOverlap,
+          ),
+        ),
+      );
+    });
+
+    test('rechaza un periodo que toca por un día a un periodo abierto', () {
+      final json = con('period_logs', {
+        'id': 3,
+        'woman_id': 2,
+        'start_date': '2026-09-10',
+        'end_date': '2026-09-12',
+        'flow_level': null,
+        'notes': '',
+      });
+      expect(
+        () => BackupDocument.fromJson(json),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.error,
+            'error',
+            BackupFormatError.periodOverlap,
+          ),
+        ),
+      );
+    });
+
+    test('rechaza un periodo invertido', () {
+      final json = con('period_logs', {
+        'id': 3,
+        'woman_id': 1,
+        'start_date': '2026-10-05',
+        'end_date': '2026-10-01',
+        'flow_level': null,
+        'notes': '',
+      });
+      expect(
+        () => BackupDocument.fromJson(json),
+        throwsA(
+          isA<BackupFormatException>()
+              .having((e) => e.error, 'error', BackupFormatError.invalidValue)
+              .having((e) => e.detail, 'detail', 'period_logs.end_date'),
+        ),
+      );
+    });
+
+    test('rechaza flujo, severidad y temperatura fuera de rango', () {
+      expect(
+        () => BackupDocument.fromJson(
+          con('period_logs', {
+            'id': 3,
+            'woman_id': 1,
+            'start_date': '2026-10-01',
+            'end_date': null,
+            'flow_level': 9,
+            'notes': '',
+          }),
+        ),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.detail,
+            'detail',
+            'period_logs.flow_level',
+          ),
+        ),
+      );
+      expect(
+        () => BackupDocument.fromJson(
+          con('symptoms', {
+            'id': 2,
+            'woman_id': 1,
+            'date': '2026-10-01',
+            'type': 'Acné',
+            'severity': 0,
+            'notes': '',
+          }),
+        ),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.detail,
+            'detail',
+            'symptoms.severity',
+          ),
+        ),
+      );
+      expect(
+        () => BackupDocument.fromJson(
+          con('ovulation_logs', {
+            'id': 2,
+            'woman_id': 1,
+            'date': '2026-10-01',
+            'temperature': 45.0,
+            'cervical_mucus': null,
+            'lh_test': null,
+          }),
+        ),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.detail,
+            'detail',
+            'ovulation_logs.temperature',
+          ),
+        ),
+      );
+    });
+
+    test('rechaza medicamento, recordatorio y ajustes fuera de dominio', () {
+      expect(
+        () => BackupDocument.fromJson(
+          con('medications', {
+            'id': 2,
+            'woman_id': 1,
+            'name': 'Hierro',
+            'dose': '20 mg',
+            'hour': 24,
+            'minute': 0,
+            'enabled': true,
+          }),
+        ),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.detail,
+            'detail',
+            'medications.hour',
+          ),
+        ),
+      );
+      expect(
+        () => BackupDocument.fromJson(
+          con('reminders', {
+            'id': 2,
+            'woman_id': 1,
+            'cycle_day_start': 61,
+            'cycle_day_end': 61,
+            'message': 'x',
+            'enabled': true,
+          }),
+        ),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.detail,
+            'detail',
+            'reminders.cycle_day_start',
+          ),
+        ),
+      );
+      expect(
+        () => BackupDocument.fromJson(
+          con('reminders', {
+            'id': 2,
+            'woman_id': 1,
+            'cycle_day_start': 5,
+            'cycle_day_end': 2,
+            'message': 'x',
+            'enabled': true,
+          }),
+        ),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.detail,
+            'detail',
+            'reminders.cycle_day_end',
+          ),
+        ),
+      );
+      expect(
+        () => BackupDocument.fromJson(
+          con('alert_settings', {
+            'id': 2,
+            'master_enabled': false,
+            'notify_hour': 24,
+            'notify_minute': 0,
+            'enabled_types': '',
+            'horizon_days': 7,
+          }),
+        ),
+        throwsA(
+          isA<BackupFormatException>().having(
+            (e) => e.detail,
+            'detail',
+            'alert_settings.notify_hour',
+          ),
+        ),
+      );
+    });
+
+    test('la v3 sin medications sigue siendo válida', () {
+      final json = muestra().toJson()..['schemaVersion'] = 3;
+      (json['tables']! as Map<String, Object?>).remove('medications');
+      expect(BackupDocument.fromJson(json).rows('medications'), isEmpty);
+    });
   });
 
   group('marca de tiempo', () {

@@ -7,6 +7,45 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
+/// Volcado estructural de un archivo SQLite: tablas → columnas y FKs.
+/// Compara nombre/tipo/nullabilidad/pk y FKs (tabla, columna, destino,
+/// on_delete), nunca el literal `sql` de sqlite_master (SQLite conserva el
+/// formato original del CREATE TABLE, que difiere entre eras).
+Map<String, Map<String, List<Map<String, Object?>>>> _dumpSchema(
+  sqlite3.Database db,
+) {
+  final tables = [
+    for (final row in db.select(
+      "SELECT name FROM sqlite_master "
+      "WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+    ))
+      row['name'] as String,
+  ];
+  return {
+    for (final table in tables)
+      table: {
+        'columns': [
+          for (final c in db.select('PRAGMA table_info($table)'))
+            {
+              'name': c['name'],
+              'type': c['type'],
+              'notnull': c['notnull'],
+              'pk': c['pk'],
+            },
+        ],
+        'fks': [
+          for (final fk in db.select('PRAGMA foreign_key_list($table)'))
+            {
+              'table': fk['table'],
+              'from': fk['from'],
+              'to': fk['to'],
+              'on_delete': fk['on_delete'],
+            },
+        ],
+      },
+  };
+}
+
 void main() {
   late AppDatabase db;
   late WomenDao dao;
@@ -32,124 +71,236 @@ void main() {
     });
   });
 
-  test('upgrades a real v1 database through v2 to v3', () async {
-    await db.close();
-    final directory = await Directory.systemTemp.createTemp(
-      'ciclotrack_migration_',
-    );
-    final file = File('${directory.path}/legacy.sqlite');
+  // Fixtures históricas reales creadas con el drift de cada versión
+  // (ver fixtures/README.md para la receta de regeneración):
+  //   v1 → de64402 (7 tablas, women.tag, FKs sin cascade)
+  //   v2 → 7479fce (+ tags/woman_tags)
+  //   v3 → 0c86d66 (+ alert_settings)
+  group('fixtures históricas v1/v2/v3', () {
+    const fixtures = [
+      (file: 'v1', commit: 'de64402', version: 1),
+      (file: 'v2', commit: '7479fce', version: 2),
+      (file: 'v3', commit: '0c86d66', version: 3),
+    ];
 
-    final legacy = sqlite3.sqlite3.open(file.path);
-    legacy.execute('''
-          CREATE TABLE women (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            initials TEXT NOT NULL,
-            emoji TEXT NOT NULL DEFAULT '👩',
-            color INTEGER NOT NULL DEFAULT 0xFFE91E63,
-            tag TEXT NOT NULL DEFAULT '',
-            private_notes TEXT NOT NULL DEFAULT '',
-            sort_order INTEGER NOT NULL DEFAULT 0,
-            created_at INTEGER NOT NULL
-          )
-        ''');
-    legacy.execute('''
-          CREATE TABLE period_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            woman_id INTEGER NOT NULL,
-            start_date INTEGER NOT NULL,
-            end_date INTEGER,
-            flow_level INTEGER,
-            notes TEXT NOT NULL DEFAULT ''
-          )
-        ''');
-    legacy.execute("""
-          INSERT INTO women
-            (name, initials, tag, created_at)
-          VALUES ('Legacy', 'LG', 'Amiga', 1798848000000)
-        """);
-    legacy.execute('''
-          INSERT INTO period_logs (woman_id, start_date, notes)
-          VALUES (1, 1798848000000, 'periodo legacy')
-        ''');
-    legacy.execute('PRAGMA user_version = 1');
-    legacy.close();
+    for (final fixture in fixtures) {
+      group('fixture ${fixture.file} (${fixture.commit})', () {
+        late Directory directory;
+        late File file;
+        late AppDatabase upgraded;
 
-    final upgraded = AppDatabase.forTesting(NativeDatabase(file));
-    addTearDown(() async {
-      await upgraded.close();
-      await directory.delete(recursive: true);
-    });
-
-    expect(upgraded.schemaVersion, 4);
-    final women = await upgraded.select(upgraded.women).get();
-    expect(women, hasLength(1));
-    expect(women.single.name, 'Legacy');
-    expect(await upgraded.select(upgraded.periodLogs).get(), hasLength(1));
-    expect(await upgraded.select(upgraded.tags).get(), hasLength(1));
-    expect(await upgraded.select(upgraded.womanTags).get(), hasLength(1));
-    expect(await upgraded.select(upgraded.alertSettings).get(), isEmpty);
-
-    final columns = await upgraded
-        .customSelect('PRAGMA table_info(women)')
-        .get();
-    expect(columns.map((row) => row.data['name']), isNot(contains('tag')));
-
-    final settingsDao = AlertSettingsDao(upgraded);
-    final settings = await settingsDao.getOrCreate();
-    expect(settings.id, 1);
-    expect(settings.masterEnabled, isFalse);
-  });
-
-  test('upgrades v3 to v4 preserving profiles and period logs', () async {
-    await db.close();
-    final directory = await Directory.systemTemp.createTemp('medications_v3_');
-    final file = File('${directory.path}/v3.sqlite');
-    final original = AppDatabase.forTesting(NativeDatabase(file));
-    await original
-        .into(original.women)
-        .insert(
-          WomenCompanion.insert(
-            name: 'María',
-            initials: 'MR',
-            createdAt: DateTime(2026, 9, 1),
-          ),
-        );
-    await original
-        .into(original.periodLogs)
-        .insert(
-          PeriodLogsCompanion.insert(
-            womanId: 1,
-            startDate: DateTime(2026, 9, 1),
-          ),
-        );
-    await original.close();
-    final legacy = sqlite3.sqlite3.open(file.path);
-    legacy.execute('DROP TABLE medications');
-    legacy.execute('PRAGMA user_version = 3');
-    legacy.close();
-    final upgraded = AppDatabase.forTesting(NativeDatabase(file));
-    try {
-      expect(
-        (await upgraded.select(upgraded.women).get()).single.name,
-        'María',
-      );
-      expect(await upgraded.select(upgraded.periodLogs).get(), hasLength(1));
-      expect(await upgraded.select(upgraded.medications).get(), isEmpty);
-      await upgraded
-          .into(upgraded.medications)
-          .insert(
-            MedicationsCompanion.insert(
-              womanId: 1,
-              name: 'Hierro',
-              hour: 23,
-              minute: 59,
-            ),
+        setUp(() async {
+          await db.close();
+          directory = await Directory.systemTemp.createTemp(
+            'toc16_${fixture.file}_',
           );
-      expect(await upgraded.select(upgraded.medications).get(), hasLength(1));
-    } finally {
-      await upgraded.close();
-      await directory.delete(recursive: true);
+          file = File('${directory.path}/${fixture.file}.sqlite');
+          await File(
+            'test/core/db/fixtures/${fixture.file}.sqlite',
+          ).copy(file.path);
+
+          // La copia debe seguir en su versión original antes de abrir.
+          final raw = sqlite3.sqlite3.open(file.path);
+          expect(
+            raw.select('PRAGMA user_version').first['user_version'],
+            fixture.version,
+            reason:
+                'la fixture debe estar en schemaVersion '
+                '${fixture.version} antes de migrar',
+          );
+          raw.close();
+
+          upgraded = AppDatabase.forTesting(NativeDatabase(file));
+        });
+
+        tearDown(() async {
+          await upgraded.close();
+          await directory.delete(recursive: true);
+        });
+
+        test('migra a v4 conservando datos y relaciones', () async {
+          expect(upgraded.schemaVersion, 4);
+
+          final women = await upgraded.select(upgraded.women).get();
+          expect(women.map((w) => w.name).toList(), ['Ana', 'Berta', 'Clara']);
+          final berta = women[1];
+          expect(berta.emoji, '🌸');
+          expect(berta.color, 0xFF2196F3);
+          expect(berta.privateNotes, 'privado');
+          expect(berta.sortOrder, 3);
+          expect(berta.createdAt, DateTime(2026, 1, 6));
+          expect(women[0].createdAt, DateTime(2026, 1, 5));
+
+          final periods = await upgraded.select(upgraded.periodLogs).get();
+          expect(periods, hasLength(4));
+          final first = periods.firstWhere((p) => p.id == 1);
+          expect(first.womanId, 1);
+          expect(first.startDate, DateTime(2026, 1, 10));
+          expect(first.endDate, DateTime(2026, 1, 15));
+          expect(first.flowLevel, 3);
+          expect(first.notes, 'flujo alto');
+          final openPeriod = periods.firstWhere((p) => p.id == 2);
+          expect(openPeriod.endDate, isNull);
+          expect(openPeriod.flowLevel, isNull);
+
+          final ovulations = await upgraded
+              .select(upgraded.ovulationLogs)
+              .get();
+          expect(ovulations, hasLength(2));
+          final ovulation = ovulations.firstWhere((o) => o.id == 1);
+          expect(ovulation.date, DateTime(2026, 1, 24));
+          expect(ovulation.temperature, closeTo(36.7, 0.0001));
+          expect(ovulation.cervicalMucus, 'elastica');
+          expect(ovulation.lhTest, isTrue);
+
+          final symptoms = await upgraded.select(upgraded.symptoms).get();
+          expect(symptoms, hasLength(2));
+          expect(symptoms.map((s) => s.type), containsAll(['dolor', 'acne']));
+
+          final encounters = await upgraded.select(upgraded.encounters).get();
+          expect(
+            encounters.single.encounterTime,
+            DateTime(2026, 1, 25, 22, 30),
+          );
+          expect(encounters.single.protection, 'preservativo');
+
+          final links = await upgraded.select(upgraded.encounterWomen).get();
+          expect(links.map((l) => (l.encounterId, l.womanId)).toSet(), {
+            (1, 1),
+            (1, 2),
+          });
+          expect(
+            links.firstWhere((l) => l.womanId == 1).relationshipType,
+            'pareja',
+          );
+
+          final reminders = await upgraded.select(upgraded.reminders).get();
+          expect(reminders, hasLength(2));
+          expect(reminders.firstWhere((r) => r.id == 2).enabled, isFalse);
+
+          // La columna women.tag solo puede existir en la fixture v1 y la
+          // migración v1→v2 debe eliminarla.
+          final columns = await upgraded
+              .customSelect('PRAGMA table_info(women)')
+              .get();
+          expect(
+            columns.map((row) => row.data['name']),
+            isNot(contains('tag')),
+          );
+        });
+
+        test('tags y alert_settings según la versión de origen', () async {
+          final tags = await upgraded.select(upgraded.tags).get();
+          final womanTags = await upgraded.select(upgraded.womanTags).get();
+          final pairs = womanTags.map((wt) => (wt.womanId, wt.tagId)).toSet();
+
+          if (fixture.version == 1) {
+            // Backfill v1→v2: 'Amiga' compartido por Ana y Berta (un solo
+            // tag, dos vínculos); Clara tenía tag vacío → sin vínculos.
+            expect(tags.map((t) => t.name).toList(), ['Amiga']);
+            expect(pairs, {(1, 1), (2, 1)});
+          } else {
+            expect(tags.map((t) => t.name).toList(), ['Amiga', 'Familia']);
+            expect(pairs, {(1, 1), (2, 1), (3, 2)});
+          }
+
+          final settings = await upgraded.select(upgraded.alertSettings).get();
+          if (fixture.version == 3) {
+            // La fila con valores no default debe llegar intacta.
+            final setting = settings.single;
+            expect(setting.id, 1);
+            expect(setting.masterEnabled, isFalse);
+            expect(setting.notifyHour, 21);
+            expect(setting.notifyMinute, 30);
+            expect(setting.enabledTypes, 'periodo,ovulacion');
+            expect(setting.horizonDays, 14);
+          } else {
+            expect(settings, isEmpty);
+          }
+        });
+
+        test('medications queda vacía y operativa tras migrar', () async {
+          expect(await upgraded.select(upgraded.medications).get(), isEmpty);
+
+          await upgraded
+              .into(upgraded.medications)
+              .insert(
+                MedicationsCompanion.insert(
+                  womanId: 1,
+                  name: 'Hierro',
+                  hour: 8,
+                  minute: 30,
+                ),
+              );
+          final medications = await upgraded.select(upgraded.medications).get();
+          expect(medications.single.name, 'Hierro');
+          expect(medications.single.dose, '');
+        });
+
+        test('esquema migrado coincide con v4 (columnas y FKs)', () async {
+          // Fuerza la migración (queda commiteada en el archivo aunque la
+          // conexión drift siga abierta).
+          await upgraded.customSelect('SELECT count(*) FROM women').get();
+
+          // Referencia: una v4 fresca creada por drift hoy.
+          final refDir = await Directory.systemTemp.createTemp('toc16_ref_');
+          addTearDown(() async => refDir.delete(recursive: true));
+          final refFile = File('${refDir.path}/ref.sqlite');
+          final reference = AppDatabase.forTesting(NativeDatabase(refFile));
+          await reference.customSelect('SELECT 1').get();
+          await reference.close();
+
+          final migratedDb = sqlite3.sqlite3.open(file.path);
+          final referenceDb = sqlite3.sqlite3.open(refFile.path);
+          addTearDown(migratedDb.close);
+          addTearDown(referenceDb.close);
+
+          // Sin filas huérfanas: las relaciones quedan íntegras.
+          expect(migratedDb.select('PRAGMA foreign_key_check'), isEmpty);
+
+          final migrated = _dumpSchema(migratedDb);
+          final referenceSchema = _dumpSchema(referenceDb);
+
+          expect(
+            migrated.keys,
+            unorderedEquals(referenceSchema.keys),
+            reason: 'mismo conjunto de 11 tablas',
+          );
+
+          // Tablas heredadas de una base v1: el commit 7479fce dejó
+          // documentado que el ON DELETE CASCADE de v2 solo aplica a
+          // instalaciones nuevas, así que estas conservan FKs sin cascade.
+          const legacyTables = {
+            'period_logs',
+            'ovulation_logs',
+            'symptoms',
+            'encounter_women',
+            'reminders',
+          };
+
+          for (final table in referenceSchema.keys) {
+            final expected = referenceSchema[table]!;
+            expect(
+              migrated[table]!['columns'],
+              expected['columns'],
+              reason: 'columnas de $table',
+            );
+
+            final expectedFks =
+                fixture.version == 1 && legacyTables.contains(table)
+                ? [
+                    for (final fk in expected['fks']!)
+                      {...fk, 'on_delete': 'NO ACTION'},
+                  ]
+                : expected['fks'];
+            expect(
+              migrated[table]!['fks'],
+              expectedFks,
+              reason: 'FKs de $table',
+            );
+          }
+        });
+      });
     }
   });
 

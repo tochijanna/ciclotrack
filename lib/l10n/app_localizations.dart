@@ -1599,8 +1599,8 @@ abstract class AppLocalizations {
   /// No description provided for @backupRestoreConfirm.
   ///
   /// In es, this message translates to:
-  /// **'¿Reemplazar todos los datos actuales? Se borrarán los {count} perfiles y todos sus registros.'**
-  String backupRestoreConfirm(int count);
+  /// **'¿Reemplazar todos los datos actuales? Se borrarán los {actuales} perfiles actuales y todos sus registros. La copia contiene {entrantes}.'**
+  String backupRestoreConfirm(int actuales, int entrantes);
 
   /// No description provided for @pdfDocumentTitle.
   ///
@@ -1979,6 +1979,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Desbloquea CicloTrack para continuar'**
   String get appLockAuthReason;
+
+  /// No description provided for @appLockLoadError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo comprobar si el bloqueo está activado. Desbloquea o reinténtalo.'**
+  String get appLockLoadError;
+
+  /// No description provided for @appLockRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get appLockRetry;
 
   /// No description provided for @remindersOf.
   ///
@@ -2499,14 +2511,44 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppLockSupported.
   ///
   /// In es, this message translates to:
-  /// **'Requiere PIN o huella al abrir la app'**
+  /// **'Pide PIN o huella al abrir la app y tras 1 minuto en segundo plano. Controla el acceso; no cifra los datos.'**
   String get settingsAppLockSupported;
+
+  /// No description provided for @settingsDiscreetNoticesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos discretos'**
+  String get settingsDiscreetNoticesTitle;
+
+  /// No description provided for @settingsDiscreetNoticesSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Las notificaciones no muestran iniciales, fechas ni el texto de los recordatorios'**
+  String get settingsDiscreetNoticesSubtitle;
+
+  /// No description provided for @discreetNoticeBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tienes un aviso nuevo. Abre la app para verlo.'**
+  String get discreetNoticeBody;
 
   /// No description provided for @settingsAppLockUnavailable.
   ///
   /// In es, this message translates to:
   /// **'No disponible en este dispositivo'**
   String get settingsAppLockUnavailable;
+
+  /// No description provided for @settingsAppLockSaveError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.'**
+  String get settingsAppLockSaveError;
+
+  /// No description provided for @settingsAppLockAuthRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El bloqueo sigue activado: hay que desbloquear con PIN o huella para desactivarlo.'**
+  String get settingsAppLockAuthRequired;
 
   /// No description provided for @settingsLocalTitle.
   ///
@@ -2634,6 +2676,24 @@ abstract class AppLocalizations {
   /// **'Restaurar'**
   String get backupRestoreAction;
 
+  /// No description provided for @backupUnencryptedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo sin cifrar'**
+  String get backupUnencryptedTitle;
+
+  /// No description provided for @backupUnencryptedWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo se guardará sin cifrar: cualquiera que lo abra podrá leer todos los datos. El bloqueo de acceso de la app no lo protege. Guárdalo en un lugar seguro.'**
+  String get backupUnencryptedWarning;
+
+  /// No description provided for @backupUnencryptedAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar'**
+  String get backupUnencryptedAction;
+
   /// No description provided for @backupSaveFailed.
   ///
   /// In es, this message translates to:
@@ -2705,6 +2765,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Valor inválido en {column}'**
   String backupInvalidValue(String column);
+
+  /// No description provided for @backupPeriodOverlap.
+  ///
+  /// In es, this message translates to:
+  /// **'La copia contiene periodos solapados'**
+  String get backupPeriodOverlap;
+
+  /// No description provided for @backupTooLarge.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo supera el tamaño máximo permitido'**
+  String get backupTooLarge;
 }
 
 class _AppLocalizationsDelegate

@@ -113,6 +113,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final l10n = AppLocalizations.of(context);
     final gateway = ref.read(backupFileGatewayProvider);
     final now = ref.read(clockProvider).now();
+    // Ningún formato va cifrado: sin aceptar el aviso no se escribe nada.
+    if (await _confirmarSinCifrar() != true) return;
+    if (!mounted) return;
     setState(() => _working = true);
 
     try {
@@ -145,7 +148,10 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       }
 
       final doc = BackupDocument.fromBytes(bytes);
-      final confirmado = await _confirmar(doc.counts['women'] ?? 0);
+      final confirmado = await _confirmar(
+        await ref.read(backupRepositoryProvider).perfilesActuales(),
+        doc.counts['women'] ?? 0,
+      );
       if (confirmado != true) return;
 
       final resumen = await ref.read(backupRepositoryProvider).importJson(doc);
@@ -171,13 +177,34 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     }
   }
 
-  Future<bool?> _confirmar(int perfiles) {
+  Future<bool?> _confirmarSinCifrar() {
+    final l10n = AppLocalizations.of(context);
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.backupUnencryptedTitle),
+        content: Text(l10n.backupUnencryptedWarning),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.backupUnencryptedAction),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _confirmar(int actuales, int entrantes) {
     final l10n = AppLocalizations.of(context);
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.backupRestoreTitle),
-        content: Text(l10n.backupRestoreConfirm(perfiles)),
+        content: Text(l10n.backupRestoreConfirm(actuales, entrantes)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -225,6 +252,8 @@ String backupFormatErrorText(AppLocalizations l10n, BackupFormatException e) {
   switch (e.error) {
     case BackupFormatError.invalidJson:
       return l10n.backupInvalidJson;
+    case BackupFormatError.tooLarge:
+      return l10n.backupTooLarge;
     case BackupFormatError.notCicloTrack:
       return l10n.backupNotCicloTrack;
     case BackupFormatError.unsupportedVersion:
@@ -239,5 +268,7 @@ String backupFormatErrorText(AppLocalizations l10n, BackupFormatException e) {
       return l10n.backupInvalidRow(e.detail ?? '');
     case BackupFormatError.invalidValue:
       return l10n.backupInvalidValue(e.detail ?? '');
+    case BackupFormatError.periodOverlap:
+      return l10n.backupPeriodOverlap;
   }
 }

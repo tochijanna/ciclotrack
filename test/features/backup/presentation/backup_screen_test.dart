@@ -107,11 +107,43 @@ void main() {
     await asentar(tester);
   }
 
+  /// Elige un formato y acepta el aviso de archivo sin cifrar.
+  Future<void> exportar(WidgetTester tester, String texto) async {
+    await pulsar(tester, texto);
+    expect(find.text('Archivo sin cifrar'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Exportar'));
+    await asentar(tester);
+  }
+
+  testWidgets('PRIV-06: sin aceptar el aviso de sin cifrar no exporta nada', (
+    tester,
+  ) async {
+    await seedWoman(tester, db, name: 'Ana');
+    await pumpBackup(tester);
+
+    for (final formato in [
+      'Copia completa (JSON)',
+      'Tablas (CSV)',
+      'Informe (PDF)',
+    ]) {
+      await pulsar(tester, formato);
+      expect(find.textContaining('se guardará sin cifrar'), findsOneWidget);
+      expect(find.textContaining('bloqueo de acceso'), findsOneWidget);
+      await pulsar(tester, 'Cancelar');
+      expect(find.text('Archivo sin cifrar'), findsNothing);
+    }
+
+    expect(gateway.guardados, isEmpty);
+    expect(gateway.ultimasExtensiones, isNull);
+
+    await closeTestDatabase(tester, db);
+  });
+
   testWidgets('exporta la copia completa en JSON', (tester) async {
     await seedWoman(tester, db, name: 'Ana');
     await pumpBackup(tester);
 
-    await pulsar(tester, 'Copia completa (JSON)');
+    await exportar(tester, 'Copia completa (JSON)');
 
     expect(gateway.ultimasExtensiones, ['json']);
     expect(gateway.guardados, hasLength(1));
@@ -127,7 +159,7 @@ void main() {
     gateway.cancelarGuardado = true;
     await pumpBackup(tester);
 
-    await pulsar(tester, 'Copia completa (JSON)');
+    await exportar(tester, 'Copia completa (JSON)');
 
     expect(gateway.guardados, isEmpty);
     expect(find.text('Exportación cancelada'), findsOneWidget);
@@ -139,7 +171,7 @@ void main() {
     await seedWoman(tester, db, name: 'Ana');
     await pumpBackup(tester);
 
-    await pulsar(tester, 'Tablas (CSV)');
+    await exportar(tester, 'Tablas (CSV)');
 
     expect(gateway.ultimasExtensiones, ['zip']);
     final file = gateway.guardados.single;
@@ -156,7 +188,7 @@ void main() {
     await seedWoman(tester, db, name: 'Ana');
     await pumpBackup(tester);
 
-    await pulsar(tester, 'Informe (PDF)');
+    await exportar(tester, 'Informe (PDF)');
 
     expect(gateway.ultimasExtensiones, ['pdf']);
     final file = gateway.guardados.single;
@@ -193,8 +225,8 @@ void main() {
     expect(find.text('Restaurar copia'), findsOneWidget);
     expect(
       find.text(
-        '¿Reemplazar todos los datos actuales? Se borrarán los 1 perfiles y '
-        'todos sus registros.',
+        '¿Reemplazar todos los datos actuales? Se borrarán los 1 perfiles '
+        'actuales y todos sus registros. La copia contiene 1.',
       ),
       findsOneWidget,
     );
@@ -255,6 +287,63 @@ void main() {
     await closeTestDatabase(tester, db);
   });
 
+  testWidgets('rechaza periodos solapados sin tocar la base', (tester) async {
+    await seedWoman(tester, db, name: 'Zoe');
+    gateway.aLeer = Uint8List.fromList(
+      utf8.encode(
+        jsonEncode(
+          BackupDocument(
+            exportedAt: now,
+            tables: {
+              'women': [
+                {
+                  'id': 1,
+                  'name': 'Ana',
+                  'initials': 'AN',
+                  'emoji': '👩',
+                  'color': 4294198070,
+                  'private_notes': '',
+                  'sort_order': 0,
+                  'created_at': now,
+                },
+              ],
+              'period_logs': [
+                {
+                  'id': 1,
+                  'woman_id': 1,
+                  'start_date': DateTime(2026, 9, 1),
+                  'end_date': DateTime(2026, 9, 5),
+                  'flow_level': null,
+                  'notes': '',
+                },
+                {
+                  'id': 2,
+                  'woman_id': 1,
+                  'start_date': DateTime(2026, 9, 4),
+                  'end_date': null,
+                  'flow_level': null,
+                  'notes': '',
+                },
+              ],
+            },
+          ).toJson(),
+        ),
+      ),
+    );
+    await pumpBackup(tester);
+
+    await pulsar(tester, 'Restaurar desde JSON');
+
+    expect(
+      find.text('No se pudo importar: La copia contiene periodos solapados'),
+      findsOneWidget,
+    );
+    final mujeres = await runReal(tester, () => db.select(db.women).get());
+    expect(mujeres.single.name, 'Zoe');
+
+    await closeTestDatabase(tester, db);
+  });
+
   testWidgets('cancelar el diálogo deja la copia sin aplicar', (tester) async {
     await seedWoman(tester, db, name: 'Zoe');
     gateway.aLeer = Uint8List.fromList(
@@ -289,6 +378,57 @@ void main() {
 
     final mujeres = await runReal(tester, () => db.select(db.women).get());
     expect(mujeres.single.name, 'Zoe');
+    expect(find.textContaining('Copia restaurada'), findsNothing);
+
+    await closeTestDatabase(tester, db);
+  });
+
+  testWidgets('el diálogo distingue perfiles actuales de entrantes', (
+    tester,
+  ) async {
+    // 2 perfiles actuales; la copia trae solo 1.
+    await seedWoman(tester, db, name: 'Zoe');
+    await seedWoman(tester, db, name: 'Ruth');
+    gateway.aLeer = Uint8List.fromList(
+      utf8.encode(
+        jsonEncode(
+          BackupDocument(
+            exportedAt: now,
+            tables: {
+              'women': [
+                {
+                  'id': 1,
+                  'name': 'Ana',
+                  'initials': 'AN',
+                  'emoji': '👩',
+                  'color': 4294198070,
+                  'private_notes': '',
+                  'sort_order': 0,
+                  'created_at': now,
+                },
+              ],
+            },
+          ).toJson(),
+        ),
+      ),
+    );
+    await pumpBackup(tester);
+
+    await pulsar(tester, 'Restaurar desde JSON');
+
+    expect(
+      find.text(
+        '¿Reemplazar todos los datos actuales? Se borrarán los 2 perfiles '
+        'actuales y todos sus registros. La copia contiene 1.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Cancelar'));
+    await asentar(tester);
+
+    final mujeres = await runReal(tester, () => db.select(db.women).get());
+    expect(mujeres.map((m) => m.name), ['Zoe', 'Ruth']);
     expect(find.textContaining('Copia restaurada'), findsNothing);
 
     await closeTestDatabase(tester, db);

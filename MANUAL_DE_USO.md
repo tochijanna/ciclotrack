@@ -247,7 +247,7 @@ Para restaurar, selecciona una copia JSON y revisa la confirmación: la importac
 
 La lista agrupa los medicamentos por mujer. Toca uno para editarlo, usa el interruptor para activarlo o desactivarlo y **Eliminar medicamento** para borrarlo tras confirmar.
 
-El aviso usa el texto **«Es hora de la pastilla para …»** con el nombre de la mujer, a la hora configurada en ese medicamento, independientemente de la hora general de alertas. No necesita periodos registrados. En cada recálculo se programa la siguiente toma: hoy si la hora aún no ha pasado, mañana en caso contrario. Hay una hora diaria por medicamento; no se registra si se tomó, ni se configuran frecuencias semanales o fecha de fin. Abre la app para mantener actualizada la programación: no hay una repetición diaria indefinida ya programada.
+El aviso se repite **cada día** a la hora configurada en ese medicamento, independientemente de la hora general de alertas, y no necesita periodos registrados. Con **Avisos discretos** activado (por defecto) muestra el texto genérico; si lo desactivas, dice **«Es hora de tu medicación (HH:MM)»**, sin el nombre de la mujer ni el del medicamento. Hay una hora diaria por medicamento; no se registra si se tomó, ni se configuran frecuencias semanales o fecha de fin. La repetición diaria está comprobada en los tests de la app, pero no en un dispositivo real: si echas en falta un aviso, abre la app y pulsa **Recalcular ahora** en **Alertas**.
 
 ## Recordatorios personalizados
 
@@ -304,7 +304,12 @@ No hay deshacer. Puedes restaurar o trasladar los datos con una copia JSON desde
 
 ## Privacidad y límites
 
-Los datos se guardan localmente. El uso cotidiano no necesita internet ni una cuenta. Las notas pueden verse en la lista de perfiles y los avisos incluyen información de los registros; ajusta la visibilidad de notificaciones en Android si quieres limitar lo que aparece en la pantalla de bloqueo.
+Los datos se guardan localmente. El uso cotidiano no necesita internet ni una cuenta. Las notas pueden verse en la lista de perfiles.
+
+- **Bloqueo de acceso.** En **Ajustes → Seguridad** puedes activar el bloqueo con el PIN o la huella del sistema. La app lo pide cada vez que se abre y al volver después de 1 minuto o más en segundo plano; si vuelves antes, sigues donde estabas. El bloqueo controla quién entra en la app, **no cifra los datos**: la base de datos y las copias exportadas se guardan en claro y dependen de la protección del propio teléfono.
+- **Avisos discretos.** Activado por defecto en **Ajustes → Seguridad**: las notificaciones solo dicen «Tienes un aviso nuevo. Abre la app para verlo.», sin tipo de aviso, iniciales, fechas ni el texto de tus recordatorios. Si lo desactivas, las notificaciones muestran el detalle (con iniciales, nunca nombres) a cualquiera que vea la pantalla desbloqueada.
+- **Copias sin cifrar.** Antes de exportar en JSON, CSV o PDF la app avisa de que el archivo no va cifrado: quien lo abra puede leer todo su contenido. Guárdalo en un lugar de confianza y bórralo cuando no lo necesites.
+- La vista de aplicaciones recientes de Android puede mostrar la última pantalla abierta aunque el bloqueo esté activado.
 
 Eliminar datos de la aplicación desde Android elimina también su información local. Una copia JSON manual guardada fuera del almacenamiento de la app permite restaurarla.
 

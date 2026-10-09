@@ -159,6 +159,32 @@ void main() {
       expect(reordered2!.sortOrder, 0);
     });
 
+    test('reorder keeps the previous order when a write fails', () async {
+      final ids = [
+        for (var i = 0; i < 3; i++)
+          await repo.create(
+            WomanDraft(name: 'Perfil $i', initials: 'P$i', sortOrder: i),
+          ),
+      ];
+      final women = [for (final id in ids) (await dao.getById(id))!];
+      // Fallo inducido en la última escritura, tras haber movido ya otra fila.
+      await db.customStatement(
+        'CREATE TRIGGER fallo_orden BEFORE UPDATE OF sort_order ON women '
+        'WHEN NEW.id = ${ids.first} '
+        "BEGIN SELECT RAISE(ABORT, 'fallo inducido'); END",
+      );
+
+      await expectLater(
+        repo.reorder(women.reversed.toList()),
+        throwsA(anything),
+      );
+
+      expect(
+        [for (final id in ids) (await dao.getById(id))!.sortOrder],
+        [0, 1, 2],
+      );
+    });
+
     test('watchAllProfiles returns women with tags', () async {
       await repo.create(
         const WomanDraft(name: 'María', initials: 'MR', tags: ['Amiga']),
@@ -175,6 +201,95 @@ void main() {
 
       final ana = profiles.firstWhere((p) => p.woman.name == 'Ana');
       expect(ana.tags, containsAll(['Ex', 'Amiga']));
+    });
+
+    Future<List<String>> tagsOf(int id) async =>
+        (await dao.watchTagsForWoman(id).first).map((t) => t.name).toList();
+
+    test('tags are normalized before linking', () async {
+      final id = await repo.create(
+        const WomanDraft(
+          name: 'María',
+          initials: 'MR',
+          tags: ['Amiga', ' Amiga ', '', 'Ex'],
+        ),
+      );
+      expect(await tagsOf(id), ['Amiga', 'Ex']);
+
+      await repo.update(
+        id,
+        const WomanDraft(name: 'María', initials: 'MR', tags: ['Ex', 'Ex']),
+      );
+      expect(await tagsOf(id), ['Ex']);
+
+      await dao.replaceTags(id, [' Casual', 'Casual']);
+      expect(await tagsOf(id), ['Casual']);
+      expect((await dao.allTags()).map((t) => t.name), [
+        'Amiga',
+        'Ex',
+        'Casual',
+      ]);
+    });
+
+    // Fallo inducido a mitad de la escritura: aborta el enlace de etiquetas,
+    // cuando el perfil (y la etiqueta nueva) ya se han escrito.
+    Future<void> failTagLinks() => db.customStatement(
+      'CREATE TRIGGER fallo_enlace BEFORE INSERT ON woman_tags '
+      "BEGIN SELECT RAISE(ABORT, 'fallo inducido'); END",
+    );
+
+    test('create leaves nothing behind when linking tags fails', () async {
+      await failTagLinks();
+      await expectLater(
+        repo.create(
+          const WomanDraft(name: 'María', initials: 'MR', tags: ['Amiga']),
+        ),
+        throwsA(anything),
+      );
+
+      expect(await repo.watchAllProfiles().first, isEmpty);
+      expect(await dao.allTags(), isEmpty);
+    });
+
+    test('update keeps profile and tags when linking tags fails', () async {
+      final id = await repo.create(
+        const WomanDraft(name: 'María', initials: 'MR', tags: ['Ex']),
+      );
+
+      await failTagLinks();
+      await expectLater(
+        repo.update(
+          id,
+          const WomanDraft(name: 'Nuevo', initials: 'NV', tags: ['Amiga']),
+        ),
+        throwsA(anything),
+      );
+
+      final woman = await dao.getById(id);
+      expect(woman!.name, 'María');
+      expect(woman.initials, 'MR');
+      expect(await tagsOf(id), ['Ex']);
+    });
+
+    test('replaceTags keeps previous links when it fails', () async {
+      final id = await repo.create(
+        const WomanDraft(name: 'María', initials: 'MR', tags: ['Ex']),
+      );
+
+      await failTagLinks();
+      await expectLater(dao.replaceTags(id, ['Amiga']), throwsA(anything));
+
+      expect(await tagsOf(id), ['Ex']);
+    });
+
+    test('update of a missing woman does nothing', () async {
+      await repo.update(
+        99,
+        const WomanDraft(name: 'Nadie', initials: 'ND', tags: ['Amiga']),
+      );
+
+      expect(await repo.watchAllProfiles().first, isEmpty);
+      expect(await dao.allTags(), isEmpty);
     });
   });
 }

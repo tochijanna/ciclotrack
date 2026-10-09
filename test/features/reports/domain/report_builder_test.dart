@@ -124,6 +124,58 @@ void main() {
       expect(informe.mujeres.single.ciclos.last.valor, 28);
     });
 
+    test(
+      'los KPI globales usan todo el historial aunque la serie se recorte',
+      () {
+        final periodos = [
+          // Dos ciclos de 40 días que quedan fuera del corte por defecto.
+          for (var i = 0; i < 3; i++)
+            periodo(2026, 1, 1 + i * 40, duracionDias: 5),
+          for (var i = 0; i < 12; i++)
+            periodo(2026, 1, 109 + i * 28, duracionDias: 5),
+        ];
+        final board = CalendarBoard(
+          women: [conPeriodos(ana, periodos)],
+          encuentros: const [],
+        );
+
+        final informe = buildReports(board, today: hoy);
+        final corto = buildReports(board, today: hoy, ciclosMax: 5);
+
+        // 15 inicios → 14 ciclos: 2 de 40 + 12 de 28.
+        expect(informe.globales.ciclos, 14);
+        expect(informe.globales.mediaCiclo, 416 / 14);
+        expect(informe.globales.ciclos, corto.globales.ciclos);
+        expect(informe.globales.mediaCiclo, corto.globales.mediaCiclo);
+        // El recorte solo afecta a la serie visual.
+        expect(informe.mujeres.single.ciclos, hasLength(12));
+        expect(
+          informe.mujeres.single.ciclos.map((p) => p.valor),
+          everyElement(28),
+        );
+        expect(corto.mujeres.single.ciclos, hasLength(5));
+      },
+    );
+
+    test('los inicios duplicados no generan ciclos de longitud cero', () {
+      final board = CalendarBoard(
+        women: [
+          conPeriodos(ana, [
+            periodo(2026, 1, 1, duracionDias: 5),
+            periodo(2026, 1, 1, duracionDias: 5),
+            periodo(2026, 1, 29, duracionDias: 5),
+          ]),
+        ],
+        encuentros: const [],
+      );
+
+      final informe = buildReports(board, today: hoy);
+
+      expect(informe.mujeres.single.ciclos.map((p) => p.valor), [28]);
+      expect(informe.mujeres.single.kpis.ciclos, 1);
+      expect(informe.mujeres.single.kpis.mediaCiclo, 28);
+    });
+
     test('sin periodos no hay ciclos ni periodo previsto', () {
       final board = CalendarBoard(
         women: [conPeriodos(ce, const [])],

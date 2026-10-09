@@ -846,8 +846,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get backupRestoreTitle => 'Restaurar copia';
 
   @override
-  String backupRestoreConfirm(int count) {
-    return '¿Reemplazar todos los datos actuales? Se borrarán los $count perfiles y todos sus registros.';
+  String backupRestoreConfirm(int actuales, int entrantes) {
+    return '¿Reemplazar todos los datos actuales? Se borrarán los $actuales perfiles actuales y todos sus registros. La copia contiene $entrantes.';
   }
 
   @override
@@ -1067,6 +1067,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get appLockAuthReason => 'Desbloquea CicloTrack para continuar';
+
+  @override
+  String get appLockLoadError =>
+      'No se pudo comprobar si el bloqueo está activado. Desbloquea o reinténtalo.';
+
+  @override
+  String get appLockRetry => 'Reintentar';
 
   @override
   String remindersOf(String name) {
@@ -1377,10 +1384,29 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsAppLockSupported =>
-      'Requiere PIN o huella al abrir la app';
+      'Pide PIN o huella al abrir la app y tras 1 minuto en segundo plano. Controla el acceso; no cifra los datos.';
+
+  @override
+  String get settingsDiscreetNoticesTitle => 'Avisos discretos';
+
+  @override
+  String get settingsDiscreetNoticesSubtitle =>
+      'Las notificaciones no muestran iniciales, fechas ni el texto de los recordatorios';
+
+  @override
+  String get discreetNoticeBody =>
+      'Tienes un aviso nuevo. Abre la app para verlo.';
 
   @override
   String get settingsAppLockUnavailable => 'No disponible en este dispositivo';
+
+  @override
+  String get settingsAppLockSaveError =>
+      'No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.';
+
+  @override
+  String get settingsAppLockAuthRequired =>
+      'El bloqueo sigue activado: hay que desbloquear con PIN o huella para desactivarlo.';
 
   @override
   String get settingsLocalTitle => '100 % local y sin nube';
@@ -1451,6 +1477,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get backupRestoreAction => 'Restaurar';
 
   @override
+  String get backupUnencryptedTitle => 'Archivo sin cifrar';
+
+  @override
+  String get backupUnencryptedWarning =>
+      'El archivo se guardará sin cifrar: cualquiera que lo abra podrá leer todos los datos. El bloqueo de acceso de la app no lo protege. Guárdalo en un lugar seguro.';
+
+  @override
+  String get backupUnencryptedAction => 'Exportar';
+
+  @override
   String backupSaveFailed(String reason) {
     return 'No se pudo guardar: $reason';
   }
@@ -1501,4 +1537,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String backupInvalidValue(String column) {
     return 'Valor inválido en $column';
   }
+
+  @override
+  String get backupPeriodOverlap => 'La copia contiene periodos solapados';
+
+  @override
+  String get backupTooLarge => 'El archivo supera el tamaño máximo permitido';
 }

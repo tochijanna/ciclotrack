@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart' show PlatformException;
+
 import 'alerts_change_dao.dart';
 import 'alerts_repository.dart';
 import 'notification_scheduler.dart';
@@ -22,6 +24,11 @@ class AlertsCoordinator {
   bool _refreshQueued = false;
   bool _started = false;
 
+  /// Momento del último refresco fallido, `null` si el último fue correcto.
+  DateTime? lastRefreshFailure;
+
+  /// Tipo del último error (solo identificador, sin mensaje ni datos).
+  String? lastErrorKind;
   Future<void> start() async {
     if (_started) return;
     _started = true;
@@ -40,8 +47,15 @@ class AlertsCoordinator {
     _refreshing = true;
     try {
       await repository.refreshAlerts();
-    } catch (_) {
+      lastRefreshFailure = null;
+      lastErrorKind = null;
+    } catch (e) {
       // Las alertas no deben bloquear la UI ni el arranque de la aplicación.
+      // Diagnóstico sin contenido sensible: solo el tipo (y código, si lo hay).
+      lastErrorKind = e is PlatformException
+          ? 'PlatformException(${e.code})'
+          : e.runtimeType.toString();
+      lastRefreshFailure = DateTime.now();
     } finally {
       _refreshing = false;
       if (_refreshQueued) {

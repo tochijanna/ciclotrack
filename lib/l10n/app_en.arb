@@ -382,9 +382,12 @@
   "backupTitle": "Backup",
   "backupSaved": "Backup saved",
   "backupRestoreTitle": "Restore backup",
-  "backupRestoreConfirm": "Replace all current data? The {count} profiles and all their records will be deleted.",
+  "backupRestoreConfirm": "Replace all current data? The {actuales} current profiles and all their records will be deleted. The backup contains {entrantes}.",
   "@backupRestoreConfirm": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "actuales": {"type": "int"},
+      "entrantes": {"type": "int"}
+    }
   },
   "pdfDocumentTitle": "CicloTrack — backup",
   "pdfFooterPage": "Page {page} of {total}",
@@ -506,6 +509,8 @@
   "appLockedSubtitle": "Unlock with your PIN or fingerprint to continue.",
   "appUnlock": "Unlock",
   "appLockAuthReason": "Unlock CicloTrack to continue",
+  "appLockLoadError": "Could not check whether the lock is enabled. Unlock or try again.",
+  "appLockRetry": "Retry",
 
   "remindersOf": "Reminders for {name}",
   "@remindersOf": {
@@ -656,8 +661,13 @@
   "medicationSaveChangeError": "Could not save the change",
   "settingsSectionSecurity": "Security",
   "settingsAppLockTitle": "App lock (PIN/fingerprint)",
-  "settingsAppLockSupported": "Requires PIN or fingerprint when opening the app",
+  "settingsAppLockSupported": "Asks for PIN or fingerprint when opening the app and after 1 minute in the background. It controls access; it does not encrypt the data.",
+  "settingsDiscreetNoticesTitle": "Discreet notifications",
+  "settingsDiscreetNoticesSubtitle": "Notifications do not show initials, dates or reminder text",
+  "discreetNoticeBody": "You have a new notice. Open the app to see it.",
   "settingsAppLockUnavailable": "Not available on this device",
+  "settingsAppLockSaveError": "Could not save the app lock setting. Try again.",
+  "settingsAppLockAuthRequired": "The lock is still on: unlock with your PIN or fingerprint to turn it off.",
   "settingsLocalTitle": "100% local and cloud-free",
   "settingsLocalSubtitle": "All data is stored only on this device: no accounts, sync or servers.",
   "settingsMedicationSubtitle": "Pills and alert times, per woman",
@@ -679,6 +689,9 @@
   "backupCancelled": "Export cancelled",
   "backupImportCancelled": "Import cancelled",
   "backupRestoreAction": "Restore",
+  "backupUnencryptedTitle": "Unencrypted file",
+  "backupUnencryptedWarning": "The file will be saved unencrypted: anyone who opens it can read all the data. The app lock does not protect it. Keep it somewhere safe.",
+  "backupUnencryptedAction": "Export",
   "backupSaveFailed": "Could not save: {reason}",
   "@backupSaveFailed": {
     "placeholders": {"reason": {"type": "String"}}
@@ -719,5 +732,7 @@
   "backupInvalidValue": "Invalid value in {column}",
   "@backupInvalidValue": {
     "placeholders": {"column": {"type": "String"}}
-  }
+  },
+  "backupPeriodOverlap": "The backup contains overlapping periods",
+  "backupTooLarge": "The file exceeds the maximum allowed size"
 }
