@@ -732,5 +732,6 @@
   "backupInvalidValue": "Valor inválido en {column}",
   "@backupInvalidValue": {
     "placeholders": {"column": {"type": "String"}}
-  }
+  },
+  "backupPeriodOverlap": "La copia contiene periodos solapados"
 }

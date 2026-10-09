@@ -40,8 +40,8 @@ String buildTableCsv(String table, List<Map<String, Object?>> rows) {
   return '\uFEFF${Csv().encode(data)}';
 }
 
-String _manifest(BackupDocument doc) =>
-    const JsonEncoder.withIndent('  ').convert({
+String _manifest(BackupDocument doc) => const JsonEncoder.withIndent('  ')
+    .convert({
       'app': backupAppId,
       'schemaVersion': doc.schemaVersion,
       'exportedAt': doc.exportedAt.toIso8601String(),

@@ -2765,6 +2765,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Valor inválido en {column}'**
   String backupInvalidValue(String column);
+
+  /// No description provided for @backupPeriodOverlap.
+  ///
+  /// In es, this message translates to:
+  /// **'La copia contiene periodos solapados'**
+  String get backupPeriodOverlap;
 }
 
 class _AppLocalizationsDelegate

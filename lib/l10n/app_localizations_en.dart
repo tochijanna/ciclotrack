@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1526,4 +1527,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String backupInvalidValue(String column) {
     return 'Invalid value in $column';
   }
+
+  @override
+  String get backupPeriodOverlap => 'The backup contains overlapping periods';
 }

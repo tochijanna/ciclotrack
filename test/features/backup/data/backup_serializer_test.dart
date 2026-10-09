@@ -199,12 +199,10 @@ void main() {
     final doc = await dumpDatabase(db, now: now);
 
     final destino = AppDatabase.forTesting(NativeDatabase.memory());
-    final zoe = await womenOf(
-      destino,
-    ).create(WomanDraft(name: 'Zoe', initials: 'ZO', tags: ['Otra']));
-    await trackingOf(
-      destino,
-    ).createPeriod(zoe, PeriodDraft(startDate: DateTime(2026, 1, 1)));
+    final zoe = await womenOf(destino)
+        .create(WomanDraft(name: 'Zoe', initials: 'ZO', tags: ['Otra']));
+    await trackingOf(destino)
+        .createPeriod(zoe, PeriodDraft(startDate: DateTime(2026, 1, 1)));
     await EncounterRepository(EncounterDao(destino)).create(
       EncounterDraft(
         encounterTime: DateTime(2026, 1, 2, 20),
@@ -237,12 +235,10 @@ void main() {
     ];
 
     final destino = AppDatabase.forTesting(NativeDatabase.memory());
-    final zoe = await womenOf(
-      destino,
-    ).create(WomanDraft(name: 'Zoe', initials: 'ZO', tags: ['Otra']));
-    await trackingOf(
-      destino,
-    ).createPeriod(zoe, PeriodDraft(startDate: DateTime(2026, 1, 1)));
+    final zoe = await womenOf(destino)
+        .create(WomanDraft(name: 'Zoe', initials: 'ZO', tags: ['Otra']));
+    await trackingOf(destino)
+        .createPeriod(zoe, PeriodDraft(startDate: DateTime(2026, 1, 1)));
 
     await expectLater(restoreDatabase(destino, doc), throwsA(isA<Exception>()));
 
@@ -266,9 +262,8 @@ void main() {
     final destino = AppDatabase.forTesting(NativeDatabase.memory());
     await restoreDatabase(destino, doc);
 
-    final nueva = await womenOf(
-      destino,
-    ).create(WomanDraft(name: 'Ce', initials: 'CE'));
+    final nueva = await womenOf(destino)
+        .create(WomanDraft(name: 'Ce', initials: 'CE'));
     expect(nueva, maxId + 1);
 
     await destino.close();
