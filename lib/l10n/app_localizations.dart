@@ -1599,8 +1599,8 @@ abstract class AppLocalizations {
   /// No description provided for @backupRestoreConfirm.
   ///
   /// In es, this message translates to:
-  /// **'¿Reemplazar todos los datos actuales? Se borrarán los {count} perfiles y todos sus registros.'**
-  String backupRestoreConfirm(int count);
+  /// **'¿Reemplazar todos los datos actuales? Se borrarán los {actuales} perfiles actuales y todos sus registros. La copia contiene {entrantes}.'**
+  String backupRestoreConfirm(int actuales, int entrantes);
 
   /// No description provided for @pdfDocumentTitle.
   ///

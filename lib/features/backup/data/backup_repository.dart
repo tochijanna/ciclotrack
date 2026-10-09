@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:drift/drift.dart' show countAll;
+
 import 'package:ciclotrack/l10n/app_localizations.dart';
 
 import '../../../core/db/app_database.dart';
@@ -61,6 +63,14 @@ class BackupRepository {
       name: 'ciclotrack-informe-${backupStamp(now)}.pdf',
       bytes: bytes,
     );
+  }
+
+  /// Perfiles actuales en la base: los que se borrarán al restaurar.
+  Future<int> perfilesActuales() async {
+    final countExpr = countAll();
+    final query = _db.selectOnly(_db.women)..addColumns([countExpr]);
+    final row = await query.getSingle();
+    return row.read(countExpr) ?? 0;
   }
 
   /// Solo JSON: es el único formato completo y sin pérdidas; CSV y PDF son de

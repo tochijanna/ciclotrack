@@ -846,8 +846,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get backupRestoreTitle => 'Restaurar copia';
 
   @override
-  String backupRestoreConfirm(int count) {
-    return '¿Reemplazar todos los datos actuales? Se borrarán los $count perfiles y todos sus registros.';
+  String backupRestoreConfirm(int actuales, int entrantes) {
+    return '¿Reemplazar todos los datos actuales? Se borrarán los $actuales perfiles actuales y todos sus registros. La copia contiene $entrantes.';
   }
 
   @override

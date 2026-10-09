@@ -225,8 +225,8 @@ void main() {
     expect(find.text('Restaurar copia'), findsOneWidget);
     expect(
       find.text(
-        '¿Reemplazar todos los datos actuales? Se borrarán los 1 perfiles y '
-        'todos sus registros.',
+        '¿Reemplazar todos los datos actuales? Se borrarán los 1 perfiles '
+        'actuales y todos sus registros. La copia contiene 1.',
       ),
       findsOneWidget,
     );
@@ -321,6 +321,57 @@ void main() {
 
     final mujeres = await runReal(tester, () => db.select(db.women).get());
     expect(mujeres.single.name, 'Zoe');
+    expect(find.textContaining('Copia restaurada'), findsNothing);
+
+    await closeTestDatabase(tester, db);
+  });
+
+  testWidgets('el diálogo distingue perfiles actuales de entrantes', (
+    tester,
+  ) async {
+    // 2 perfiles actuales; la copia trae solo 1.
+    await seedWoman(tester, db, name: 'Zoe');
+    await seedWoman(tester, db, name: 'Ruth');
+    gateway.aLeer = Uint8List.fromList(
+      utf8.encode(
+        jsonEncode(
+          BackupDocument(
+            exportedAt: now,
+            tables: {
+              'women': [
+                {
+                  'id': 1,
+                  'name': 'Ana',
+                  'initials': 'AN',
+                  'emoji': '👩',
+                  'color': 4294198070,
+                  'private_notes': '',
+                  'sort_order': 0,
+                  'created_at': now,
+                },
+              ],
+            },
+          ).toJson(),
+        ),
+      ),
+    );
+    await pumpBackup(tester);
+
+    await pulsar(tester, 'Restaurar desde JSON');
+
+    expect(
+      find.text(
+        '¿Reemplazar todos los datos actuales? Se borrarán los 2 perfiles '
+        'actuales y todos sus registros. La copia contiene 1.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Cancelar'));
+    await asentar(tester);
+
+    final mujeres = await runReal(tester, () => db.select(db.women).get());
+    expect(mujeres.map((m) => m.name), ['Zoe', 'Ruth']);
     expect(find.textContaining('Copia restaurada'), findsNothing);
 
     await closeTestDatabase(tester, db);
