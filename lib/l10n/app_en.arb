@@ -382,9 +382,12 @@
   "backupTitle": "Backup",
   "backupSaved": "Backup saved",
   "backupRestoreTitle": "Restore backup",
-  "backupRestoreConfirm": "Replace all current data? The {count} profiles and all their records will be deleted.",
+  "backupRestoreConfirm": "Replace all current data? The {actuales} current profiles and all their records will be deleted. The backup contains {entrantes}.",
   "@backupRestoreConfirm": {
-    "placeholders": {"count": {"type": "int"}}
+    "placeholders": {
+      "actuales": {"type": "int"},
+      "entrantes": {"type": "int"}
+    }
   },
   "pdfDocumentTitle": "CicloTrack — backup",
   "pdfFooterPage": "Page {page} of {total}",

@@ -148,7 +148,10 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       }
 
       final doc = BackupDocument.fromBytes(bytes);
-      final confirmado = await _confirmar(doc.counts['women'] ?? 0);
+      final confirmado = await _confirmar(
+        await ref.read(backupRepositoryProvider).perfilesActuales(),
+        doc.counts['women'] ?? 0,
+      );
       if (confirmado != true) return;
 
       final resumen = await ref.read(backupRepositoryProvider).importJson(doc);
@@ -195,13 +198,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     );
   }
 
-  Future<bool?> _confirmar(int perfiles) {
+  Future<bool?> _confirmar(int actuales, int entrantes) {
     final l10n = AppLocalizations.of(context);
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.backupRestoreTitle),
-        content: Text(l10n.backupRestoreConfirm(perfiles)),
+        content: Text(l10n.backupRestoreConfirm(actuales, entrantes)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
