@@ -1405,6 +1405,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo guardar el bloqueo de acceso. Inténtalo de nuevo.';
 
   @override
+  String get settingsAppLockAuthRequired =>
+      'El bloqueo sigue activado: hay que desbloquear con PIN o huella para desactivarlo.';
+
+  @override
   String get settingsLocalTitle => '100 % local y sin nube';
 
   @override
